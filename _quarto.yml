@@ -2,6 +2,7 @@ project:
   type: book
   output-dir: docs
 
+
 book:
   title: "Technical Interview Notes"
   author: "Josh Allen"
@@ -27,6 +28,7 @@ execute:
   message: false
   warning: false
   results: 'hide'
+  freeze: auto
 
 
 
