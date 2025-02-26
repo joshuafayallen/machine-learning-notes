@@ -1,0 +1,818 @@
+# Linear Regression and Shrinkage Estimators
+
+
+Since the bulk of your work will be building machnine learning models it is probably going to be important that you get way more comfortable with machine learning in python. You are a bit of a unicorn in the sense that you will do anything but learn pandas. So you are going to have to make sure that this isn't new information. 
+
+
+```{python}
+#| code-fold: true
+import polars as pl 
+import numpy as np
+import pandas as pd 
+import statsmodels.formula.api as smf 
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+from statsmodels.stats.outliers_influence import variance_inflation_factor as VIF
+from statsmodels.stats.anova import anova_lm
+from sklearn.linear_model import ElasticNet, ElasticNetCV
+from sklearn.model_selection import GridSearchCV, train_test_split, ShuffleSplit, KFold
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.metrics import mean_squared_error, make_scorer
+import polars.selectors as cs
+from marginaleffects import *
+from plotnine import *
+from great_tables import GT 
+
+
+boston = pl.read_csv('data/Boston.csv').to_pandas()
+
+```
+
+
+Since R is kind of your native language the way Python does things is weird to you so a simple linear model like this 
+
+
+```{r}
+
+boston = read.csv('data/Boston.csv')
+
+mod = lm(medv ~ lstat, data = boston)
+
+
+```
+
+
+becomes this (monster) in python where you now also have to tell it that you need the constant. Which is frankly crazy. 
+
+
+```{python}
+
+form_model = smf.ols('medv ~ lstat', data = boston).fit()
+
+x = boston['lstat']
+
+x = sm.add_constant(x)
+
+sm_model = sm.OLS(boston['medv'], x).fit()
+
+form_model.summary()
+
+# sm_model.summary()
+
+
+
+```
+
+
+Like an intersting cultural difference between these two is how we do things after estimation. For R apply functions to it since R is a more functionally oriented language. However if we access the object we created we have a whole host of class methods for this task. So if we wanted to predict what would happen at specified values we would do something to the effect of 
+
+
+```{python}
+
+new_df = pd.DataFrame({'lstat':[5, 10, 15]})
+
+x_new = sm.add_constant(new_df)
+
+preds = sm_model.get_prediction(x_new)
+
+## this prints a huge array
+preds_mean = preds.predicted_mean
+
+
+```
+
+Multiple regression works somewhat similarly. Unfortunately it takes this hideous form
+
+
+
+```{python}
+
+y = boston['medv']
+
+x = boston[['crim', 'age']]
+
+x = sm.add_constant(x)
+
+sm.OLS(y, x).fit().summary()
+
+# smf.ols('medv ~ crim + age', data = boston).fit().summary()
+
+
+```
+
+
+```{r}
+
+summary(lm(medv ~ crim + age, data = boston))
+
+
+```
+
+
+What starts to get interesting is that what if we need we want to fit everything in one go? In R this is pretty simple 
+
+
+```{r}
+summary(lm(medv ~ ., data = boston))
+```
+
+Whereas in python you need to do something like this 
+
+
+```{python}
+
+smf.ols('medv ~' + '+'.join(boston.columns.difference(['medv'])), data = boston).fit().summary()
+
+
+```
+
+or 
+
+
+
+```{python}
+
+x = boston.drop(columns=['medv'])
+
+x = sm.add_constant(x)
+
+y = boston['medv']
+
+
+sm.OLS(y,x).fit().summary()
+
+```
+
+## Transformations
+
+We can start to do things like add transformations like this 
+
+
+```{python}
+#| label: check
+#| eval: false
+
+x = boston.drop(columns = 'medv')
+
+y = boston['medv']
+
+x['sqr_lstat'] = x['lstat'] **2
+
+y['medv'] = np.log(y['medv'])
+
+x = sm.add_constant(x) 
+
+sm.OLS(y,x).fit().summary()
+
+```
+
+
+For interactions we do something like this 
+
+
+```{python}
+
+x = boston[['age', 'lstat']]
+
+x['lstat:age'] = x['age'] * x['lstat']
+
+x = sm.add_constant(x) 
+
+y = boston['medv']
+
+
+sm.OLS(y, x).fit().summary()
+
+
+```
+
+
+For qualitative variables we need to switch to a new dataset. There is a lot of interesting information in multicategory variables. One thing that we have to keep in mind when using qualitative variables normally is that we have a reference category. This may not always be straightforward to infer and we are throwing information away that is interesting. One hot encoding or breaking out the qualitative variable to indicatior variables is a nice way to do this, 
+
+
+```{python}
+
+carseats = pl.read_csv('data/Carseats.csv')
+
+carseats.select(pl.col('ShelveLoc').unique()).head()
+
+
+
+cars_small = carseats.select(pl.col('Sales', 'CompPrice', 'Income', 'ShelveLoc')).to_dummies(cs.string())
+
+x = cars_small.select(pl.exclude('Sales')).to_pandas()
+
+y = cars_small.to_pandas()['Sales']
+
+x = sm.add_constant(x)
+
+sm.OLS(y, x).fit().summary()
+
+
+
+
+```
+
+For quick and dirty things this is nice and fairly straightforward. We are not really going to delve to deep on fitting a ton of models but really this would just involve some F-string. Instead we are going to focus on the machine learning workflow. Going through step by step and doing these are not terribily time consuming but as things get more complicated we are going to need a more robust framework to deal with this. 
+
+
+## Regression Assumptions
+
+Our basic assumptions of linear regression are that 
+
+1. There are linear relationship between our outcome and our predictors 
+  - This is something we violate all the time. For the most part we can transform the dependent or independent variable to dependent variable
+2. No Perfect multicolinearity. This is effectively a mathematical constraint. If any of the predictors are an exact linear combination of each other then we can't actually calculate the model. Software solves this for us and kicks out various terms. It will do this arbitrarily so. 
+  - In practice this assumption is never violated but we still need to worry about some collinearity. The general idea is that when we are measuring a concept with variables that are really correlated with each other then we are not going to get a good understanding of what each variable is contributing on their own. This is not a statistical problem it is a research design problem. We can't systematically account for whether this will 
+
+The general idea is that when we are measuring a concept with variables that are really correlated with each other then we are not going to get a good understanding of what each variable is contributing on their own. This is not a statistical problem it is a research design problem. We can't systematically account for whether this will inflate the standard errors  or deflate them. Meaning that if we are interested in variable importance or making statements about what moving one variable up or down will do. 
+
+3. Spepherical Error term aka IID error assumption 
+
+For simplicity we can group two related assumptions 
+
+The first part is that we expect homogeneity 
+
+$$
+\begin{equation}
+  var(\mu_i) = E[\mu_i] - E[\mu_i | X_i)^2]
+\end{equation}
+$$
+
+The second part is that there is no autocorrelation. 
+
+$$
+\begin{equation}
+  cov(\mu_i, \mu_j | X_i, X_j) = 0
+\end{equation}
+$$
+
+
+In practice when we violate this asumption our coefficients are unaffected but our standard errors can be drastically wrong. We can correct the standard errors to account for violations by loosening up how we compute the variance-covariance matrix. In some ways this is acceptable under very specific settings however. This can generally point to deeper issues with modeling the data. Like one way to trigger heterosckedasicity is simply to model binary data with OLS. A more appropriate solution would just to be model the DGP correctly.
+
+
+## Shrinkage Estimators 
+
+One solution that this flavor of statistics has proposed to reduce the variance of OLS estimates when the number of predictors large or the predictors are really collinear than we can use shirkage aka regularization to penalize regression coefficients towards zero. 
+
+Ridge regression and LASSO regression are not entirely different than OLS regression. Each of these estimators reduces the residual sum of squares however we tack on a penalty term to the lasso and ridge estimators. 
+
+```{=tex}
+\begin{align}
+
+\text{OLS} = \sum_{x,y \in D}(y-\text{prediction}(x))^2 \\
+
+\text{Ridge} = \sum_{x,y \in D}(y-\text{prediction}(x))^2 + \lambda \sum \beta^{2}_{j} \\
+
+\text{LASSO} = \sum_{x,y \in D}(y-\text{prediction}(x))^2 + \lambda \sum |{\beta_{j}}|
+
+\end{align}
+
+
+
+```
+
+What is going on underneath the hood? 
+
+- Ridge penalty we are summing the squared coefficients and multiplying it by the hyperparameter. 
+  - Effectively imposing a penalty equivelent to the square of the magnitude of the coefficients
+- LASSO penalty we are just summing the absolute values of the coefficients. 
+    - Effectively imposing a penalty equivelent to the absolute value of the magnitude of coefficients 
+
+The reason why we want to penalize a model is that as we start training and start adding in variables we think help predict our outcome our models are going to start to do a better job fitting the noise. Each approach has pros and cons. A ridge penalty will let all predictors enter into the predictions even if they don't contribute much. A lasso penalty will implictly start to kick out variables that don't contribute anything to the model. Theoretically this is important if we have a high amount of multicollinearity/we don't wanted automated feature selection. Effectively this question is a little theoretical in practice we are going to compare the predicitve accuracy of the two to find this out. The ridge and lasso penalties will appear in other cases so I will probably go over this again. 
+
+## What is multicollinearity and how do we fix it? 
+
+To set up this question lets think of a hypothetical business problem. We are trying to assign somebody a premium based on the data we have on other people. We have access to their age, their location, past driving history, make and model of their car, and gender. Theoretically we would expect these variables to be related to one another in some way. For example make and model of their car, age, and gender is probably going to tell us something about their past driving history. We would expect that a 20 year old male driving a sports car is probably going to have a higher likelihood of having one or more speeding tickets then a female driving the same car. When we go to model this relationship each of these variables are going to be related to each other. 
+
+Lets setup an OLS with this example where age enters into the model in years, car type is a factor with a Toyota Corolla as it reference level, past incidents is the log of past driving behavior, location is a simple indicator variable where rural is the reference level, and gender is a indicator variable where the reference level is female.
+
+$$
+Premium = \alpha + \beta_{1} Age + \beta_{2} \text{car_type} + \beta_{3} location + \beta_{4} \log{history} + \beta_{5} Gender + \varepsilon
+$$
+
+For simplicity we will focus on gender as the primary explainer for insurance premiums. Lets say that gender and location are highly correlated this may occur for a variety of reasons e.g. presence of a military base, presence of a college campus etc. When we go to interpret the effect of being male on an insurance premium we hold all variables in the equation constant. However, if the moving from a rural area to the city is highly deterministic of gender we can neatly unpack the effect of gender on insurance premium. While an interpretational problem this makes it difficult to unpack the effect of a single variable on insurance premiums. 
+
+
+Another important factor is multicollinearity impacts our uncertainty estimates either biasing them down leading us to fail to reject the null more times than we should or can bias our standard errors downwards over rejecting the null hypothesis [@gujarati2012basic; @lenzAchievingStatisticalSignificance2021]. Lets take a simulated example to make this point a bit more explicit 
+
+
+```{r}
+#| label: sim
+library(performance)
+library(magrittr)
+library(tidyverse)
+
+
+
+
+generate_dummy_data <- function(data, seed = NULL) {
+  set.seed(seed = seed)
+  data <- dplyr::tibble(gender = rbinom(100, 1, 0.5),
+                        location = ifelse(runif(100) < 0.9, gender, 1 - gender),
+                        y = 5 + 3 * gender + rnorm(100, 0, 3))
+  return(data)
+}
+
+generate_dummy_model <- function(data) {
+  model <- lm(y ~ gender + location, data = data)
+  return(model)
+}
+
+extract_model_coefficients <- function(model) {
+  coefs <- broom::tidy(model) |> janitor::clean_names()
+  # replace dots and white spaces with underscores
+  return(coefs)
+}
+
+run_lm_simulation <- function(data_generator, model_generator, n = 1000) {
+  simulation <- 
+    dplyr::tibble(i = 1:n) %>% 
+    dplyr::mutate(
+      data = purrr::map(.x = i, .f = ~ data_generator(seed = .x)),
+      model = purrr::map(.x = data, .f = model_generator),
+      coefs = purrr::map(.x = model, .f = extract_model_coefficients)
+      ) %>%
+  return(simulation)}
+
+dummy_simulation <- run_lm_simulation(data_generator = generate_dummy_data,
+                                      model_generator = generate_dummy_model, 
+                                      n = 1000)
+
+
+
+simulated_p = dummy_simulation |>
+    unnest(coefs) |>
+    filter(term != '(Intercept)')
+
+
+
+ggplot(simulated_p, aes(x = p_value, fill = term)) +
+  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+  facet_wrap(vars(term), scales = "free_y", ncol = 1) +
+  labs(title = "Distribution of P-Values for x and x_collinear",
+       x = "P-Value",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+In this case we see that we have some encouraging results that we are not going to over reject gender but if we look at location we are much more prone to failing to reject the null hypothesis. This is fine in a simulated world because we induced this relationship ourselves. However, in the real world that is not available to us. 
+
+To get around multicollinearity we use methods that penalize our coeficients towards zero. The two most common forms of penalization are known as ridge and LASSO regression. The canonical regression equation minimizes the sum of squared residuals. Regularization adds a penalty term to this equation that shrinks the coefficient estimates toward zero. Ridge regression (L2 penalty) adds the sum of the squared coefficients to the loss function, which discourages large coefficient values but does not set them to zero. LASSO regression (L1 penalty) adds the sum of the absolute values of the coefficients, which can shrink some coefficients to exactly zero, effectively performing feature selection.
+
+```{r}
+#| label: test
+library(tidymodels)
+
+hitters = read_csv('data/Hitters.csv') |>
+    janitor::clean_names() |>
+    filter(!is.na(salary))
+
+
+ridge_spec = linear_reg(mixture = 0, penalty = 0) |>
+    set_mode('regression') |>
+    set_engine('glmnet') |>
+    fit(salary ~ ., data = hitters)
+
+ridge_spec |>
+    autoplot() + 
+    theme_minimal() +
+    labs(title = 'Ridge Regularization')
+
+
+
+
+
+```
+
+As we can see with the ridge penalty as we increase the size of the penalty the closer to zero these coefficients get. For some coefficients they get pushed towards zero immediately. One of the things that happens with multicollinear data is that jumps in one variable can cause massive swings in another in ways that aren't entirely transparent. In prediction context we may not neccessarily care about the individual impact of one of 100 variables. We are more concerned that our model is healthy and making good predictions on data that it hasn't seen. By regularizing our model we penalize the model for being extremely flexible this may increase our bias a bit but this comes at the gain of reducing the variance. What this means is that we are going to get a healthier prediction machine. For a LASSO model some of these coefficients will be zero just by the nature of the penalty. Effectively performing feature selection for us.
+
+## Training these things 
+
+
+One important thing to note is that neither when we change the scale of our predictor variable the LASSO and Ridge esstimates will not adjust accordingly because the larger coefficients that result from say salary and age are going to be on different scales which our coefficients are going to respond to accrodingly. However, the penalty term is not going react well at all since it will penalize larger coefficients by default. To build on our prior knowledge lets build a scikit learn pipeline that validates 
+
+```{python}
+
+
+K = 5
+kfold = KFold(K,
+                  random_state=0,
+                  shuffle=True)
+
+hitters = pl.read_csv('data/Hitters.csv').with_columns(
+     pl.col('Salary').str.to_integer(strict = False).alias('Salary')
+).drop_nulls()
+
+scaler = StandardScaler()
+
+K = 5
+
+x = hitters.select(pl.exclude('Salary')).to_dummies(cs.string())
+
+y = hitters.select(pl.col('Salary')).to_numpy()
+
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size= 0.2 )
+
+lambdas = 10**np.linspace(8, -2, 100) / y.std()
+
+ridge = ElasticNet(l1_ratio = 0)
+
+param_grid = {'ridge__alpha': lambdas}
+
+pipe = Pipeline(steps = [('scaler', scaler), ('ridge', ridge)])
+
+pipe.fit(x_train, y_train)
+
+validation = ShuffleSplit(n_splits=1,
+                              test_size=0.5,
+                              random_state=0)
+
+grid = GridSearchCV(pipe, param_grid, cv = validation, scoring='neg_mean_squared_error')
+
+grid.fit(x, y)
+grid.best_params_['ridge__alpha']
+
+grid.best_estimator_
+
+ridge_fig, ax = plt.subplots(figsize=(8,8))
+ax.errorbar(-np.log(lambdas),
+            -grid.cv_results_['mean_test_score'],
+            yerr=grid.cv_results_['std_test_score'] / np.sqrt(K))
+ax.set_ylim([50000,250000])
+ax.set_xlabel('$-\log(\lambda)$', fontsize=20)
+ax.set_ylabel('Cross-validated MSE', fontsize=20)
+
+```
+
+So we have it looking at the MSE but we can also look at it with R2
+
+```{python}
+
+ridge_cv = ElasticNetCV(alphas = lambdas,
+                        l1_ratio = 0,
+                        cv = kfold)
+
+
+pipe_cv = Pipeline(steps =[('scaler', scaler), ('ridge', ridge_cv)])       
+
+pipe_cv.fit(x, y)
+
+tuned_ridge = pipe_cv.named_steps['ridge']
+ridgeCV_fig, ax = plt.subplots(figsize=(8,8))
+ax.errorbar(-np.log(lambdas),
+            tuned_ridge.mse_path_.mean(1),
+            yerr=tuned_ridge.mse_path_.std(1) / np.sqrt(K))
+ax.axvline(-np.log(tuned_ridge.alpha_), c='k', ls='--')
+ax.set_ylim([50000,250000])
+ax.set_xlabel('$-\log(\lambda)$', fontsize=20)
+ax.set_ylabel('Cross-validated MSE', fontsize=20)                   
+
+```
+
+
+We could do the same thing with a lasso regression but this workflow is not great instead we can make a function and then loop over the grids. 
+
+```{python}
+
+models = {
+    'ridge': ElasticNet(l1_ratio=0),
+    'lasso': ElasticNet(l1_ratio=1)  # Lasso is a special case of ElasticNet
+}
+
+# Prepare for GridSearchCV
+
+param_grids = {
+    'ridge': {'elasticnet__alpha': lambdas},  # Use 'elasticnet' as the step name
+    'lasso': {'elasticnet__alpha': lambdas}
+}
+
+results = []
+# Set up ShuffleSplit cross-validation for GridSearchCV
+validation = ShuffleSplit(n_splits=1, test_size=0.5, random_state=0)
+
+# Function to perform grid search and output results
+def tune_model(model_name, model, param_grid):
+    # Build pipeline
+    pipe = Pipeline(steps=[('scaler', scaler), ('elasticnet', model)])  # Step name matches model_name
+    
+    # Perform grid search
+    grid = GridSearchCV(pipe, param_grid, cv=validation, scoring='neg_mean_squared_error')
+    grid.fit(x_train, y_train)
+    
+    # Extract best parameters and model
+    best_alpha = grid.best_params_['elasticnet__alpha']
+    best_model = grid.best_estimator_
+    results.append({
+        'model': model_name.capitalize(),  # Store as "Ridge" or "Lasso"
+        'best_alpha': best_alpha,
+        'best_model': str(best_model),
+        'best_score': grid.best_score_
+    })
+    return best_model
+    
+best_models = {}
+# Tune each model
+for model_name, model in models.items():
+    best_models[model_name] = tune_model(model_name, model, param_grids[model_name])
+
+
+results_df = pl.DataFrame(results)
+
+```
+
+So now we have the best model but we would like to grab the most important features. We may need something to present to stakeholders or to better understand what is going on in our models. 
+
+```{python}
+
+def get_variable_importance(best_model, feature_names):
+    # Access the 'elasticnet' step in the pipeline
+    elastic_net_step = best_model.named_steps['elasticnet']
+    coef = elastic_net_step.coef_
+    feature_importance = sorted(zip(feature_names, coef), key=lambda x: abs(x[1]), reverse=True)
+    features, coefficients = zip(*feature_importance)
+    return features, coefficients
+# Prepare side-by-side plots
+fig, axes = plt.subplots(1, len(best_models), figsize=(15, 6), sharey=True)
+
+# Get feature names
+feature_names = x.columns
+
+# Plot VIP for each model
+for i, (model_name, best_model) in enumerate(best_models.items()):
+    # Extract variable importance
+    features, coefficients = get_variable_importance(best_model, feature_names)
+    
+    # Determine bar colors based on coefficient sign
+    colors = ['green' if coef > 0 else 'red' for coef in coefficients]
+    
+    # Create subplot
+    axes[i].barh(features, np.abs(coefficients), color=colors)
+    axes[i].set_title(f'Variable Importance: {model_name.capitalize()}')
+    axes[i].set_xlabel('Absolute Coefficient Value')
+    if i == 0:  # Add y-axis label only for the first plot
+        axes[i].set_ylabel('Features')
+    axes[i].invert_yaxis()  # Invert y-axis for descending order
+    
+    # Add a legend
+    axes[i].legend(['Positive Impact', 'Negative Impact'], loc='lower right')
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+
+```
+
+
+Which is nice we see what is postively impacting value. However, I don't neccessarily like these plots since we are not really showing anything interesting. A better way would be to show marginal effects. In R we would do something to this effect.
+
+
+```{r}
+#| eval: false
+#| code-fold: true
+library(tidymodels)
+library(marginaleffects)
+library(ISLR)
+
+Hitters <- as_tibble(Hitters) |>
+  filter(!is.na(Salary))
+
+Hitters_split <- initial_split(Hitters, strata = "Salary")
+
+Hitters_train <- training(Hitters_split)
+Hitters_test <- testing(Hitters_split)
+
+Hitters_fold <- vfold_cv(Hitters_train, v = 10)
+
+
+ridge_recipe <- 
+  recipe(formula = Salary ~ ., data = Hitters_train) |> 
+  step_novel(all_nominal_predictors()) |> 
+  step_dummy(all_nominal_predictors()) |> 
+  step_zv(all_predictors()) |> 
+  step_normalize(all_predictors())
+
+ridge_spec <- 
+  linear_reg(penalty = tune(), mixture = 0) |> 
+  set_mode("regression") |> 
+  set_engine("glmnet")
+
+ridge_workflow <- workflow() |> 
+  add_recipe(ridge_recipe) |> 
+  add_model(ridge_spec)
+
+penalty_grid <- grid_regular(penalty(range = c(-5, 5)), levels = 50)
+
+tune_res <- tune_grid(
+  ridge_workflow,
+  resamples = Hitters_fold, 
+  grid = penalty_grid
+)
+
+best_penalty = select_best(tune_res, metric = 'rsq')
+
+ridge_final <- finalize_workflow(ridge_workflow, best_penalty)
+
+ridge_final_fit <- fit(ridge_final, data = Hitters_train)
+
+avg_predictions(ridge_final_fit, newdata = Hitters_test, by = 'somefactor', newdata = some_grid_of_values)
+
+
+```
+
+In machine learning parlance we could make a partial dependency plot. Which is really just plotting the predictions when we move values of our variables that we may think are interesting.
+
+
+## Evaluation Metrics 
+
+We have more than a few evaluation metrics for linear regression or regression based tasks to be specific so it is worth going over the most popular ones.  In at @tbl-ols-mets I outline the basics of each measure but will discuss each of these measures in greater detail. 
+
+
+```{python}
+#| label: tbl-ols-mets
+#| code-fold: true
+
+ols_mets = pl.DataFrame({
+    'Metric': [
+        'R-Squared',
+        'Mean Square Error (MSE)',
+        'Root Mean Square Error (RMSE)',
+        'Mean Absolute Error (MAE)',
+        'Mean Absolute Percentage Error (MAPE)',
+        'Symmetric Mean Absolute Percentage Error (SMAPE)'
+    ],
+    'What it Does': [
+        'The proportion of variation explained by the model',
+        'The average error of the model',
+        'The square root of the average error of the model',
+        'Similar to the MSE but we calculate with |y - yhat|',
+        'Similar to the MSE but calculated by |y - yhat| / yi',
+        'Similar to the MSE but calculated by |y - yhat| / ((y + yhat) / 2)'
+    ]
+})
+
+GT(ols_mets)
+
+```
+
+
+Before we dive into each of these metrics it is worth going over the OLS optimization problem. For an OLS the optimization problem is the sum of the squared residuals. The objective function is given by
+
+$$ 
+\arg \min_{\beta, \alpha} \sum^{n}_{i = 1} (y_{i} - \hat{y}_{i})^{2}
+$$
+
+For notational purposes $\beta$ is a vector of regression coefficients, $y_{i}$ is the observed value of our dependent variable and $\hat{y}$ is the predicted value from our model. It is a little bit clearer if we rewrite the optimization problem with 
+
+$$
+\arg \min_{\beta, \alpha} \sum^{n}_{i = 1} (y_{i} - (\alpha + \beta \times x_i))^{2}
+$$
+
+
+Of the optimatization problems in the world this one is kind of beautifully simple. So linear regression is going to draw a line (or hyperplane) through our data that tries to minimize the distance between each of the points. We are going to see how far away the predicted value is from the observed value and then we are going to square them to ensure they aren't negative then we are going to sum them to get the total distance for each point. In effect what is going on is something to this 
+
+
+```{python}
+
+fitted = form_model.fittedvalues
+
+resids = form_model.resid
+
+boston['fitted'] = fitted
+
+m,b = np.polyfit(boston['lstat'], boston['medv'], 1)
+
+fig,ax = plt.subplots(figsize=(15,6))
+plt.plot(boston['lstat'], boston['lstat'] * m + b, color = 'pink')
+plt.scatter(boston['lstat'], fitted, color = 'red',alpha = 0.1)
+plt.scatter(boston['lstat'], boston['medv'], color = 'blue', alpha = 0.5)
+for i in range(len(boston)):
+    plt.plot([boston['lstat'].iloc[i], boston['lstat'].iloc[i]], 
+             [boston['medv'].iloc[i], boston['fitted'].iloc[i]], color='blue', alpha=0.5)
+plt.xlabel('Percent Low Status')
+plt.ylabel('Home Value Median ($1000)')
+
+
+```
+
+
+Effectively we are minimizing the distance between the points and our line via this objective function. These metrics are all broadly related to this same idea. 
+
+### R-Squared 
+
+$R^2$ aka the 'coefficient of determination' is some what straight forward it is $1-\frac{RSS}{TSS}$. Lets break this down a little further 
+
+$$
+R^2 = 1 - \frac{RSS}{TSS} = 1 - \frac{\sum^N_{i = 1} (y_{i} - \hat{y}_i)^{2}}{\sum^N_{i = 1} (y_i - \bar{y})^{2}}
+$$
+
+So if we look closely at the fraction is the numerator is the sum of the squared residuals or the distance metric we talked about earlier. In the denominator we have the something broadly similar. The total sum of squares is something akin to a more naive predicition error. Instead of $\hat{y}$ we have $\bar{y}$ which is just the mean of y. So we are effectively taking the summed distance of the observed value of y and the mean of y. What this gives us is the fraction of the variance explained by our model. In political science and the social sciences more generally this is something that most people don't even report anymore. In many cases we are creating regression tables where we have different dependent variables. One of the primary weaknesses of using $R^{2}$ is that the easiest way to improve your $R^2$ is to simply add more variables. As the model gets more information it is is going to a better job of getting $\hat{y}$ close to the observed value of Y. 
+
+As a political scientist by training I am always skeptical of the idea of using $R^2$ for anything other than chuckling at people who see it as some sort of measure of distance from the true model. I think @King86 sums some of the criticisms quite well. Decisions about how we process our data are also going to influence this metric because we are going to either increase or decrease the distance. $R^2$ in a machine learning context may fit the description of a goodness of fit test where we are figuring out the amount of variation in the data explained. We are often swapping out variables on the right hand side. $R^2$ we can assess if some combination of these variables reduce the amount of unexplained variation. Generally we would probably want to use the penalized version of $R^2$ so we don't reward our model for just adding more variables. However, I think one of the most interesting points about $R^2$ are things that are already present in our OLS model. This is going to hold less and less as our model gets less interpretable. 
+
+
+### Mean Squared Error and its flavors 
+
+Heuristically it seems a lot of machine learning evaluation for regression models uses mean squared error or some variation of it to check model performance. Conceptually these metrics are linked because we can get the $R^2$ by doing:
+
+$$
+R^2 = 1 - \frac{x \times MSE}{\sum^n_{i =1} (y_i - \hat{y})^2}
+$$
+
+However, the thing with $R^2$ is that it is not neccessarily that sensistive to extreme values. While in general it is difficult to have wildly divergent measure of $R^2$ and MSE we may actually care about how our models perform in response to outliers. If big errors are costly to our model performance than we are going to want a measure that more directly captures their influence.
+
+$$
+MSE = \frac{1}{n} \sum^n_{i =1} (y_i - \hat{y})^2
+$$
+
+Where we are effectively getting the average error instead of the total error. One thing that flips with respect to $R^2$ is that we are getting a slightly more interpretable difference metric. Meaning that we are getting the average distance between our predicted values and the observed values. So we are looking for this number to be kind of low! However, whats important to note is that there is no scaling factor. Meaning that outliers are going to really effect this metric because we are taking the difference and then going to square it. Lets imagine a situation where I am trying to increase the distance between a friend and the ball. If I stand right next to them and throw a ball it will land closer to them then if I started from farther away and threw the ball. Since we go through this squaring process what ends up happening is that we don't have a great mental model of how to interpret this distance. What is the squared deviation of the median home value? Kind of not that intuitive because that distance is harder to put into words. To get it back on the original scale we can use the Root mean squared error which is just 
+
+$$
+RMSE = \sqrt{MSE}
+$$
+
+This puts the MSE back on its original scale. If our model is predicting median home prices and the RMSE is 1000, this means that a typical prediction error is around 1000 dollars, with larger errors being weighted more heavily than smaller ones. 
+
+
+## Bias Variance Tradeoff
+
+In the prior, our model could be good at predicting the data we have. However, when we introduce new data, it might struggle to generalize and predict new observations accurately. This challenge arises from overfitting, where the model is really good at describing the dataset it has already seen. To mitigate this we split our data into training sets, test sets, and validation sets effectively hiding parts of our data from our model. It never has access to every single part of the data. By reducing the amount of data the model sees it can't learn every single strange data point in the model. 
+
+The reason we do this is because we want our model to predict new data but also do a good job of approximating the data generating process. These two goals are inherently conflictual. Bias represents how far away we are from the target while variance represents how far away our guesses are from each other. If we build a model that is good at predicting every single quirk of the dataset, aka reducing variance, then when we introduce new data to the model it is going to be very very brittle. If we reduce the complexity of the model making it more flexible, aka reducing bias, then we risk not being able to catch the patterns in our data.
+
+In the bias-variance tradeoff, we aim to find a balance: a model that is simple enough to generalize well to new data but complex enough to capture the important patterns. Techniques like cross-validation, regularization, and hyperparameter tuning help us navigate this tradeoff and improve the model’s predictive performance.
+
+Mathematically we can think of the bias-variance tradeoff along the lines of mean squared error where 
+
+$$
+Error = Bias^2 + Variance + Noise
+$$
+
+Where we have the how far away the predictions are from the real values, how far away the predictions are from each other, and the randomness from the data generating process. We can't really doing anything about the randomness from the DGP. A useful heuristic is that we can reduce how far away our predictions are from our real values by introducing more complexity to the model. This may mean more complex functional forms of variables, introduce interactions, or use more flexible models. We can increase variance by using simple models, use bagging or boosting to leverage "bad learners", or use regularization to penalize our models. 
+
+
+### Double Descent
+
+
+```{r}
+#| code-fold: true
+
+# code taken from https://www.r-bloggers.com/2021/07/double-descent-part-i-sample-wise-non-monotonicity/
+
+f <- function(x){
+  (-0.4 + 1/(x+0.5)) + (0.5*exp(x))
+}
+#The point where the prediction error is minimized
+optimum <- optimize(f, interval=c(0, 1), maximum=FALSE, tol = 1e-8)
+temp_data <- data.frame(x = optimum$minimum, y=optimum$objective)
+
+f1 <- function(x){
+  ifelse(x<=2,   (-0.4 + 1/(x+0.5)) + (0.5*exp(x)), NA)
+}
+f2 <- function(x){
+  ifelse(x>=2, (0 + 1/(1/(0.5*exp(4/x)))), NA)
+}
+#Prediction variance function (it is piecewise so creating two of them).
+var_f1 <- function(x){
+  ifelse(x<=2,   (0.5*exp(x)), NA)
+}
+var_f2 <- function(x){
+  ifelse(x>=2, 1/(1/(0.5*exp(4/x))), NA)
+}
+#Prediction bias function (it is piecewise so creating two of them).
+bias_f1 <- function(x){
+  ifelse(x<=2,-0.4 + 1/(x+0.5),NA )
+}
+bias_f2 <- function(x){
+  ifelse(x>=2,0,NA )
+}
+ggplot(data = temp_data, aes(x=x, y=y)) +
+  xlim(0,4) +
+  geom_function(fun = var_f1, color = "red", size = 2, alpha = 0.7) +
+  geom_function(fun = var_f2, color = "red", size = 2, alpha = 0.7) +
+  geom_function(fun = bias_f1, color = "blue", size = 2, alpha = 0.7)  +
+  geom_function(fun = bias_f2, color = "blue", size = 2, alpha = 0.7)  +
+  geom_function(fun = f1, color = "forestgreen", size = 2, alpha = 0.7) +
+  geom_function(fun = f2, color = "forestgreen", size = 2, alpha = 0.7) +
+  geom_vline(xintercept = 2, linetype = "dashed") +
+  geom_point() + 
+  theme_minimal() + ylab("Error") + xlab("Number of Predictors/Number of observations") +
+  theme(axis.text=element_blank(),
+        axis.ticks=element_blank()) +
+  annotate("text", x=0.32, y=-0.2+1/(0.2+0.5), label= expression(paste("B", ias^2)), color = "blue") +
+  annotate("text", x=0.2, y=-0.2+0.5*exp(0.2), label= "Variance", color = "red") +
+  annotate("text", x=0.26, y=0.21+(0.5*exp(0.2) + 1/(0.2+0.5)), label= expression(paste("Variance + B", ias^2)), color = "forestgreen") +
+  annotate("text", x=2.4, y=-0.2+1/(0.2+0.5), label= "Interpolation limit", color = "black") 
+
+
+```
+
+Double descent is effectively just the idea that we don't always see degrading performance in the test set when our model is really complex. Once we get past a certain threshold our model will start to perform well again. 
+
+
+Effectively at some point the model will pass through every point in our dataset in multidimensional space. Effectively what is happening is that the model will memorize the training set because we let it be super complex and all we are doing is slightly modifying how we draw the line. Thus within some region we call the interpolation threshold our model is going to do poorly within this region. Once we get past this region our model's performance will start to get better again and even outperform the 'simple' model again. 
+
+We can think of double descent as recasting our bias variance tradeoff a bit. Once we reach the interpolation threshold our model gains a somewhat crude approximation of the entirety of the data. In the bias variance framework think of bivariate linear regression. Its predictions are going to be pretty far off in some cases. A similar thing kind of happens in the interpolation region. The interpolations are crude but as we add more and more parameters the interpolations start to get better and better until the test error improves.
+
+The reason this happens is that when we hit this interpolation region there is effectively only one model that can perfectly interpolate the data and when we add new data this will get thrown off. With to few parameters in the interpolation region we are not giving our model enough shots to be flexible enough to get this specification correct. By adding more and more parameters what we are doing is giving the model more chances to draw the line effectively.

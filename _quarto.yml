@@ -1,0 +1,32 @@
+project:
+  type: book
+  output-dir: docs
+
+book:
+  title: "Technical Interview Notes"
+  author: "Josh Allen"
+  date: last-modified
+  chapters:
+    - index.qmd
+    - data-viz.qmd
+    - SQL.qmd
+    - probability.qmd
+    - linear-regression.qmd 
+    - Bayesian-Stats.qmd
+    - classification.qmd
+    - tree-based-methods.qmd
+    - unsupervised-learning.qmd
+    - Causal-Inference.qmd
+    - Neural-Networks.qmd
+    
+
+bibliography: ref.bib
+format:
+ html: default 
+execute: 
+  message: false
+  warning: false
+  results: 'hide'
+
+
+

@@ -1,0 +1,1433 @@
+# SQL 
+
+In this chapter we will briefly go over the basics of SQL and also do some SQL practice since I have a very limited way to practice. 
+
+Since I am going on the non-academic job market it is high time I learned SQL. I have tried lots of amazing resources but find it hard for me to navigate between notes and various and learning SQL since they are just familiar enough to trip me up and lots of them send you off to various editors. This blog post will serve as my notes and hopefully as a resource for not myself. The general idea is I am just going to work through R4DS and the various `dplyr` verbs. Then move onto some more advanced SQL stuff like window functions and what not. 
+
+## Setup
+
+For the majority of this `palmerpenguins` dataset not because you really need to use `SQL` for a dataset this small but copying over the `nyc-taxi` dataset is incredibly annoying for blogging purposes.
+
+```{r}
+library(DBI)
+library(arrow)
+library(dbplyr)
+library(tidyverse)
+
+pengs = palmerpenguins::penguins
+
+con =  src_memdb()
+
+pengs = copy_to(con, pengs,
+       overwrite = TRUE)
+
+```
+
+We are going to go back and forth using `dbplyr` and `SQL` to query the dataset. What impressed me throughout this process was how seamless `dbplyr` works with dplyr verbs work. With the exception of some string functions it can work as a drop in replacement for SQL. What really helped throughout this process was writing out my queries and using `show_query`.
+
+```{r}
+
+pengs |>
+    select(species) |>
+    show_query()
+
+```
+
+Which will give us a SQL query. Obviously this is a pretty simple query but as we get more and more complex this is going to be helpful.  For the most part `show_query` outputs the right query but can be a little bit difficult to debug because of the limitations of showing things in the R console. 
+
+# Dplyr
+
+## Select 
+
+One convention in SQL which I don't really get but is a thing is that functions are defined using all caps. Luckily for us the SQL and dplyr versions are pretty much the same one is just shouty. If we wanted all the columns like we may when we are importing the dataset for the first time we are just going to do `SELECT * FROM taxis`. There is really not like a perfect equivalent in R except for maybe head. But even then it is not a perfect one to one.
+
+
+:::panel-tabsets
+
+## R 
+
+```{r}
+
+head(pengs)
+
+```
+
+## SQL 
+
+```{r}
+
+tbl(con, sql("SELECT * FROM pengs"))
+
+```
+
+:::
+
+
+For one or multiple variables we are going to use a very similar syntax but were SQL and R differ is where we put the object we are querying from meaning in R we use the pipe to use data as the first argument of `select` but in SQL we put the object name behind the columns we are selecting like this 
+
+:::panel-tabset
+
+## R 
+
+```{r}
+
+pengs |>
+    select(body_mass_g, flipper_length_mm)
+
+```
+
+## SQL
+
+```{r}
+
+tbl(con, sql("SELECT body_mass_g, flipper_length_mm FROM pengs"))
+
+```
+
+:::
+
+So what if we want to keep all but one column we would do this in R 
+
+```{r}
+
+pengs |>
+    select(-species) |>
+    head(n =2)
+
+```
+
+Unfortunately that is really not like a thing in some flavors of `SQL` other flavors of SQL you can use `except` but as the results from show query suggests we actually need to feed it all the columns we want. This would be the same thing if we wanted to use `starts_with`. 
+
+
+
+## Filter
+
+The first major difference syntactically between dplyr and SQL is with filter statements aka `WHERE` statements in SQL. So let’s say we want only penguins that are Adelie penguins. 
+
+:::panel-tabset
+
+## R
+
+```{r}
+
+pengs |>
+    filter(species == 'Adelie')
+
+```
+
+Becomes. 
+
+## SQL
+
+```{r}
+
+tbl(con,sql( "
+    SELECT * from pengs
+    WHERE species = 'Adelie'
+"))
+
+```
+
+:::
+
+:::aside
+
+Some flavors of SQL make you end lines with ';'
+:::
+
+As `dplyr` users will notice the way we specified the equality position uses the `=` instead of `==`. This is going to come up a lot. The same thing goes for negation operations. 
+
+:::panel-tabset
+
+## R 
+
+```{r}
+
+pengs |>
+    filter(species != 'Adelie')
+
+```
+
+## SQL 
+
+```{r}
+
+tbl(con, sql("SELECT * from pengs 
+             WHERE NOT species = 'Adelie'"))
+
+```
+
+
+:::
+
+If we want multiple conditions in our where statements instead of `|` or `&/,` we actually just use the words `or` and `and`
+
+:::panel-tabset
+
+## R
+
+```{r}
+
+pengs |>
+    filter(species == 'Chinstrap' | species == 'Adelie')
+
+```
+
+becomes 
+
+## SQL
+
+```{r}
+tbl(con, sql("SELECT * from pengs 
+            WHERE species = 'Adelie' OR species = 'Chinstrap'"))
+
+```
+
+:::
+
+You could easily sub in `AND` but that feels a bit excessive to continue this process for each possible combination. One thing that I do all the time is use sets to subset my data. 
+
+:::panel-tabset
+
+## R 
+```{r}
+
+pengs |>
+    filter(species %in% c('Chinstrap', "Gentoo"))
+
+```
+
+Becomes 
+
+## SQL
+
+```{r}
+
+tbl(con, sql("SELECT * from pengs
+            WHERE species IN ('Chinstrap', 'Gentoo')"))
+
+```
+
+:::
+
+in this case we define a set in a similar way. If we wanted to negate this statement all we would do is 
+
+```{r}
+
+tbl(con, sql("SELECT * from pengs
+            WHERE NOT species IN ('Chinstrap', 'Gentoo')"))
+
+```
+
+Lets say we want to find penguins that are less than the average body mass in R this is fairly straightforward
+
+```{r}
+
+pengs |>
+    filter(body_mass_g < mean(body_mass_g, na.rm = TRUE))
+
+```
+
+However when we do this in some flavor of `SQL` it is not as straightforward. These are aggregation functions that `where` can't handle because thats not its job.  So if we did 
+
+```{r}
+#| error: TRUE
+
+tbl(con, "SELECT * from pengs WHERE body_mass_g < AVG(body_mass_g)")
+
+```
+
+We get an error. If we wanted to use aggregation functions we have to change how we do this 
+
+```{r}
+
+pengs |>
+    filter(body_mass_g < mean(body_mass_g, na.rm = TRUE)) |>
+    show_query()
+
+```
+
+What is this `OVER` thing? `OVER` in SQL is a window function. There is a more technical way to explain this but heuristically when we pass `AVG` to `WHERE` we are effectively doing this. So there is not really anything to compare it too.
+
+```{r}
+pengs |>
+    summarise(mean(body_mass_g, na.rm = TRUE))
+
+```
+
+If we wanted to filter penguins that are less than the average body mass we have to prevent this aggregation process by creating a column and then creating a less than statement like this 
+
+```{r}
+
+tbl(con, sql("SELECT * FROM(
+              SELECT pengs .*, AVG(body_mass_g) OVER () AS avg
+               FROM pengs)
+              WHERE (body_mass_g < avg)"))
+
+
+```
+
+It is a little clunky but the tl;dr is that we basically have two `FROM` statements so if we wanted all penguins between the minimum and the average we could do 
+
+:::panel-tabset
+
+## R
+
+```{r}
+
+palmerpenguins::penguins |>
+    filter(between(body_mass_g, left = min(body_mass_g, na.rm = TRUE), right = mean(body_mass_g, na.rm = TRUE)))
+
+
+```
+
+## SQL
+
+```{r}
+
+tbl(con, sql("SELECT * FROM(
+             SELECT pengs .*, AVG(body_mass_g) OVER() AS avg, MIN(body_mass_g) OVER() AS min
+            FROM pengs)
+            WHERE body_mass_g BETWEEN min AND avg"))
+
+```
+
+:::
+
+If you notice in all our examples, we have lots and lots of missing values. This is one of the most common tasks in like any data science task. Let’s say that we can safely ignore the missing valus. In R we have a lot of options whether we are using filter or `drop_na` from tidyr. However, in SQL missing values are usually represented by `NULL`
+
+
+```{r}
+
+tbl(con, sql("SELECt * FROM pengs 
+                WHERE NOT sex IS NULL"))
+
+```
+
+## Rename
+
+The `AS` function is kind the work horse for the next few sections. The naming convention differs a little bit so instead of `new_name = old_name` we do `SELECT old_name as new_name`
+
+```{r}
+
+tbl(con, sql("SELECT species AS kinds_of_penguins
+          FROM pengs"))
+
+```
+
+## Mutate 
+
+As lots of things go we need to be able to create our own variables. So to do this in R we do this 
+
+```{r}
+
+pengs |>
+    mutate(sqr_body_mass = body_mass_g^2)
+
+```
+
+In SQL to get the equivalent statement we use `SELECT transformation AS new_var_name`  when we need to do things that are not in the dataset. So we basically need to define the column before we do anything.
+
+```{r}
+
+tbl(con, sql("SELECT pengs .*, POWER(body_mass_g,2) AS sqr_body_mass
+            FROM pengs"))
+
+```
+
+So if we needed wanted to make a ratio of bill depth to bill length we would do 
+
+```{r}
+
+tbl(con, sql("SELECT pengs .*, bill_depth_mm/bill_length_mm AS ratio 
+            FROM pengs"))
+
+```
+
+A very important thing we do all the time is generate indicator variables for treatment status gender etc. Oddly enough if we peep the output of `show query` we see a familiar face! 
+
+## R 
+
+```{r}
+
+pengs |>
+    mutate(male = ifelse(sex == 'Male', 1, 0)) |>
+    show_query()
+
+```
+
+
+So to make an indicator variable we would just do 
+
+```{r}
+
+tbl(con, sql("SELECT pengs.*, CASE WHEN (sex = 'male') THEN 1.0 WHEN not (sex = 'male') THEN 0.0 END AS male
+             FROM pengs"))
+
+```
+
+Let’s combine our window functions with our friend case_when
+
+```{r}
+#| eval: false
+tbl(con, sql("SELECT * FROM(SELECT pengs .*,
+           AVG(body_mass_g) AS avg, MIN(body_mass_g) AS min, MAX(body_mass_g) AS max,
+            CASE WHEN (body_mass_g = min) THEN 'This penguins is small' WHEN (body_mass_g = avg) THEN 'This is an average sized penguin' WHEN (body_mass_g = max) THEN 'this is a really big penguin' END AS note 
+            FROM pengs)"))
+
+```
+
+I will spare you the long output of the error message. But needless to say this was wrong. If we translate what I was trying to do into dplyr we get this 
+
+```{r}
+
+pengs |>
+    mutate(note = case_when(
+            body_mass_g == min(body_mass_g) ~ 'This is a small peng',
+            body_mass_g == mean(body_mass_g) ~ 'Average sized peng',
+            body_mass_g == max(body_mass_g) ~ 'Big sized peng',
+             .default = 'Penguin is some size')) |>
+        show_query()
+
+```
+
+So it looks like we need to change the window function 
+
+```{r}
+
+check = tbl(con, sql("SELECT pengs .*,
+              CASE
+            WHEN (body_mass_g >= MIN(body_mass_g) OVER win1) THEN 'this is a small penguin'
+            WHEN (body_mass_g = AVG(body_mass_g) OVER win1) THEN 'this is an average sized penguin'
+            WHEN (body_mass_g = MAX(body_mass_g) OVER win1) THEN 'this is a big penguin'
+            ELSE 'This penguin is not big, small or average'
+            END AS note
+            FROM pengs 
+            WINDOW win1 AS ()")) |>
+                collect()
+
+
+```
+
+Lets look at this a little closer to make sure this worked. We would probably want to make this a little more robust. So lets go ahead and define a range. 
+
+
+```{r}
+
+tbl(con, sql("SELECT pengs .*,
+              CASE
+            WHEN (body_mass_g >= MIN(body_mass_g) OR body_mass_g < AVG(body_mass_g)  OVER win1) THEN 'this is a small penguin'
+            WHEN (body_mass_g >= AVG(body_mass_g) OR body_mass_g < MAX(body_mass_G) OVER win1) THEN 'this is an average sized penguin'
+            WHEN (body_mass_g >= MAX(body_mass_g) OVER win1) THEN 'this is a big penguin'
+            ELSE 'This penguin is not big, small or average'
+            END AS note
+            FROM pengs 
+            WINDOW win1 AS ()"))
+
+```
+
+
+
+## Group by and summarize 
+
+As established earlier we can use SQL to summarize like this. 
+
+```{r}
+
+tbl(con, sql('SELECT AVG(bill_depth_mm) AS avg
+           FROM pengs'))
+
+```
+
+But the actual practical utility is somewhat limited. Often we want group specific differences. Oddly enough I expected this to be a window function thing, but we actually delay computing of the mean by different groups to the end. I guess this makes sense if we are dealing with big data
+
+```{r}
+
+tbl(con, sql("SELECT species, AVG(body_mass_g) AS avg_body_mass
+            FROM pengs
+            GROUP BY species"))
+
+```
+
+So if we wanted to count of the species we would do something along this line 
+
+```{r}
+
+tbl(con, sql("SELECT species, COUNT(species) AS total
+            FROM pengs 
+            GROUP BY species"))
+
+```
+
+For multiple grouping variables we would define the grouping variables the same way as we would in `dplyr`
+
+```{r}
+
+tbl(con, sql("SELECT species, sex, COUNT(species) AS total
+            FROM pengs 
+            GROUP BY species, sex"))
+
+```
+
+The same would go for multiple summary functions 
+
+```{r}
+
+tbl(con, sql("SELECT species, COUNT(species) AS total, AVG(bill_depth_mm) AS avg_bill_depth, MEDIAN(bill_depth_mm) AS median_bill_depth
+             FROM pengs 
+             GROUP BY sex"))
+
+```
+
+After aggregation we may only be interesed in a certain value in this aggregated set. However, if we do this we will get an error because `WHERE` will only look for rows in unaggregated data. Effectively SQL splits filter into a grouped and ungrouped version.
+
+
+```{r}
+#| error: true
+
+tbl(con, sql("SELECT species, COUNT(species) AS total, AVG(bill_depth_mm) AS avg_bill_depth, MEDIAN(bill_depth_mm) AS median_bill_depth
+             FROM pengs 
+             GROUP BY sex
+             WHERE avg_bill_depth > 600"))
+
+```
+
+
+So if we wanted to filter a grouped data frame we have to use `HAVING`
+
+```{r}
+tbl(con, sql("SELECT species, COUNT(species) AS total, AVG(bill_depth_mm) AS avg_bill_depth, MEDIAN(bill_depth_mm) AS median_bill_depth
+             FROM pengs 
+             GROUP BY sex
+             HAVING avg_bill_depth > 10")) |>
+                collect()
+```
+
+## Joins/Appending Rows 
+
+In the real world it is rare that we will have all our data in one place. Companies keep information in lots of different places because well it would be bad if we kept credit card information with all the necessary components to make a purchase. Instead of having to figure out three different things malicious actors would just need to access one database. Replacing entire data tables can also skyrocket costs. So instead, it is more efficient to simply insert rows. 
+
+
+### Apppending Rows 
+
+To kind of mimic this we are just going to slice this data frame roughly in half. While not entirely realistic the general process will be similar enough
+
+```{r}
+#| code-fold: true
+
+pengs_top = palmerpenguins::penguins |>
+    slice(1:172)
+
+pengs_bottom = palmerpenguins::penguins |>
+    slice(173:344)
+
+con2 = src_memdb()
+
+con3 = src_memdb()
+
+pengs_top = copy_to(con2, pengs_top)
+
+pengs_bottom = copy_to(con3, pengs_bottom)
+
+```
+
+For whatever reason `show_query` is not working with this so we are going to have to consult the interwebs. The `SQL` equivalent of `bind_rows` is `UNION`. 
+
+```{r}
+
+tbl(con2, sql("SELECT * FROM pengs_top
+             UNION ALL 
+             SELECT * FROM pengs_bottom"))
+
+
+```
+
+One of the key things in this query is `ALL` which is somewhat new to me. Basically the `ALL` tells `SQL` that we don't really care about duplicates so just add the rows regardless. So if we wanted to exclude duplicates we would do something like this 
+
+```{r}
+#| code-fold: true
+
+tbl(con2, sql("SELECt * FROM pengs_top 
+              UNION 
+              SELECT * FROM pengs_top")) |>
+                collect() |>
+                nrow()
+
+tbl(con2,sql("SELECT * FROM pengs_top") ) |>
+    collect() |>
+    nrow()
+
+```
+
+### Joins
+
+Luckily for us the join syntax from `dplyr` is pretty directly taken `SQL` so lefts create some dummy data to join.
+
+```{r}
+#| code-fold: true
+
+national_data <- tribble(
+  ~state, ~year, ~unemployment, ~inflation, ~population,
+  "GA",   2018,  5,             2,          100,
+  "GA",   2019,  5.3,           1.8,        200,
+  "GA",   2020,  5.2,           2.5,        300,
+  "NC",   2018,  6.1,           1.8,        350,
+  "NC",   2019,  5.9,           1.6,        375,
+  "NC",   2020,  5.3,           1.8,        400,
+  "CO",   2018,  4.7,           2.7,        200,
+  "CO",   2019,  4.4,           2.6,        300,
+  "CO",   2020,  5.1,           2.5,        400
+)
+
+national_libraries <- tribble(
+  ~state, ~year, ~libraries, ~schools,
+  "CO",   2018,  230,        470,
+  "CO",   2019,  240,        440,
+  "CO",   2020,  270,        510,
+  "NC",   2018,  200,        610,
+  "NC",   2019,  210,        590,
+  "NC",   2020,  220,        530,
+)
+
+con3 = src_memdb()
+
+con4 = src_memdb()
+
+national_data = copy_to(con4, national_data, overwrite = TRUE)
+
+national_libraries = copy_to(con3, national_libraries, overwrite = TRUE)
+
+
+
+```
+
+So we have some fake national level data that we would like to join in to the dataset. We could do something like this but what we notice is that it is going to decide the join keys for us and probably create some headaches for us later on. 
+To solve this we need to use our keys if we expose the underlying logic
+
+```{r}
+
+national_data |>
+    left_join(national_libraries, join_by(state, year)) |>
+    show_query()
+
+
+```
+
+We will notice that `join_by` is shorthand for equality joins. What changes is that instead of `left_key = right_key` we have to specify what is coming from what table using `.`
+
+```{r}
+
+db_con = con4$con
+
+query = "SELECT *
+             FROM national_data
+             LEFT JOIN national_libraries
+             ON (
+             national_data.state = national_libraries.state AND
+             national_data.year = national_libraries.year
+             )
+             "
+
+dbGetQuery(db_con, sql(query))       
+
+```
+
+:::aside
+For whatever reason with `SQLite` gets a little grumpy with the join syntax.
+
+:::
+
+If we wanted to do various other joins like inner and anti joins we would do a similar thing. 
+
+```{r}
+
+query = "SELECT * 
+        FROM national_data
+    INNER JOIN national_libraries 
+    ON(
+    national_data.state = national_libraries.state AND
+    national_data.year = national_libraries.year
+    )
+"
+
+dbGetQuery(db_con, sql(query))
+
+```
+
+### Inequality joins
+
+Confession I have never really understood how inequality joins work in regular dplyr but I am sure at some point I am going to need them and now when the stakes are so low is a good time to do it. So lets just take the data from the `dplyr` 1.1.0 announcement to do this since we know what the output should be.
+
+```{r}
+
+companies <- tibble(
+  id = c("A", "B", "B"),
+  since = c(1973, 2009, 2022),
+  name = c("Patagonia", "RStudio", "Posit")
+)
+
+transactions <- tibble(
+  company = c("A", "A", "B", "B"),
+  year = c(2019, 2020, 2021, 2023),
+  revenue = c(50, 4, 10, 12)
+)
+
+companies = copy_to(con3, companies, overwrite = TRUE)
+
+transactions = copy_to(con4, transactions, overwrite = TRUE)
+
+db_con = con3$con
+
+```
+
+So the main idea of an inequality join is that we can join by a key in this case company but only keep records from a certain date. The blog post kind of equates it with a `filter/WHERE` that happens during the join phase. So we would see something like this 
+
+```{r}
+
+transactions |>
+  inner_join(companies, join_by(company == id, year >= since)) 
+
+
+```
+
+Instead of two equality statements we would effectively use the same syntax just swapping out the `=` with `>=`
+
+```{r}
+
+query = "
+      SELECT * FROM transactions
+      INNER JOIN companies 
+      ON(
+      transactions.company = companies.id AND
+      transactions.year >= companies.since
+      )
+
+"
+
+dbGetQuery(db_con, sql(query))
+
+```
+
+
+
+# Tidyr
+
+This section is really about pivots
+
+## Pivots 
+
+In tidyverse parlance we use pivots to change the "shape of the data." If you are unfamiliar with this idea consider the religion and income data below. You will notice that we have a column for each income bracket or what is sometimes called "wide" data. This may be useful for some question but generally if we want to plot things or do things it will be easier if they are "long" data.
+
+```{r}
+#| code-fold: true
+
+con5 = src_memdb()
+
+relig = copy_to(con5, relig_income, overwrite = TRUE)
+
+head(relig_income, n = 2)
+
+```
+
+To make our data "long" we use `pivot_longer` and to make data "wide" we use `pivot_wider` each has their own quirks but the general idea is that we have to tell these functions where to put the old names/where to get the new names and where to put the old values/where to get the new values. So if we wanted to make our data longer we would do something like this.
+
+```{r}
+
+long = relig_income |>
+    pivot_longer(-religion,
+                names_to = 'income_bracket',
+                values_to = 'income')
+
+head(long, n = 2)
+
+```
+
+If we wanted to make this wide again all we would do is reverse this with `pivot_wider`
+
+```{r}
+
+wide = long |>
+    pivot_wider(names_from = income_bracket, values_from = income)
+
+```
+
+:::aside
+There are ton of additional functionality that will not be covered like dealing with not uniquely identified columns.
+
+:::
+
+To get a sense of how to do this let’s consult our old friend `show_query` 
+
+```{r}
+#| eval: false
+relig |>
+    pivot_longer(-religion,
+                names_to = 'income_bracket',
+                values_to = 'income') |>
+                    show_query()
+
+```
+
+We are not going to actually show the results because it is quite the query. The summary of what is happening is that `SQLite` doesn't have a perfect equivalent of `pivot_longer`. Basically, what you need to do is to keep appending smaller and smaller data frames to each other until you get to a long data frame. In other flavors of SQL this process is a lot more humane with explicit `PIVOT` and `UNPIVOT` but I am not in one of those flavors. To spare myself a bit I am just going to do two columns
+
+```{r}
+
+tbl(con5, sql("
+    SELECT religion, '<$10k' AS income_bracket, '<$10k' AS income
+    FROM relig_income 
+
+    UNION ALL
+
+    SELECT religion, '$10-20k' AS income_bracket, '$10-20k' AS income
+    FROM relig_income
+
+    UNION ALL
+
+    SELECT religion, '$20-30k' AS income_bracket, '$20-30k' AS income
+    FROM relig_income
+
+    
+"))
+
+```
+
+I am a little scared to see what this looks for `pivot_wider` but we should at least give it a go. 
+
+```{r}
+#| eval: false
+
+long = relig |>
+    pivot_longer(-religion,
+                 names_to = 'income_bracket',
+                 values_to = 'income')
+
+long |>
+    pivot_wider(names_from = income_bracket, values_from = income) |>
+    show_query()
+
+```
+
+Okay again this is a little unwieldy to show. Basically what happens is that we are creating a big case_when condition and then from there we are going to use the same binding trick and then group the data. So lets go ahead and copy and paste some of this.
+
+```{r}
+#| code-fold: true
+
+query = "
+SELECT
+    religion,
+    MAX(CASE WHEN (income_bracket = '<$10k') THEN income END) AS '<$10K',
+    MAX(CASE WHEN (income_bracket = '$10-20k') THEN income END) AS '$10-20k',
+    MAX(CASE WHEN (income_bracket = '$20-30k') THEN income END) AS '$20-30k'
+FROM (
+    SELECT religion, '<$10k' AS income_bracket, '<$10k' AS income
+    FROM relig_income
+
+    UNION ALL
+
+    SELECT religion, '$10-20k' AS income_bracket, '$10-20k' AS income
+    FROM relig_income
+
+    UNION ALL
+
+    SELECT religion, '$20-30k' AS income_bracket, '$20-30k' AS income
+    FROM relig_income
+) AS wide_religion
+GROUP BY religion
+"
+
+tbl(con5, sql(query))
+
+```
+
+## Unnest/a brief aside
+
+So one thing that you come across from time to time in R and python data wrangling are list columns. These happen for a variety of reasons and are pretty innocuous to handle.
+
+
+```{r}
+
+list_starwars = starwars |>
+    select(name, films)
+
+ list_starwars |>
+    unnest_longer(films)
+```
+
+However, per [this Stack overflow answer](https://stackoverflow.com/questions/3070384/how-to-store-a-list-in-a-column-of-a-database-table) and the linked question this is not really a thing or like really not advised. Even when you try to copy the starwars dataset to a database you get an error.
+
+
+
+## Misc
+
+## Ranking 
+
+There are lots of different ways to rank things in R if we want to return the min/max you can do 
+
+```{r}
+
+pengs |>
+    slice_max(bill_length_mm, n = 3)
+
+```
+
+There are also various ranking functions.
+
+```{r}
+
+example = tribble(~id, ~col1,
+                   1, 1,
+                   2, 2,
+                   3, 2,
+                   4, 3,
+                   5, 4)
+
+example |>
+    mutate(rank_one = dense_rank(col1),
+           rank_two = min_rank(col1))
+
+
+```
+
+Like our `dplyr` join functions the `dense_rank` and `min_rank` function actually takes inspiration from `SQL`. So in our example where the two functions differ is how they handle ties. So in `dense_rank` and `min_rank` both id 2 and 3 get assigned the same rank where they differ is `dense_rank` will assign id 4 the rank of 3 and `min_rank` will assign id 4 the rank of 4. 
+
+So how would we do this in `SQL`
+
+```{r}
+con7 = src_memdb()
+
+team_rankings = copy_to(con7, example)
+
+team_rankings |>
+    mutate(rank_one = dense_rank(col1)) |>
+    show_query()
+
+```
+
+This is deceptively a bit more complex. So lets break it down.
+
+```{r}
+
+tbl(con7, sql("
+SELECT
+example .*,
+    CASE 
+WHEN (NOT((col1 is NULL))) THEN DENSE_RANK() OVER (PARTITION BY (CASE WHEN ((col1 is NULL)) THEN 1 ELSE 0 END) ORDER BY col1)
+END AS rank_one
+FROM example
+"))
+
+
+```
+
+So basically the `PARTITION BY` bit is used to divide the data into groups before we rank them. The `CASE WHEN` handles when we have missing values. Then the window function is applying dense rank over these partions. This was a somewhat silly example so lets do something a bit more realistic. Lets say we actually want to rank the penguins by average bill length and then return the penguins in the top 3. 
+
+```{r}
+
+tbl(con, sql(
+    "
+    SELECT
+    ranked_pengs .*,
+    CASE
+    WHEN (NOT((avg_bill_length is NULL))) THEN DENSE_RANK() OVER (PARTITION BY (CASE WHEN ((avg_bill_length is NULL)) THEN 1 ELSE 0 END) ORDER BY avg_bill_length)
+    END AS rank
+    FROM( 
+     SELECT pengs .*, AVG(bill_length_mm) OVER () AS avg_bill_length
+     FROM pengs)
+     AS ranked_pengs 
+     LIMIT 3
+    "
+))
+
+
+
+```
+
+We could also do this by groups by just inserting a group by statement before the limit bit
+
+```{r}
+tbl(con, sql(
+    "
+    SELECT
+    ranked_pengs .*,
+    CASE
+    WHEN (NOT((avg_bill_length is NULL))) THEN DENSE_RANK() OVER (PARTITION BY (CASE WHEN ((avg_bill_length is NULL)) THEN 1 ELSE 0 END) ORDER BY avg_bill_length)
+    END AS rank
+    FROM( 
+     SELECT pengs .*, AVG(bill_length_mm) OVER () AS avg_bill_length
+     FROM pengs)
+     AS ranked_pengs 
+     GROUP BY species
+     LIMIT 3
+    "
+))
+
+```
+
+## Distinct Values
+ 
+Duplicates are a fact of life but depending on your question or what information you are trying to show repeated records may not be desirable. We handle these with the same function but kind of like `mutate` we have to let select handle these. If we wanted one row per column without having to specify every column in our dataset than we could do something like this
+
+```{r}
+
+tbl(con, sql("SELECT *
+            FROM(
+            SELECT pengs .*,
+            ROW_NUMBER() OVER (PARTITION BY species ORDER BY species) AS id 
+            FROM PENGS) AS small_pengs
+            WHERE id = 1"))
+
+```
+
+
+However if we have a slightly less complex query than we can feed distinct multiple columns
+
+
+```{r}
+
+tbl(con, sql("SELECT DISTINCT species, island
+            FROM pengs"))
+
+```
+
+
+
+
+
+## SQL Concepts translated 
+
+### CTES and Subqueries 
+
+Here we are going to go over the general ideas of more advanged SQL. These depart fairly significantly from dplyr in a lot of ways. Both SQL and dplyr are flexible and you can get them to do a lot. However, since we are working with things that are on the company computer that are really big the SQL parser will enforce some optimization/when you do something to the data it is no longer available. We saw this a little bit with `WHERE` and `HAVING` but this was never made explicit. 
+
+SQL shifts away from my mental model of how to manipulate data. We never explicitly assign anything and in dplyr, data.table, polars etc have an explicit logic of chaining built into it with not a lot of rules baked into the order of execution as long as the column is available. Whereas SQL enforces execution because it is going to optimize our query for us. This requires a little sacrafice in flexibility in how we write the code to make the optimization process easier. 
+
+What this means practically is that in a lot of cases as a dplyr or coder I will assign intermediate objects to check on the health of the data cleaning pipeline as to not explicitly overwrite results. Polars kind of more clearly reflects where we aren't allowed to use columns we just created we have to separate them into another operation. Effectively we can kind of think of CTE's and subqueries as creating intermediate objects where we do some data cleaning and then do filter or do something else to it. So think of something to the effect of the below code. 
+
+```{r}
+
+penguins = palmerpenguins::penguins
+
+cte_examp = penguins |>
+    mutate(sqr_mass = body_mass_g^2,
+           sqr_length = bill_length_mm^2)
+
+cte_filt = cte_examp |>
+    filter(sqr_mass > 60 | sqr_length > 20)
+
+subquery_examp = penguins |>
+    mutate(sqr_mass = body_mass_g^2,
+           sqr_length = bill_length_mm^2) |>
+filter(sqr_mass > 60 | sqr_length > 20)
+
+```
+
+However, often times we may need to do something akin to assigning intermediate operations to solve our data processing needs. SQL has built in ways to do this but they definitely look a little wonky. We have Common Table Expressions and Subqueries 
+
+
+```{r}
+#| echo: false
+
+dat = tribble(~Subquery, ~`Common Table Expression`,
+               'Inner queries that allow us to filter and perform calculations to be used later. Only used in the FROM Clause', 'Effectively a table we can refer back to using FROM small_table')
+
+dat |>
+    gt::gt()
+
+
+
+
+```
+
+
+### CTE
+
+So lets say we have a table where we are interested in ranking the top selling artist within each genre based on revenue per member. 
+
+```{r}
+#| eval: false
+
+
+artists_con = dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password = Sys.getenv('PASSWORD'))
+
+artistis_data = copy_to(artists_con, artists_data)
+
+
+
+
+
+```
+
+So in dplyr we would just do something like this 
+
+```{r}
+
+artists_data = tibble(
+  artist_id = c(103, 104, 105, 109, 110),
+  artist_name = c("Taylor Swift", "BTS", "Adele", "Blackpink", "Maroon 5"),
+  genre = c("Pop", "K-Pop", "Pop", "K-Pop", "Pop"),
+  concert_revenue = c(700000, 800000, 600000, 450000, 550000),
+  year_of_formation = c(2004, 2013, 2006, 2016, 1994),
+  country = c("United States", "South Korea", "United Kingdom", "South Korea", "United States"),
+  number_of_members = c(1, 7, 1, 4, 5),
+  album_released = c(9, 7, 3, 5, 7),
+  label = c("Republic Records", "Big Hit Music", "Columbia Records", "YG Entertainment", "Interscope Records"),
+  stringsAsFactors = FALSE
+)
+
+artists_data |>
+    mutate(rev_per_member = concert_revenue / number_of_members) |>
+    # forcing rank to reverse the order its ranking htins
+    mutate(rank = rank(-rev_per_member, ties.method = 'first'), .by = genre) |>
+    filter(rank == 1) |>
+    group_by(genre) |>
+    arrange(desc(rev_per_member), .by_group = TRUE)
+
+
+```
+
+
+For a CTE we would do something like this 
+
+```{r}
+#| eval: false
+
+tbl(artists_con, sql(
+    "
+    WITH ranked_concerts_cte AS(
+    SELECT 
+    artist_name,
+    concert_revenue,
+    genre,
+    number_of_members,
+    (concert_revenue / number_of_members) AS revenue_per_member,
+    RANK() OVER (
+    PARTITION BY genre
+    ORDER BY (concert_revenue / number_of_members) DESC) AS ranked_concerts
+    FROM artists_data)
+
+    SELECT
+  artist_name,
+  concert_revenue,
+  genre,
+  number_of_members,
+  revenue_per_member
+FROM ranked_concerts_cte
+WHERE ranked_concerts = 1
+ORDER BY revenue_per_member DESC
+    "
+))
+
+
+```
+
+In effect we are going through kind of just making an intermediate object in order to use it in a more familiar looking query. Here the logic is a bit obscured but imagine we are pulling millions of columns of with millions of rows from a big table. Here we are just goint to make our life a bit easier by just creating an intermediate object to query from
+
+
+### Subquery
+
+In this case we can shorten the steps by writing a subquery where we are using our `FROM` statement do the heavy lifting. So instead of making a smaller table we can use our from statement to do the processing like this 
+
+```{r}
+#| eval: false
+
+tbl(artists_con, sql(
+    "
+    SELECT 
+        artist_name,
+        concert_revenue,
+        genre,
+        number_of_members,
+        revenue_per_member
+    FROM (
+        SELECT
+            artist_name, 
+            concert_revenue, 
+            genre,
+            number_of_members,
+            (concert_revenue / number_of_members) AS revenue_per_member,
+            RANK() OVER (
+                PARTITION BY genre
+                ORDER BY (concert_revenue / number_of_members) DESC
+            ) AS ranked_concerts
+        FROM artists_data
+    ) AS sub
+    WHERE ranked_concerts = 1
+    ORDER BY revenue_per_member DESC
+    "
+))
+
+```
+
+
+### Window Functions
+
+Window functions are kid of just grouped mutates in dplyr. We define the windows using `OVER` and `PARTITION BY`. We are diving up an existing table into smaller windows that that let us run various aggregation functions or define groups. There are three parts to a window function 
+
+- `OVER` which tells SQL we are going to do a window function
+- `PARTION BY` which tells SQL what to do the grouping by 
+- Then our operation
+So effectively we can think of it as this 
+
+```{r}
+penguins |>
+    mutate(avg_pengs = mean(body_mass_g, na.rm = TRUE), .by = species)
+
+
+```
+
+
+## SQL practice 
+
+### Histogram of Tweets
+
+Assume you're given a table Twitter tweet data, write a query to obtain a histogram of tweets posted per user in 2022. Output the tweet count per user as the bucket and the number of Twitter users who fall into that bucket.
+
+In other words, group the users by the number of tweets they posted in 2022 and count the number of users in each group.
+
+
+This question is a little bit weird since I didn't quite understand what is going on. Basically we need to do something like this. 
+
+```{r}
+
+fake_user_data = tibble(
+    tweet_id = c(12321,12312123,1234231231,1232342341,1234234231212),
+    user_id = c(111,111,111,254,148),
+    tweet_date = c(mdy_hms('12/30/2021 00:00:00'), mdy_hms('01/01/2022 00:00:00'), mdy_hms('02/14/2022 00:00:00'),
+                   mdy_hms('03/01/2022 00:00:00'), mdy_hms('03/23/2022 00:00:00'))
+)
+
+fake_user_data |>
+    filter(year(tweet_date) == 2022) |>
+    group_by(user_id) |>
+    summarise(tweet_count_per_user = n(), .groups = 'drop') |>
+    summarise(tweet_bucket = n(), .by = tweet_count_per_user) |>
+    rename(users_num = tweet_count_per_user)
+```
+
+So kind of something that I don't do a lot. The question is effectively just testing if you can use subqueries. So this mess becomes. A query that looks like this 
+
+
+```{r}
+#| eval: false
+
+twitter_bucket = dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password = Sys.getenv('PASSWORD'))
+
+
+fake_tweet_post = copy_to(twitter_bucket, fake_user_data, overwrite = TRUE)
+
+twitter_bucket <- tbl(twitter_bucket, sql("
+    SELECT 
+        tweet_count_per_user AS tweet_bucket, 
+        COUNT(user_id) AS users_num
+    FROM (
+        SELECT 
+            user_id, 
+            COUNT(tweet_id) AS tweet_count_per_user
+        FROM fake_user_data
+        WHERE EXTRACT(YEAR FROM tweet_date) = 2022
+        GROUP BY user_id
+    ) AS total_tweets
+    GROUP BY tweet_count_per_user
+"))
+
+twitter_bucket |>
+    collect()
+
+
+```
+
+
+## Getting qualified candidates
+
+
+Given a table of candidates and their skills, you're tasked with finding the candidates best suited for an open Data Science job. You want to find candidates who are proficient in Python, Tableau, and PostgreSQL.
+
+Write a query to list the candidates who possess all of the required skills for the job. Sort the output by candidate ID in ascending order.
+
+
+So one thing that is interesting is that we have SQL has this having count function that makes life a little easier. Basically WHERE clauses can't be done sequentially so instead of doing somethign like this 
+
+
+```{r}
+
+canidates = tribble(
+~candidate_id, ~skill,
+123,	'Python',
+123,	'Tableau',
+123,	'PostgreSQL',
+234,	'R',
+234,	'PowerBI',
+234,	'SQL Server',
+345,	'Python',
+345,	'Tableau')
+
+
+canidates |>
+    filter(skill %in% c('Python', 'PostgreSQL', 'Tableau')) |>
+    group_by(candidate_id) |>
+    summarise(total = n(), .groups = 'drop') |>
+    filter(total == 3)  |>
+    select(candidate_id)
+
+
+```
+
+so this becomes 
+
+
+
+```{r}
+#| eval: false
+library(DBI)
+library(RPostgres)
+
+con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password = Sys.getenv('PASSWORD'))
+
+
+candidates_data = copy_to(con, canidates)
+
+
+find_qual = tbl(con, sql("
+SELECT candidate_id 
+FROM canidates
+WHERE skill IN ('Python', 'Tableau', 'PostgreSQL')
+GROUP BY candidate_id
+HAVING COUNT(skill) = 3
+"))
+
+find_qual |>
+    collect()
+
+```
+
+One thing that can be kind of annoying is that when we have something like a left join we need to be pretty explicit about what we are grabbing things from and what we are referencing from 
+
+
+
+```{r}
+#| eval: false
+
+pages_con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password = Sys.getenv('PASSWORD'))
+
+pages = tribble(
+~page_id, ~page_name,
+20001,	'SQL Solutions',
+20045,	'Brain Exercises',
+20701,	'Tips for Data Analysts',
+31111,	'Postgres Crash Course',
+32728,	'Break the thread'
+
+)
+
+pages = copy_to(pages_con, pages)
+
+page_likes_con <- dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password =  Sys.getenv('PASSWORD'))
+
+page_likes = tribble(
+~user_id, ~page_id,	~liked_date,
+111,	20001,	'04/08/2022 00:00:00',
+121,	20045,	'03/12/2022 00:00:00',
+156,	20001,	'07/25/2022 00:00:00',
+255,	20045,	'07/19/2022 00:00:00',
+125,	20001,	'07/19/2022 00:00:00',
+144,	31111,	'06/21/2022 00:00:00',
+125,	31111,	'07/04/2022 00:00:00') |>
+mutate(liked_date = mdy_hms(liked_date))
+
+page_likes = copy_to(page_likes_con, page_likes, overwrite = TRUE, temporary = FALSE)
+
+tbl(pages_con, sql(
+    '
+    SELECT pages.page_id
+    FROM pages
+    LEFT JOIN page_likes ON(
+    pages.page_id = page_likes.page_id)
+    WHERE liked_date is NULL
+    ORDER BY page_id ASC
+    '
+)) |>
+    collect()
+
+
+
+```
+
+Tesla is investigating production bottlenecks and they need your help to extract the relevant data. Write a query to determine which parts have begun the assembly process but are not yet finished.
+
+
+Assume you're given the table on user viewership categorised by device type where the three types are laptop, tablet, and phone.
+
+Write a query that calculates the total viewership for laptops and mobile devices where mobile is defined as the sum of tablet and phone viewership. Output the total viewership for laptops as laptop_reviews and the total viewership for mobile devices as mobile_views
+
+
+
+```{r}
+#| eval: false
+
+con_nyt = dbConnect(
+  RPostgres::Postgres(),
+  dbname = "postgres",
+  host = "localhost",
+  port = 5432,
+  user = "postgres",
+  password =  Sys.getenv('PASSWORD'))
+
+viewership = tribble(
+    ~user_id	,~device_type	, ~view_time,
+123,	'tablet',	'01/02/2022 00:00:00',
+125,	'laptop',	'01/07/2022 00:00:00',
+128,	'laptop',	'02/09/2022 00:00:00',
+129,	'phone',	'02/09/2022 00:00:00',
+145,	'tablet',	'02/24/2022 00:00:00'
+)
+
+viewership = copy_to(con_nyt, viewership)
+
+
+tbl(con_nyt, sql(
+    "
+    SELECT
+  SUM(laptop_views) AS laptop_views_count,
+  SUM(mobile_views) AS mobile_views_count
+FROM (
+  SELECT *,
+         CASE WHEN device_type = 'laptop' THEN 1 ELSE 0 END AS laptop_views, 
+         CASE WHEN device_type IN ('tablet', 'phone') THEN 1 ELSE 0 END AS mobile_views
+  FROM viewership
+) AS viwership
+    "
+)) |>
+    collect()
+
+
+```

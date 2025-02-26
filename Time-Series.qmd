@@ -1,0 +1,36 @@
+# Time-Series 
+
+Time is something that we all have to deal with. The problem with time in statistics is that it is SUPER SUPER finnicky. When we start to model a single thing over time much less multiple things shit starts to get weird really quickly. So lets get back into your time series notes. 
+
+
+## Why Bother?
+
+Generally we have some fixes when linear regression starts to break down. The problem is that they only go so far and are not neccessarily going to gain us that much insightful leverage on the data generating proces. As lots of articles argue. We should take time seriously! So how do we do that?
+
+We have several families of Time Series methods:
+
+1. Error Correction Models
+2. ARIMA
+3. ARCH/GARCH 
+4. GAMS
+5. Machine Learning Stuff
+
+Traditionally in Political Science and Economics we tend to focus on the first 3. There are some that you are just not going to run into much in the wild in political science but are worth learning about since you are probably going to be pushed to use them. 
+
+
+## Dynamic Regression 
+
+Lets focus on the crux of the issue when we are thinking about time series. Lets say we are interested in modeling the relationship spending and selling over time. Our naive smooth brain may tell us that we should model it like this. 
+
+$$
+\text{Spending} = \alpha_{t} + \beta_{t} \text{income} + \varepsilon{t}
+$$
+
+This would be fine if we only had one time point! But as we start to add time points previous values of spending are going to tell us about future values of spending same with prior values of income. This violates our autocorrelation assumption. What ends up happening is that we can correctly estimate the slope of the regression line but our standard errors will be off. The reason this happens is that the standard error is normally calculated by taking a weighted mean of the deviations of the observed yi. What then ends up happening with this calaculation is that we are kind of adding the previous periods error plus the autoregressive order. We could theoretically correct our standard errors. However, we tend to over reject the null and the use of standard error corrections in this setting tend to point toward bigger problems beneath the surface. In our model we are kind of saying that only contemporaneous values income are the only thing that matters. What is likely the true model is something along the lines of 
+
+$$
+\text{Spending} = \alpha_{0} + \alpha_{1} \text{Spending}_{t-1} + \beta_1 Income_{t} + \varepsilon_{t}
+$$
+
+What this implies is that our model cross sectional model is wrong because we are leaving the lag of y out of the model. Something that will propagate in our model. What this means is that $Spending_{t-1}$ is going to be related to contemporaneous spending and our estimates will be unbiased and inconsistent kind of no matter what we do. 
+

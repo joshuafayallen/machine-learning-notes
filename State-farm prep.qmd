@@ -1,0 +1,679 @@
+---
+title: "State Farm Job Interview Prep"
+format: html
+bibliography: ref.bib
+execute: 
+  cache: true
+  warning: false
+  message: false 
+---
+
+So due to some nice summaritans online I have a rough mockup on what I am going to be expected to answer so we can tailor some of the prep to that. In a sense I think I kind of get the sense they tend to give a lot of classification problems. 
+
+# Extracting Marginal Effects 
+
+## EDA 
+
+According to one nice sumaritan we would expect some version of how would present the results of a teched up classifier and how would we present the results of a less high tech classifier. Then of course which one woudld you pick. 
+
+```{r}
+#| warning: false
+#| message: false 
+
+library(patchwork)
+library(themis)
+library(tinytable)
+library(modelsummary)
+library(marginaleffects)
+library(readr)
+library(forcats)
+library(stringr)
+library(tidymodels)
+
+
+stocks = read_csv('data/Smarket.csv') |>
+    janitor::clean_names() |>
+    mutate(direction = as.factor(direction))
+
+```
+
+So lets use the stock market data to do this. First we are going to do some exploration and cleaning. I am not neccessarily the biggest fan of using characters but it may be instructional. 
+
+
+```{r}
+check_na = stocks |>
+    mutate(across(everything() , \(x) sum(is.na(x)), .names = '{.col}_total_miss')) |>
+    select(ends_with('total_miss')) 
+
+tt(head(check_na, 1))
+
+
+```
+
+So it looks like we are kind of set in terms of missingness. The next thing we are going to want to do is check the class balance. 
+
+
+```{r}
+stocks |>
+    group_by(direction) |>
+    summarise(total = n()) |>
+    tt()
+
+
+```
+
+This isn't the worse class imbalance isn't the worse
+
+
+```{r}
+
+
+
+
+ggplot(stocks, aes(x = direction, fill = direction)) +
+    geom_bar(position = 'dodge') +
+    theme_allen_minimal() 
+
+
+```
+
+So from what I can gather 'up' vs 'down is effectively' just a class label for volume so we can get something a bit more interesting with this. 
+
+
+```{r}
+ggplot(stocks, aes(x = year, y = volume)) +
+    geom_jitter(height = 0) +
+    theme_allen_minimal()
+```
+
+Next we should probably just a general sense of how correlated things.
+```{r}
+cor_dat = stocks |>
+    mutate(direction = ifelse(direction == 'Up', 1, 0)) |>
+    cor()
+
+cor_dat[lower.tri(cor_dat)] = NA
+
+plot_dat = cor_dat |>
+    as.data.frame() |>
+    rownames_to_column('measure2') |>
+    pivot_longer(-measure2,
+    names_to = 'measure_1',
+    values_to = 'cor') |>
+        mutate(nice_cor = round(cor, 2)) |>
+        filter(measure2 != measure_1) |>
+        filter(!is.na(cor)) |>
+        mutate(measure1 = forcats::fct_inorder(measure_1),
+               measaure2 = forcats::fct_inorder(measure2))
+
+ggplot(plot_dat, aes(x = measure2, y = measure1, fill = cor)) +
+    geom_tile() +
+    geom_text(aes(label = nice_cor)) +
+    scale_fill_gradient2(low = "#E16462", mid = "white", high = "#0D0887",
+                       limits = c(-1, 1)) +
+    coord_equal() +
+    labs(x = NULL, y = NULL, fill = 'Correlation') +
+    theme_allen_minimal() +
+    theme(panel.grid.major  = element_blank())
+
+
+```
+
+
+
+## Modeling 
+
+So lets start with training two models. Generally people love xGBoost for classification and then I love logistic regression because well its near and dear to my heart. In this case what we are going to do is see if regularization buys us anything. 
+
+```{r}
+#| code-fold: true
+splits = initial_split(stocks, strat = 'direction')
+
+training_split = training(splits)
+
+testing_split = testing(splits)
+
+folds = vfold_cv(training_split)
+
+logit_rec = recipe(
+  direction ~ lag1 + lag2 + lag3 + lag4 + lag5 + volume,
+  data = training_split
+) |>
+  step_normalize(all_numeric_predictors())
+
+lr_spec = logistic_reg(penalty = tune(), mixture = tune()) |>
+  set_mode('classification') |>
+  set_engine('glmnet')
+
+gbm_spec = boost_tree(
+  tree_depth = tune(),
+  trees = tune(),
+  learn_rate = tune(),
+  min_n = tune(),
+  loss_reduction = tune(),
+  sample_size = tune(),
+  mtry = tune()
+) |>
+  set_mode('classification') |>
+  set_engine('xgboost')
+
+gbm_rec = recipe(
+  direction ~ lag1 + lag2 + lag3 + lag4 + lag5 + volume,
+  data = training_split
+)
+
+mod_workflows = workflow_set(
+  preproc = list(logit_rec = logit_rec, xgboost_rec = gbm_rec),
+  models = list(logit = lr_spec, xgboost = gbm_spec),
+  cross = FALSE
+)
+
+logit_grid = grid_regular(penalty(), mixture(), levels = c(10, 10))
+
+xgb_grid = grid_space_filling(
+  trees(),
+  tree_depth(),
+  learn_rate(),
+  min_n(),
+  loss_reduction(),
+  sample_size = sample_prop(),
+  finalize(mtry(), training_data)
+)
+
+wf_tune_add = mod_workflows |>
+  option_add(grid = logit_grid, id = 'logit_rec_logit') |>
+  option_add(grid = xgb_grid, id = 'xgboost_rec_xgboost')
+
+tuned_results = wf_tune_add |>
+  workflow_map(
+    resamples = folds,
+    metrics = metric_set(accuracy),
+    verbose = TRUE
+  )
+
+## substantively we don't have all that much of a difference between the xgboost model
+## and the logit model during the evaluation phase so I think we should try and just see how they do on the testing set
+
+xgb_result = tuned_results |>
+  extract_workflow_set_result('xgboost_rec_xgboost') |>
+  select_best(metric = 'accuracy')
+
+logit_result = tuned_results |>
+  extract_workflow_set_result('logit_rec_logit') |>
+  select_best(metric = 'accuracy')
+
+xgb_train_results = tuned_results |>
+  extract_workflow('xgboost_rec_xgboost') |>
+  finalize_workflow(xgb_result) |>
+  fit(data = training_split)
+
+logit_train_results = tuned_results |>
+  extract_workflow('logit_rec_logit') |>
+  finalize_workflow(logit_result) |>
+  fit(data = training_split)
+
+logit_spec = logistic_reg() |>
+  set_engine('glm') |>
+  set_mode('classification')
+
+logit_fit_train = logit_spec |>
+  fit(
+    direction ~ lag1 + lag2 + lag3 + lag4 + lag5 + volume,
+    data = training_split
+  )
+
+
+
+```
+
+
+It looks like for the most part the thing that really moves the needle is the number of trees, tree depth, minimal node size, and number of randomly selected predictors. Learning rate and loss reduction don't really move the needle all that much. Lets see what tidymodels things are the two best models by ROC 
+
+```{r}
+#| code-fold: true
+bind_rows(
+  augment(xgb_train_results, new_data = training_split) |>
+    accuracy(direction, estimate = .pred_class) |>
+    mutate(model = 'XGBoost'),
+  augment(logit_train_results, new_data = training_split) |>
+    accuracy(direction, estimate = .pred_class) |>
+    mutate(model = 'Regularized Logit'),
+  augment(logit_fit_train, new_data = training_split) |>
+    accuracy(direction, estimate = .pred_class) |>
+    mutate(model = 'Logit')
+) |>
+  mutate(.metric = stringr::str_to_title(.metric)) |>
+  pivot_wider(names_from = .metric, values_from = .estimate) |>
+  select(-.estimator) |>
+  arrange(desc(Accuracy)) |>
+  tt()
+
+
+```
+
+So I am really not all that sold that there is a ton of differences between the XGBoost model and the logit. From what I can tell we don't have the best classifiers by any stretch of the imagination. I think I would just prefer the simpler model for presentation purposes. If we grew this data this might change but ceteris paribus I am not all that convinced that we are really going to gain all that much other than a higher compute bill and less interpretability. So we are just going to fit a regular ole logit and hit it with some marginal effects fun. 
+
+
+
+```{r}
+stock_class_model = glm(
+  direction ~ lag1 + lag2 + lag3 + lag4 + lag5 + volume,
+  data = stocks,
+  family = binomial(link = 'logit')
+)
+
+modelplot(stock_class_model) +
+  geom_vline(xintercept = 0) +
+  theme_allen_minimal()
+
+
+
+
+```
+
+So when we go and grab the raw coefficient estimates its not like we are gaining to much.
+
+
+
+# What should we do if we have some class imbalance? 
+
+
+```{r}
+
+
+df = read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv") |>
+    janitor::clean_names() 
+
+ df |>
+    group_by(success, died) |>
+    summarise(total = n()) |>
+    mutate(prop = total/sum(total)) |>
+                tt()
+
+
+```
+
+So for the most part nicely balanced class data is pretty rare! Lets take a fairly simple from Julia Silge's [excellent blog post](https://juliasilge.com/blog/himalayan-climbing/). For the most part mountaneering trips don't tend to have a lot of deaths which is good! However, when we want to start predicting what makes a succesful climb this can be a problem if we aren't careful.
+
+## Preprocessing: A variety of sampling techniques
+
+
+So we can think about fraud and war along similar lines in the class imbalance space. For the most part we have a ton of not war or not fraud cases in these kinds of dataset. I am sure if we start to skew the class imbalances a little bit more or even just added a third class like 'maybe fraud' or 'mid' to the COW database we are going to start pushing the limits of what the model could handle. 
+
+One of the real important things is choosing evaluation metrics that can handle imbalanced classes. As we saw in the last section accuracy tends to be a poor metric with big class imbalances becuase its the total number of correct predictions divided by the total number of predicitions. The thing about these models is that they tend to do pretty well in predicting things after they are trained on some data. So the model gets really good at predicting the dominant class but gets really bad at predicting the less dominant class. 
+
+We can pray that we get more data and just by pure chance we got a bad draw with lots of class imbalance. But, for the most part those prayers will never be answered. Fundamentally if the DGP of war or fraud change we have kind of a big problem on our hands. Instead what we can do is use as variety of resampling methods to artificially create balance between the two classes. In @tbl-resampling-methods I outline the broad strokes of each resampling method. 
+
+
+```{r}
+#| label: tbl-resampling-methods 
+#| echo: false
+tibble::tribble(~Method, ~`What it Does`,
+                'Oversampling', 'Bias the classifier towards the minority class by duplicating the minority class',
+                'Undersampling', 'Bias the classifier towards the minority class by removing examples of the dominant class',
+                'Random Oversampling Examples (ROSE)', 'Generate new synthetic points with some noise to the minority class',
+                'Synthetic Minority Oversampling Technique (SMOTE)', 'Generates new synthetic points by interpolating between existing points',
+                'Adaptive Synthetic Sampling (ADASYN)', 'Identify hard to classify examples meaning they do not have a ton of neighbors. Generate some synthetic points via K-nearest neighbors') |>
+                    tt()
+
+
+
+```
+
+Effectively what each of these are doing from the perspective of the classifier because it imposes non-uniform missclassfication costs. The simplest approach is to simply randomly add data to the minority class or randomly delete data from the dominant class. However, these approaches have some obvious drawbacks. One thing that you will notice is that we have to manually set a ratio. What ratio do we set 🤷. We may want to shoot for equal balance but we have kind of fundamentaly changed the DGP which does not come at zero cost. By oversampling we are increasing our computational cost because we are copying our data and we risk over fitting. For undersampling we are chucking useful information away a lot of useful information that may improve predictive power down the line. 
+
+To combat this there are various procedures to use more data driven approaches to make up data or sample data. SMOTE generates synthetic examples by selecting a minority class instance, finding one of its k-nearest neighbors (from the same class), and creating a new point along the line segment between them. The synthetic point is placed at a random position between the two, ensuring that the newly generated data follows the distribution of the minority class via K-NN. SMOTE is viable strategy if the skew isn't really bad. One of the problems is that while k-NN is kind of clever we have a hyperparameter to tune which can be computationally expensive. Since SMOTE is an oversampling technique some of the same draw backs of oversampling still apply.
+
+To handle some of the weakpoints of SMOTE we have a family of synthetic data generators try to combat overfitting. A slightly modified version of the SMOTE framework is ADASYN which generates more and more synthetic data points near points closer to the decision boundary. Effectively what is happening is that we end up generating more and more points closer to the decision boundary with the goal of class balance. Another technique,
+ROSE which is based on bootstrap re-sampling techniques. Effectively what that means is that we are going to randomly draw a row from our dataset, setting the probability of the drawing the minority and the majority class to be the same. Then we are going to generate a synthetic example in the same neighborhood with a small amount of noise estimated via a kernel density estimate. We are going to keep doing this over and over again till we get a balanced dataset.  
+
+
+
+```{r}
+#| label: fraud-classification
+#| code-fold: true
+
+clean_df = df |>
+    filter(season != 'Unknown', !is.na(sex), !is.na(citizenship)) |>
+    select(peak_id, year, sex, season, age, citizenship, hired, success, died) |>
+    mutate(died = case_when(
+        died ~ 'died', 
+        .default = 'survived'
+    ),
+    across(where(is.character), \(x) as.factor(x)),
+    across(where(is.logical), \(x) as.integer(x))) 
+
+splits = initial_split(clean_df, strata = died) 
+
+training_split = training(splits)
+
+testing_split = testing(splits)
+
+folds = vfold_cv(training_split, strata = died)
+
+rec_non_sample = recipe(died ~ ., data = training_split) |>
+    # we could something fancier but that is kind of unncessary for pedagogy
+    step_impute_median(age) |>
+    step_other(peak_id, citizenship) |>
+    # one thing i should have realized is that when you step_ all_type it will include your dv 
+    step_dummy(all_nominal_predictors(), -died) 
+
+rec_resample_down = recipe(died ~ ., data = training_split) |>
+    # we could something fancier but that is kind of unncessary for pedagogy
+    step_impute_median(age) |>
+    step_other(peak_id, citizenship) |>
+    step_dummy(all_nominal_predictors(), -died) |>
+    step_downsample(died #, under_ratio = some ratio to downsample wise
+    )
+
+
+
+
+rec_resample_up = recipe(died ~ ., data = training_split) |>
+    # we could something fancier but that is kind of unncessary for pedagogy
+    step_impute_median(age) |>
+    step_other(peak_id, citizenship) |>
+    step_dummy(all_nominal_predictors(), -died) |>
+    step_upsample(died #, over_ratio = some ratio to downsample wise
+    )
+
+rec_smote = recipe(died ~ ., data = training_split) |>
+  step_impute_median(age) |>
+  step_other(peak_id, citizenship) |>
+  step_dummy(all_nominal(), -died) |>
+  step_smote(died)
+
+logit_spec = logistic_reg() |>
+    set_engine('glm')
+
+rf_spec = rand_forest(trees = 1000) |>
+    set_mode('classification') |>
+    set_engine('ranger')
+
+xgb_spec = boost_tree(trees = 1000) |>
+    set_mode('classification') |>
+    set_engine('xgboost')
+
+
+mod_workflows = workflow_set(
+    preproc = list('no_resampling' = rec_non_sample, 'down_sampling' = rec_resample_down, 'up_sampling' = rec_resample_up,
+                    'smote' = rec_smote),
+    models = list('logit' = logit_spec, 'xgboost' = xgb_spec, 'rf' = rf_spec)
+)
+
+memb_metrics = metric_set(roc_auc, accuracy, sensitivity, specificity)
+
+tuned_results = mod_workflows |>
+    workflow_map(
+    resamples = folds,
+    metrics = memb_metrics,
+    control = control_resamples(save_pred = TRUE)
+    )
+
+
+```
+
+
+When we examine the results of these various classifiers a pretty clear picture emerges. If we were only going to evaluate these models on accuracy then we would simply pick the logit and be on our merry way. But accuracy tells a bad story in this case since it effectively is telling us that the model is good at predicting the dominant class. 
+
+```{r}
+#| echo: false
+
+no_resamples_examp = tuned_results |>
+    filter(str_detect(wflow_id, 'no_resampling')) 
+
+no_resamples_examp |>
+    rank_results(rank_metric = 'accuracy') |>
+    select(model, metric = .metric, mean) |>
+    tt()
+
+
+
+```
+
+
+If we examine the classifications holistically then a very differnt picture emerges. As you can see we aren't really crushing it in terms of ROC-AUC. 
+
+```{r}
+
+roc_auc_calcs = no_resamples_examp |>
+     collect_predictions() |>
+     group_by(wflow_id) |>
+     roc_curve(died, .pred_died) |>
+     mutate(nice_labs = case_match(wflow_id,
+     'no_resampling_logit' ~ 'Logit', 
+     'no_resampling_rf' ~ 'Random Forest',
+     'no_resampling_xgboost' ~ 'XGBoost'
+     )) 
+
+ggplot(roc_auc_calcs, aes(x = 1-specificity, y = sensitivity, color = nice_labs)) +
+    geom_line() +
+    labs(x = 'False Positive Fraction', y = 'True Positive Fraction', color = '') +
+    geom_abline(intercept = 0, slope = 1) + 
+    theme_allen_minimal()
+
+
+```
+
+If we do the same excercise for the resampled models we have a very different story. The accuracy is still fairly high but we do get some slight improvements on the ROC-AUC front meaning our classifiers are doing slightly better classifying the minority class. 
+
+```{r}
+resamples_examp = no_resamples_examp = tuned_results |>
+    filter(str_detect(wflow_id, 'no_resampling', negate = TRUE)) 
+
+results_ranked = resamples_examp |>
+    rank_results(rank_metric = 'accuracy') |>
+    filter(rank %in% c(1:3), .metric %in% c('accuracy', 'roc_auc')) |>
+    pivot_wider(names_from = .metric, values_from = mean) |>
+    fill(roc_auc, .direction = 'up') |>
+    filter(!is.na(accuracy)) |>
+    select(wflow_id, accuracy, roc_auc)
+
+tt(results_ranked)
+
+
+```
+
+
+So lets now go ahead and see what happens when we evaluate on the testing set with the best performing ROC
+
+```{r}
+rf_result_smote = tuned_results |>
+    extract_workflow_set_result('smote_rf') |>
+    select_best(metric = 'roc_auc')
+
+rf_result_no = tuned_results |>
+    extract_workflow_set_result('no_resampling_rf') |>
+    select_best(metric = 'roc_auc') 
+
+final_rf_no = tuned_results |>
+    extract_workflow('no_resampling_rf') |>
+    finalize_workflow(rf_result_no) |>
+    last_fit(splits)
+
+final_rf_smote = tuned_results |>
+    extract_workflow('smote_rf') |>
+    finalize_workflow(rf_result_smote) |>
+    last_fit(splits)
+
+smote_metrics = collect_metrics(final_rf_smote) |>
+    mutate(model = 'SMOTE RF')
+
+collect_metrics(final_rf_no) |>
+    mutate(model = 'RF') |>
+    bind_rows(smote_metrics) |>
+    select(model, Metric = .metric, Value = .estimate) |>
+    tt(digits = 3)
+
+
+
+```
+
+
+
+
+## Modeling 
+
+Goosing the data can only take you so far. When we start to goose our data we can start to introduce problems that are fairly opaque and can lead to overfitting. For some of the more sophisticated techniques like SMOTE, ROSE, or ADASYN are more or less pretty clever ways of goosing the data. However, tuning and/or definining what set of points constitute typical points can cause problems. Additionally goosing the data tends to work where the minority class is not so overwhelemed. In our example of fraud we have like 99% no fraud. 
+
+Instead of torturing the hell out of our data what we can do insted is to use anomaly detection frameworks. Basically the focus of these models is to get really good at detecting anomalies. So if we have 10000 observations and 9,900 are not fraud and 100 are fraud these definitely abnormal. 
+
+The thing with anomaly detection is that there are a bunch of different kinds of anomalies. Take your credit card transactions as an example. 
+
+
+```{r}
+#| echo: false
+tibble::tribble(~' ', ~Definition,
+                'Point/Local Anomalies', 'Anomalies that deviate from its neighbors. Ex: I use one card to pay my bills and then once and awhile use it at a restaurant or I end up using it to buy new furnatirue',
+                'Global Anomalies', 'Anomalies that are weird in the context of the data. Lets say all my transactions are within a two or three mile radius and then suddenly I spend a lot of money somewhere across the globe from me',
+                'Dependency Anomalies', 'These are points that are effectively breaking the observed DGP. Lets say I get a new job We have only ever observed my salary as a grad student. The new job would generate a different set of observations',
+                'Cluster/contextual anomalies', 'In a sense these are kind of a similar to global anomalies. Instead of one large dollar transaction across the globe this could look something like a trip. Where we have a large cluster transactions in the same place') |>
+                    tt()
+
+
+
+```
+
+
+So it may actually depend on what is going on with the kinds of processes we are trying to model. From what I gather from @RuffKauffmannVandermeulen:2021 the issues with anomalies is that we often have a lack of labelled data. I think this is likely a symptom of the kind of data we are working with. In perhaps one of the most important applications fraud that data is privately held. 
+
+# Feature Selection 
+
+One thing that is important is what goes into the linear algebra machine. For things like XGBoost and Random Forests these are kind of the epitome of the "Two Culture" mentioned by @breimanStatisticalModelingTwo2001 where the result of a bunch bad learners end up doing really well predicting the relationships between independent and dependent variables. This happens because well we don't impose many restriction on what the functional form of the relationship between the independent variables between the dependent variable. So if the actual regression equation is something to the effect of 
+
+$$
+\text{Wreckless Driving} = \alpha + \beta_{1} \log(\text{risk taking}) + \beta_{2} age^{2} + \beta_{3} \log(\text{risk taking}) \times age^{2} + \varepsilon
+$$
+
+These models are going to have a fairly good chance of picking this weird relationship up because it is dividing up the space into smaller pieces to either classify or generate predicitions. For a visual demstration see @fig-reg-trees 
+
+
+```{r}
+#| label: fig-reg-trees
+library(rpart)
+library(parttree)
+
+out = rpart(Kyphosis ~ Start + Age, data = kyphosis)
+
+# Grab the partitions and plot
+fit_pt = parttree(out)
+
+plot(fit_pt)
+
+```
+
+
+Substantively what this means is that these methods are uber flexible but if we were are going to use this as a feature selection machine for models with more parametric assumptions than that could be problem. Random forest are a form of self-regularizing adaptive smoothers. As @CurthJeffaresvanderSchaar:2024 argue
+
+ > We showed that forests improve upon trees through multiple distinct mechanisms that are usually implicitly entangled: they reduce the effect of noise in outcomes, reduce the variability in realized predictors and reduce potential bias by enriching the class of functions that can be represented.
+
+As you may have guessed a logit doesn't have these self regularizing properties. So if we cram a bunch of predictors on the right hand side of the equation the likelihood that there is some multicollinearity is pretty high. While this doesn't effect our coefficient estimates it does effect our standard errors in many cases this can cause them to be inflated resulting in us failing to reject the null. However, it is also possible that this effect is reversed which is highly problematic. Lets say we are interested in describing the effect of some new strategy on some KPI. We can come up with a plausible causal mechanism for why that is. We then go and do our feature selection and our main variable of interest is statistically significant. WOOHOOO great! Not so fast in many political science papers by adding correlated variables we can actually deflate the standard errors causing over rejection of the null [@lenzAchievingStatisticalSignificance2021].
+
+The other key property that we should focus on is that random forests search over a more diverse array of functions making their predictions less sensitive to us inputting the features in there wrong. Lets say we have a really good idea that age is an important predictor of reckless driving. We would expect that not only is the effect non-linear but has an interaction with gender or risk taking behavior. We may not be able to directly observe risk taking behavior but we may have some proxies that we could get ahold of like traffic tickets. If this interaction is a significant predictor of wreckless driving then our random forest models are going to pick them up. Unless we explicitly enter these into our model we are not going to pick this relationship up. So if we enter age in without transforming the variable we are likely not going to find its effect or the effect of a one unit increase in age is likely to be incredibly small.
+
+
+## What is multicollinearity and how do we fix it? 
+
+To set up this question lets think of a hypothetical business problem. We are trying to assign somebody a premium based on the data we have on other people. We have access to their age, their location, past driving history, make and model of their car, and gender. Theoretically we would expect these variables to be related to one another in some way. For example make and model of their car, age, and gender is probably going to tell us something about their past driving history. We would expect that a 20 year old male driving a sports car is probably going to have a higher likelihood of having one or more speeding tickets then a female driving the same car. When we go to model this relationship each of these variables are going to be related to each other. 
+
+Lets setup an OLS with this example where age enters into the model in years, car type is a factor with a Toyota Corolla as it reference level, past incidents is the log of past driving behavior, location is a simple indicator variable where rural is the reference level, and gender is a indicator variable where the reference level is female.
+
+$$
+Premium = \alpha + \beta_{1} Age + \beta_{2} \text{car_type} + \beta_{3} location + \beta_{4} \log(history) + \beta_{5} Gender + \varepsilon
+$$
+
+For simplicity we will focus on gender as the primary explainer for insurance premiums. Lets say that gender and location are highly correlated this may occur for a variety of reasons e.g. presence of a military base, presence of a college campus etc. When we go to interpret the effect of being male on an insurance premium we hold all variables in the equation constant. However, if the moving from a rural area to the city is highly deterministic of gender we can neatly unpack the effect of gender on insurance premium. While an interpretational problem this makes it difficult to unpack the effect of a single variable on insurance premiums. 
+
+
+Another important factor is multicollinearity impacts our uncertainty estimates either biasing them down leading us to fail to reject the null more times than we should or can bias our standard errors downwards over rejecting the null hypothesis [@gujarati2012basic; @lenzAchievingStatisticalSignificance2021]. Lets take a simulated example to make this point a bit more explicit 
+
+
+```{r}
+library(performance)
+
+
+generate_dummy_data <- function(data, seed = NULL) {
+  set.seed(seed = seed)
+  data <- dplyr::tibble(gender = rbinom(100, 1, 0.5),
+                        location = ifelse(runif(100) < 0.9, gender, 1 - gender),
+                        y = 5 + 3 * gender + rnorm(100, 0, 3))
+  return(data)
+}
+
+generate_dummy_model <- function(data) {
+  model <- lm(y ~ gender + location, data = data)
+  return(model)
+}
+
+extract_model_coefficients <- function(model) {
+  coefs <- broom::tidy(model)
+  # replace dots and white spaces with underscores
+  colnames(coefs) <- gsub(pattern = "\\.| ", 
+                          replacement = "_", 
+                          x = colnames(coefs))
+  return(coefs)
+}
+
+run_lm_simulation <- function(data_generator, model_generator, n = 1000) {
+  simulation <- 
+    dplyr::tibble(i = 1:n) %>% 
+    dplyr::mutate(
+      data = purrr::map(.x = i, .f = ~ data_generator(seed = .x)),
+      model = purrr::map(.x = data, .f = model_generator),
+      coefs = purrr::map(.x = model, .f = extract_model_coefficients)
+      ) %>%
+  return(simulation)
+}
+dummy_simulation <- run_lm_simulation(data_generator = generate_dummy_data,
+                                      model_generator = generate_dummy_model, 
+                                      n = 1000)
+
+simulated_p = dummy_simulation |>
+    unnest(coefs) |>
+    filter(term != '(Intercept)')
+
+
+
+ggplot(simulated_p, aes(x = p_value, fill = term)) +
+  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+  facet_wrap(vars(term), scales = "free_y", ncol = 1) +
+  labs(title = "Distribution of P-Values for x and x_collinear",
+       x = "P-Value",
+       y = "Frequency") +
+  theme_minimal()
+```
+
+In this case we see that we have some encouraging results that we are not going to over reject gender but if we look at location we are much more prone to failing to reject the null hypothesis. This is fine in a simulated world because we induced this relationship ourselves. However, in the real world that is not available to us. 
+
+To get around multicollinearity we use methods that penalize our coeficients towards zero. The two most common forms of penalization are known as ridge and LASSO regression. The canonical regression equation minimizes the sum of squared residuals. Regularization adds a penalty term to this equation that shrinks the coefficient estimates toward zero. Ridge regression (L2 penalty) adds the sum of the squared coefficients to the loss function, which discourages large coefficient values but does not set them to zero. LASSO regression (L1 penalty) adds the sum of the absolute values of the coefficients, which can shrink some coefficients to exactly zero, effectively performing feature selection.
+
+```{r}
+
+data('Hitters', package = 'ISLR')
+
+hitters = Hitters |>
+    janitor::clean_names() |>
+    filter(!is.na(salary))
+
+
+ridge_spec = linear_reg(mixture = 0, penalty = 0) |>
+    set_mode('regression') |>
+    set_engine('glmnet') |>
+    fit(salary ~ ., data = hitters)
+
+ridge_spec |>
+    autoplot() + 
+    theme_allen_minimal() +
+    labs(title = 'Ridge Regularization')
+
+
+
+
+
+```
+
+As we can see with the ridge penalty as we increase the size of the penalty the closer to zero these coefficients get. For some coefficients they get pushed towards zero immediately. One of the things that happens with multicollinear data is that jumps in one variable can cause massive swings in another in ways that aren't entirely transparent. In prediction context we may not neccessarily care about the individual impact of one of 100 variables. We are more concerned that our model is healthy and making good predictions on data that it hasn't seen. By regularizing our model we penalize the model for being extremely flexible this may increase our bias a bit but this comes at the gain of reducing the variance. What this means is that we are going to get a healthier prediction machine. For a LASSO model some of these coefficients will be zero just by the nature of the penalty. Effectively performing feature selection for us.
+
+## Imputation methods 
+
+

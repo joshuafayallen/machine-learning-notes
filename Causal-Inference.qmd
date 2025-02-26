@@ -1,0 +1,194 @@
+# Causal Inference
+
+```{python}
+#| echo: false 
+
+import polars as pl
+import math
+
+```
+
+In industry there are lots of opportunity for causal inference! Actually in a lot of cases we don't really realize! Platforms are constantly changing and companies want to evaluate the rollout of new features and whether or not they actually move the needle is important since they are sinking a lot of time and resources into these features. So today we are going to tackle A/B experiments broadly while touching up our understanding of a host of other causal inference methods. One thing that I think is kind of cool is that there is a lot more communication between Academic Social Sciences and the Causal Inference world. We are all dealing with the same problem but some us have more money than the others. However, we can't run away from of the fundamental problems we face. 
+
+
+
+## The Fundamental Problem 
+
+The fundamental problem of causal inference is that we don't have a time machine. By that I mean we would love to have a data frame like this where we can get the individual level causal effect. Meaning we can observe what would happen if we assigned people the treatment and what would happen if people never received the treatment. 
+
+
+```{python}
+
+time_machine_world = {
+    'Treated Outcome': [50, 60, 70],
+    'Untreated Outcome': [10, 25, 23],
+
+}
+
+pl.DataFrame(time_machine_world).with_columns(
+    (pl.col('Treated Outcome') - pl.col('Untreated Outcome')).alias('Treatment_Effect')
+)
+
+
+
+```
+
+To do this we would need a time machine to go back in time and either give them the treatment or take away the treatment. We only ever observe one state of an individual. We are missing half of the information to get this individual result. Instead we have to come up with a framework that lets us bridge these worlds. The most common framework and kind of the working model that motivates the observational causal inference framework is the Randomized Control Trial/ A/B test framework. We kind of all intuitevely understand this framework. We have a, more or less, exchangeable group of people, villages etc and then we randomize treatment status then take the average of the outcome. Effectively we can think of it as 
+
+$$
+\text{Average Treatement Effect} = (\bar{Y} | \text{Treated}) - (\bar{Y} | \text{Untreated})
+$$
+
+In a DAG framework we can think of it like this. 
+
+
+```{r}
+#| echo: false
+library(dagitty)
+library(ggdag)
+
+coords = tibble::tribble(~name, ~y, ~x,
+                        'Outcome', 0, 1,
+                        'Treatment', 0, 0,
+                        'Randomizer', 0, -2,
+                        'Confounder', 0.5,0)
+
+rct_dag = dagify(Outcome ~ Treatment + Confounder,
+                Treatment ~ Randomizer,
+                exposure = 'Treatment',
+                outcome = 'Outcome',
+                coords = coords,
+                labels = c(
+                    Outcome = 'Outcome',
+                    Treatment = 'Treatment',
+                    Confounder = 'Confounder',
+                    Randomizer = 'Randomizer'
+                )) |>
+                    tidy_dagitty()
+
+ggdag(rct_dag, text = FALSE, use_labels = 'label') +
+    theme_dag()
+
+
+```
+
+Notice that the randomizer is not effected by anything and the only effect of randomization is through the treatment status. Importantly any things that make us special don't actually determine our potential outcomes. It eliminates a lot of potential avenues for selection or and treatment status is not determined by anything else in our model. This is a pretty powerful and magical idea, but it comes at a cost. In this case we mean money. Just because we can randomize doesn't mean we will magically find the causal effect of something on something else. In the preceding sections we will spend some time on how to do this and potential areas for trouble. 
+
+## RCTs 
+
+Technically in industry they are called A/B tests because well reasons. The general idea is that this follows the canonical RCT. We have an intervention we want to test so we will run an experiment. This is straightforward idea but we have to make a lot of design considerations. Since experiments have an air of magic to them there is lots of room for them to go wrong. There are lots of statistical avenues to explore including Multi-Armed Bandit, problems staggered rollout, conjoint experiments, and whole host of other things. However, before we start with those its going to be pretty important to talk about power.
+
+Statistical power is one thing that a variety of designs have in common since they kind of broadly fall under the null hypothesis significance testing framework. Very basically the idea of power comes down to the idea that we want our experiment to have a good shot of rejecting the null hypothesis if the alternative is true. Basically we want to reduce the probability of Type II error or the false negative rate. Importantly when power is low we tend to estimate a treatement effect that is larger than the 'true' treatment effect and/or the sign of the effect may be wrong [@gelmanNaturalSolutionsPvalue2017]. 
+
+So what are the components of statistical power. Political scientists tend to think of power and what we are interested a bit differently then psychologists do. We tend to think of treatment effects on the scale of our oiutcome and through a regression lens. This is important because Psychologist tend to deal with standardized effect sizes and ANOVA/ANCOVA analysis which is just regression in a trench coat, but thats a conversation for another time. Much of the following section is just written notes to [Carlise Rainey's excellent power primer](https://osf.io/preprints/osf/5am9q_v1). I should mention that there are bespoke tools to simulate a variety of designs and identifying some potential sticking points. The setup of the paper is that we have a some experiment where we assume a null hypothesis of no treatment effect and an alternative of H1 > 0 implying a positive treatment effect. Although we can extend this to a two-tailed and/or a negative treatment effect. 
+
+### Rules 1 & 2 of Statistical power
+
+The main takeaway from this section is that we can think of power as 
+
+$$ 
+\text{Statistical Power} = \frac{\text{Treatment}}{\text{Standard Error}}
+$$
+
+Lets first start with the intuition. If we could rerun our trial infinite times and collect the treatment effects and count how we frequently we observe the treatment effect we would get our canonical Gaussian distribution. The center of the distribution will be centered over the treatment effect because of the CLT. How far away a single point is from the treatment effect is just the variance. However, if we run the trial a thousand times than that would be the sample treatment effect. The distance measure in the sample is we just refer to as the standard error. To reject the null hypothesis of Treatment Effect > 0 than we would want our sampling distribution to look something like this 
+
+```{r}
+library(ggplot2)
+
+dat = data.frame(treat = rnorm(1000, mean = 5, sd = 1))
+
+ggplot(dat, aes(x = treat)) +
+    geom_histogram() +
+    theme_minimal() +
+    geom_vline(xintercept = 0) +
+    labs(x = 'Treatment Effect')
+
+
+```
+
+
+Kind of by extension we are powering the experiment to be able to adjudicate this. What we are saying in words that an experiment has "80% power to detect a treatment effect of ___" if $\text{Treatment effect} - 1.64 \times \hat{SE}_{\hat{\text{TE}}} > 0$ in 80% of repeated experiments. Whats noticeable is that we are inserting the critical value of a 90% confidence level in  this equation. Obviously as change our significants level then that changes the critical value. If we subsitute in the moment conditions of the normal CDF than we get back to 
+
+$$ 
+\text{Statistical Power} = \frac{\text{Treatment}}{\text{Standard Error}}
+$$
+
+Effectively when we are doing a priori analysis we are making an assumption a plausible treatment effect and the variability of that estimate. However, this is pretty challenging because if we knew the treatment effect ahead of time we either simulated the data or we wouldn't need to spend time and money on an experiment! 
+
+### What treatment effect should I asume? 
+
+From a statistical power perspective there are a few things we can think about. What our best guess is of the effect, the smallest plausible effect, and the smallest substantively meaninful effect. We may have run a gajillion mailer experiments so we may have a pretty good sense of what the effect could be. That would be great but thats not neccessarily generalizeable to the rest of us. Instead we should use our substantive expertise to think about what would be a smallest plausible effect of our treatment or the smallest meaningful effect of our treatment. This will be important later because we are going to use it in our power equation. 
+
+
+### From the SD to the SE 
+
+When we go to actually estimate our treatment effect we are going to do something like this 
+
+$$
+Outcome = \alpha + \beta \times Treatment + \varepsilon
+$$
+
+We make the assumption that $\varepsilon$ is distributed $N(0, \sigma^2)$ which gets us the classic standard error of 
+
+
+$$
+SE^{Classic}_t = \sqrt{\frac{\sigma^2}{N \times \bar{D} (1-\bar{D})}}
+$$
+
+Where N is our total sample size and D is the fraction assigned to each condition. This $\bar{D}$ will be important as we start adding conditions. However, lets remain focused on what this tells us. We can further decompose this which gets to the idea that $\sigma$ is just the standard deviation within the outcome. It makes sense because what we are really doing is stratifying Y by our treatment conditions. To get a good guess of what our $\sigma$ to plug into our treatment condition is we should find a suitable reference population. The chances are that the company or somebody else is working this area. What this gets us is that we can use features of a reference population to predict a plausible standard error. Where it looks like 
+
+$$
+\frac{2 \times SD(Y)}{\sqrt{2 \times N}}
+$$
+
+Where N is the sample size per each condition. What this intuition gets us is that we can think of ways to reduce $\varepsilon$ by including covariates. This is taking things out of the error term reducing the SE. 
+
+
+### From the SE to the Minimum Detectable Effect Size 
+
+So this is a long way to get to this idea. If we set an alpha level of 1.90 and a target of 80% power than we know a two things. We know that the arms of either side of a 90% confidence interval are 1.64 standard errors wide thus power is the percent of the sampling distribution that is largert than 1.64 standard errors. To find the MDE we need to solve for the treatment effect that positions 80% of the sampling distribution above 1.64. So after passing it through the inverse of the standard normal CDF and centering it we get the result that for 80% power we can multiply the SE by 2.5 to get the MDE. First, the arms of the 90% confidence interval are 1.64 standard errors
+wide, so the power of the study is the percent of the sampling distribution that is larger
+than 1.64 standard errors. 
+
+Carlise uses the example of a ANES experiment where the outcome is a feelings thermometer for respondents PID. If we were to want to run a similar experiment we could take the SD of 20.8 and plug it into our numerator. The reference experiment has two conditions with more or less 500 experiments. So we can back out the minimal detectable effect size like this 
+
+
+
+```{python}
+
+sd_ref = 20.8 
+
+
+numerator = sd_ref * 2 
+
+denominator = math.sqrt(2 * 500)
+
+
+mde = (numerator / denominator) * 2.5
+
+print(f'The minimal detectable effect is for 80% power {mde}')
+
+```
+
+## Getting to the Sample Size
+
+
+Cool we could do some more stuff to bring down the standard error. However, how do we move from mde and SE to a good sample size? When we combine our rules we get something like this 
+
+
+$$
+\text{Sample Size} = 2 \times (\frac{2.5 \times \hat{SD}(y)}{\hat{Treatment}})^2
+$$
+
+
+If we are using an existing studies we can grab the standard errors and 
+
+
+## Rules of Thumb According to Jpal 
+
+1. A larger sample increases the statistical power of the evaluation
+2. If the effect size of the program is small, the evaluation needs a large sample to achieve a given level of power 
+3. An evaluation of a program with low take-up needs a large sample
+4. If the underlying population has high vartiation in outcomes, the evalution eneds a large sample
+5. For a given sample size power is maximized when the sample s equally split between the treatment and control group
+6. For a given sample size, randomizing at the cluster level as opposed to the individual level reduces the power of the evaluation. The more similar the outcomes of individuals within clusters are, the larger the sample needs to be.
