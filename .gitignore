@@ -11,3 +11,4 @@ wheels/
 
 /.quarto/
 /_site/
+.Rproj.user
