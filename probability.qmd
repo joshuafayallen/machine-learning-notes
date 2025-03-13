@@ -1,17 +1,20 @@
-# Probability 
+# Baby Stats
+
+## Probability
 
 We have our general sense of probabilities where we are just the number of times things occur. This is kind of helpful.
 
 
 ```{python}
 import numpy as np
-from scipy import stats as stats 
-from matplotlib import pyplot as plt
+from scipy import stats as stats
+import matplotlib.pyplot as plt
+from plotnine import *
 import polars as pl
 
-numbs = np.array([1,3,4,3])
+numbs = np.array([1, 3, 4, 3])
 
-1/numbs.sum()
+1 / numbs.sum()
 
 
 ```
@@ -321,6 +324,48 @@ math.factorial(20)//(factorial(20-5))
 ## The Centeral Limit Theorum
 
 She is genuinely one of the most coolest concepts in statistics. Bascially no matter the distribution of the variablee as we take more and more samples of the data as N increases we are going to converge to a normal distribution. This is really powerful concept in frequentist statistics because we are making inferences about the population using samples. 
+
+Effectively we can take any distribution that we want and take an infinite number of samples from it and it will be a normal distribution. Lets take our trusty dusty old uniform distribution
+
+```{python}
+pop = np.random.uniform(0,100, size = 5000)
+
+
+
+fig, ax = plt.subplots(figsize = (12,8))
+
+ax.hist(pop, edgecolor = 'white')
+
+plt.show()
+
+```
+
+Then lets compare what happens when we take increasingly larger sample sizes.
+
+```{python}
+
+samp_sizes = [10, 100, 500, 1000]
+
+samps = {}
+
+for i in samp_sizes:
+    sample_means = [
+        np.random.choice(pop, size=samp, replace=True) for samp in samp_sizes
+    ]
+    samps[f"sample_size{i}"] = sample_means
+
+
+df = (
+    pl.DataFrame(samps)
+    .unpivot(value_name="vals", variable_name="sample_size")
+    .explode("vals")
+)
+
+(ggplot(df, aes(x="vals"))
+  + geom_histogram(bins = 30) 
+  + facet_wrap("sample_size"))
+
+```
 
 
 ## Explain the Difference Between Probability and Likelihood

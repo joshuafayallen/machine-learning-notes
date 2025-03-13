@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>3&nbsp; Probability – Technical Interview Notes</title>
+<title>3&nbsp; Baby Stats – Technical Interview Notes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -147,7 +147,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./probability.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Probability</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./probability.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Baby Stats</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -193,7 +193,7 @@ window.Quarto = {
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./probability.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Probability</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Baby Stats</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
@@ -248,15 +248,16 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#conditional-probability" id="toc-conditional-probability" class="nav-link active" data-scroll-target="#conditional-probability"><span class="header-section-number">3.1</span> Conditional Probability</a>
+  <li><a href="#probability" id="toc-probability" class="nav-link active" data-scroll-target="#probability"><span class="header-section-number">3.1</span> Probability</a></li>
+  <li><a href="#conditional-probability" id="toc-conditional-probability" class="nav-link" data-scroll-target="#conditional-probability"><span class="header-section-number">3.2</span> Conditional Probability</a>
   <ul class="collapse">
-  <li><a href="#freqeuentist" id="toc-freqeuentist" class="nav-link" data-scroll-target="#freqeuentist"><span class="header-section-number">3.1.1</span> Freqeuentist</a></li>
-  <li><a href="#bayesianism" id="toc-bayesianism" class="nav-link" data-scroll-target="#bayesianism"><span class="header-section-number">3.1.2</span> Bayesianism</a></li>
-  <li><a href="#integrating-what-we-know-and-what-we-learn" id="toc-integrating-what-we-know-and-what-we-learn" class="nav-link" data-scroll-target="#integrating-what-we-know-and-what-we-learn"><span class="header-section-number">3.1.3</span> Integrating what we know and what we learn</a></li>
+  <li><a href="#freqeuentist" id="toc-freqeuentist" class="nav-link" data-scroll-target="#freqeuentist"><span class="header-section-number">3.2.1</span> Freqeuentist</a></li>
+  <li><a href="#bayesianism" id="toc-bayesianism" class="nav-link" data-scroll-target="#bayesianism"><span class="header-section-number">3.2.2</span> Bayesianism</a></li>
+  <li><a href="#integrating-what-we-know-and-what-we-learn" id="toc-integrating-what-we-know-and-what-we-learn" class="nav-link" data-scroll-target="#integrating-what-we-know-and-what-we-learn"><span class="header-section-number">3.2.3</span> Integrating what we know and what we learn</a></li>
   </ul></li>
-  <li><a href="#counting" id="toc-counting" class="nav-link" data-scroll-target="#counting"><span class="header-section-number">3.2</span> Counting</a></li>
-  <li><a href="#the-centeral-limit-theorum" id="toc-the-centeral-limit-theorum" class="nav-link" data-scroll-target="#the-centeral-limit-theorum"><span class="header-section-number">3.3</span> The Centeral Limit Theorum</a></li>
-  <li><a href="#explain-the-difference-between-probability-and-likelihood" id="toc-explain-the-difference-between-probability-and-likelihood" class="nav-link" data-scroll-target="#explain-the-difference-between-probability-and-likelihood"><span class="header-section-number">3.4</span> Explain the Difference Between Probability and Likelihood</a></li>
+  <li><a href="#counting" id="toc-counting" class="nav-link" data-scroll-target="#counting"><span class="header-section-number">3.3</span> Counting</a></li>
+  <li><a href="#the-centeral-limit-theorum" id="toc-the-centeral-limit-theorum" class="nav-link" data-scroll-target="#the-centeral-limit-theorum"><span class="header-section-number">3.4</span> The Centeral Limit Theorum</a></li>
+  <li><a href="#explain-the-difference-between-probability-and-likelihood" id="toc-explain-the-difference-between-probability-and-likelihood" class="nav-link" data-scroll-target="#explain-the-difference-between-probability-and-likelihood"><span class="header-section-number">3.5</span> Explain the Difference Between Probability and Likelihood</a></li>
   </ul>
 </nav>
     </div>
@@ -265,7 +266,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Probability</span></h1>
+<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Baby Stats</span></h1>
 </div>
 
 
@@ -282,33 +283,37 @@ window.Quarto = {
 </header>
 
 
+<section id="probability" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="probability"><span class="header-section-number">3.1</span> Probability</h2>
 <p>We have our general sense of probabilities where we are just the number of times things occur. This is kind of helpful.</p>
-<div id="25c2e357" class="cell" data-execution_count="1">
+<div id="e9d72cfd" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats <span class="im">as</span> stats </span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib <span class="im">import</span> pyplot <span class="im">as</span> plt</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>numbs <span class="op">=</span> np.array([<span class="dv">1</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">3</span>])</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span><span class="op">/</span>numbs.<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy <span class="im">import</span> stats <span class="im">as</span> stats</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>numbs <span class="op">=</span> np.array([<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">4</span>, <span class="dv">3</span>])</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="op">/</span> numbs.<span class="bu">sum</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="1">
 <pre><code>np.float64(0.09090909090909091)</code></pre>
 </div>
 </div>
 <p>However, for the most part in the real world we don’t neccessarily care about the probability of a single event happening unconditionally. Conditioanl probability is genereallly a little weird but not totally different than just counting.</p>
-<section id="conditional-probability" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="conditional-probability"><span class="header-section-number">3.1</span> Conditional Probability</h2>
+</section>
+<section id="conditional-probability" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="conditional-probability"><span class="header-section-number">3.2</span> Conditional Probability</h2>
 <p>There are two ways we generally think of basic condiitonal probability Frequentistly and Bayesianly. For the most part these are fairly similar. The key difference is how we incorporate what we know about the world.</p>
-<section id="freqeuentist" class="level3" data-number="3.1.1">
-<h3 data-number="3.1.1" class="anchored" data-anchor-id="freqeuentist"><span class="header-section-number">3.1.1</span> Freqeuentist</h3>
+<section id="freqeuentist" class="level3" data-number="3.2.1">
+<h3 data-number="3.2.1" class="anchored" data-anchor-id="freqeuentist"><span class="header-section-number">3.2.1</span> Freqeuentist</h3>
 <p>In Frequentism people often say that we don’t impose any priors on the data. This is not true in any real sense because we impose a flat prior. So the prior is kind of incorporated for us. Typically we see conditional probabilities expressed in two ways</p>
 <p><span class="math display">\[
 \text{P(A|B)} = \frac{\text{Probability of A and B Hapenning}}{\text{Probability of B happening}} \\\
 \text{P(A|B)} = \frac{\text{P(A)} \cap \text{P(B)}}{\text{P(B)}}
 \]</span></p>
 <p>This is a bit hard to visualize so lets take an example</p>
-<div id="fe81d7e2" class="cell" data-execution_count="3">
+<div id="81a15b1c" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>senators.glimpse()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Rows: 6
@@ -320,7 +325,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </div>
 <p>So if we wanted to calculate the conditional probability of drawing a female democratic senator we would really just do this.</p>
-<div id="5086eea4" class="cell" data-execution_count="4">
+<div id="ecd829d4" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>womand_democrat <span class="op">=</span> senators.<span class="bu">filter</span>((pl.col(<span class="st">'gender'</span>) <span class="op">==</span> <span class="st">'Woman'</span>) <span class="op">&amp;</span> (pl.col(<span class="st">'party'</span>) <span class="op">==</span> <span class="st">'Democrats'</span>))[<span class="st">'total'</span>]</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>democrat <span class="op">=</span> senators.<span class="bu">filter</span>(pl.col(<span class="st">'party'</span>) <span class="op">==</span> <span class="st">'Democrats'</span>).with_columns(total <span class="op">=</span> pl.col(<span class="st">'total'</span>).<span class="bu">sum</span>())[<span class="st">'total'</span>][<span class="dv">0</span>]</span>
@@ -357,8 +362,8 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 <p>So this will roughly get us that the odds of drawing a female democratic senator is 0.31.</p>
 </section>
-<section id="bayesianism" class="level3" data-number="3.1.2">
-<h3 data-number="3.1.2" class="anchored" data-anchor-id="bayesianism"><span class="header-section-number">3.1.2</span> Bayesianism</h3>
+<section id="bayesianism" class="level3" data-number="3.2.2">
+<h3 data-number="3.2.2" class="anchored" data-anchor-id="bayesianism"><span class="header-section-number">3.2.2</span> Bayesianism</h3>
 <p>Bayesians view conditional probability in a slightly different way. But as Richard McCelreath argues that isn’t entirely true in this canned example. Typically we define Bayes Rule as something along these lines.</p>
 <span class="math display">\[\begin{align}
 
@@ -366,7 +371,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 
 \end{align}\]</span>
 <p>However as Rich points out there is nothing uniquely Bayesian about this example. We could theoretically rewrite this to just plug in the numbers into the classic frequentist conditional probability statement. The canoncial example is some sort of testing framework. In statistical rethinking they use “Vampirism”</p>
-<div id="6cf97bd3" class="cell" data-execution_count="5">
+<div id="ceda0675" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>prob_vampire_positive <span class="op">=</span> <span class="fl">0.95</span> </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>prob_positive_mortal <span class="op">=</span> <span class="fl">0.01</span></span>
@@ -381,8 +386,8 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </div>
 </section>
-<section id="integrating-what-we-know-and-what-we-learn" class="level3" data-number="3.1.3">
-<h3 data-number="3.1.3" class="anchored" data-anchor-id="integrating-what-we-know-and-what-we-learn"><span class="header-section-number">3.1.3</span> Integrating what we know and what we learn</h3>
+<section id="integrating-what-we-know-and-what-we-learn" class="level3" data-number="3.2.3">
+<h3 data-number="3.2.3" class="anchored" data-anchor-id="integrating-what-we-know-and-what-we-learn"><span class="header-section-number">3.2.3</span> Integrating what we know and what we learn</h3>
 <p>The richness of Bayesian statistics come from using our expertise and updating them in light of data. Informally we can think of a prior as something we know about the data or data generating process before actually seeing. If we know that height in American males is about 5’9 we can write our prior as</p>
 <p><span class="math display">\[
 \begin{align}
@@ -399,7 +404,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 \]</span></p>
 <p>A posterior is really just when our prior meets our data. Our posterior distribution contains every unique combination of data, likelihood, parameters, and our prior.</p>
 <p>What makes Bayesianism interesting is when we start updating the posterior distribution. Under the hood we need integral calculus to do this but hand deriving that either on paper or from scratch. Really what we are kind of doing when we run this through a MCMC is that we are sampling from our posterior distribution and counting the frequencies that something occurs. I am going to use the counting water example</p>
-<div id="44bb1087" class="cell" data-execution_count="6">
+<div id="55d63273" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_n_ways_possible(observations: <span class="bu">str</span>, n_water: <span class="bu">int</span>, resolution: <span class="bu">int</span> <span class="op">=</span> <span class="dv">4</span>):</span>
@@ -462,7 +467,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 <span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> np.random.choice(<span class="bu">list</span>(<span class="st">"WL"</span>),  size<span class="op">=</span>N, p<span class="op">=</span>np.array([p, <span class="dv">1</span><span class="op">-</span>p]), replace<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="5520f9a5" class="cell" data-execution_count="7">
+<div id="95c27636" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>RESOLUTION <span class="op">=</span> <span class="dv">4</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>observations <span class="op">=</span> <span class="st">"WLW"</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>n_possible_ways, p_water <span class="op">=</span> run_globe_tossing_simulation(observations, resolution<span class="op">=</span>RESOLUTION)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -476,7 +481,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </div>
 <p>This will spit out the number of ways we can produce various draws. Now lets simulate the number of globe tosses wher we are just adding tosses.</p>
-<div id="e5b987c2" class="cell" data-execution_count="8">
+<div id="e2057c3a" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> factorial</span>
@@ -529,8 +534,8 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </section>
 </section>
-<section id="counting" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="counting"><span class="header-section-number">3.2</span> Counting</h2>
+<section id="counting" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="counting"><span class="header-section-number">3.3</span> Counting</h2>
 <p>One component of interviews is that we should have some intuition on counting. Like not 1,2,3 etc but how many possible combinations of things can there be aka permutations and combinations. It has been awhile since you have had to do this so it is worth going over. Permutations care about about the unique order that things can be paired in. While combinations are order agnostic. Lets say that we are trying to figure out the number of possible ways that we can seat guests at various tables. That would be a combination. For your own sake lets number all the seats. A permutation would care about the number of unique ways we can arrange people while taking the seat numbers available. What is underriding this whole thing is factorials and orders. So the formulas look something like this. Where n is the number of items and k is the number of items to arrange</p>
 <span class="math display">\[\begin{align}
 \text{permutation} = \frac{n!}{(n-k)!} \\
@@ -541,7 +546,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 
 \]</span>
 <p>factorials are just a simplfying way of writing out something like this. Where we are progresively multiplying 1 by 1 to 2 * 1 then so on and so forth.</p>
-<div id="2cd1b278" class="cell" data-execution_count="9">
+<div id="06ccd30e" class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> factorial(n):</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> <span class="dv">1</span></span>
@@ -555,7 +560,7 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </div>
 <p>Lets say we wanted to figure out the number of possible table combinations. Lets say we have 20 people and 5 tables. So we would do something like this.</p>
-<div id="8701a41e" class="cell" data-execution_count="10">
+<div id="16ada2ba" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math </span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>math.factorial(<span class="dv">20</span>)<span class="op">//</span>(math.factorial(<span class="dv">5</span>) <span class="op">*</span> math.factorial(<span class="dv">20</span> <span class="op">-</span> <span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -564,19 +569,68 @@ $ total  &lt;i64&gt; 33, 40, 2, 15, 9, 1
 </div>
 </div>
 <p>However this is not really how wedding seating works. Order matters and who sits next to who matters. So we need to take that into account. In instead of multiplying by the factorial of k we do something like this with permutations</p>
-<div id="e434e51a" class="cell" data-execution_count="11">
+<div id="50ebb721" class="cell" data-execution_count="11">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>math.factorial(<span class="dv">20</span>)<span class="op">//</span>(factorial(<span class="dv">20</span><span class="op">-</span><span class="dv">5</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="11">
 <pre><code>1860480</code></pre>
 </div>
 </div>
 </section>
-<section id="the-centeral-limit-theorum" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="the-centeral-limit-theorum"><span class="header-section-number">3.3</span> The Centeral Limit Theorum</h2>
+<section id="the-centeral-limit-theorum" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="the-centeral-limit-theorum"><span class="header-section-number">3.4</span> The Centeral Limit Theorum</h2>
 <p>She is genuinely one of the most coolest concepts in statistics. Bascially no matter the distribution of the variablee as we take more and more samples of the data as N increases we are going to converge to a normal distribution. This is really powerful concept in frequentist statistics because we are making inferences about the population using samples.</p>
+<p>Effectively we can take any distribution that we want and take an infinite number of samples from it and it will be a normal distribution. Lets take our trusty dusty old uniform distribution</p>
+<div id="59f64833" class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>pop <span class="op">=</span> np.random.uniform(<span class="dv">0</span>,<span class="dv">100</span>, size <span class="op">=</span> <span class="dv">5000</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize <span class="op">=</span> (<span class="dv">12</span>,<span class="dv">8</span>))</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>ax.hist(pop, edgecolor <span class="op">=</span> <span class="st">'white'</span>)</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="probability_files/figure-html/cell-13-output-1.png" width="947" height="633" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Then lets compare what happens when we take increasingly larger sample sizes.</p>
+<div id="45939f8d" class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>samp_sizes <span class="op">=</span> [<span class="dv">10</span>, <span class="dv">100</span>, <span class="dv">500</span>, <span class="dv">1000</span>]</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>samps <span class="op">=</span> {}</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> samp_sizes:</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    sample_means <span class="op">=</span> [</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        np.random.choice(pop, size<span class="op">=</span>samp, replace<span class="op">=</span><span class="va">True</span>) <span class="cf">for</span> samp <span class="kw">in</span> samp_sizes</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    samps[<span class="ss">f"sample_size</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span>] <span class="op">=</span> sample_means</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> (</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    pl.DataFrame(samps)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    .unpivot(value_name<span class="op">=</span><span class="st">"vals"</span>, variable_name<span class="op">=</span><span class="st">"sample_size"</span>)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    .explode(<span class="st">"vals"</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>(ggplot(df, aes(x<span class="op">=</span><span class="st">"vals"</span>))</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  <span class="op">+</span> geom_histogram(bins <span class="op">=</span> <span class="dv">30</span>) </span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="op">+</span> facet_wrap(<span class="st">"sample_size"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="probability_files/figure-html/cell-14-output-1.png" width="672" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
-<section id="explain-the-difference-between-probability-and-likelihood" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="explain-the-difference-between-probability-and-likelihood"><span class="header-section-number">3.4</span> Explain the Difference Between Probability and Likelihood</h2>
+<section id="explain-the-difference-between-probability-and-likelihood" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="explain-the-difference-between-probability-and-likelihood"><span class="header-section-number">3.5</span> Explain the Difference Between Probability and Likelihood</h2>
 <p>Probability and likelihood are two concepts that are often used in statistics and data analysis, but they have different meanings and uses.</p>
 <p>Probability is the measure of the likelihood of an event occurring. It is a number between 0 and 1, with 0 indicating an impossible event and 1 indicating a certain event. For example, the probability of flipping a coin and getting heads is 0.5.</p>
 <p>The likelihood, on the other hand, is the measure of how well a statistical model or hypothesis fits a set of observed data. It is not a probability, but rather a measure of how plausible the data is given the model or hypothesis. For example, if we have a hypothesis that the average height of people in a certain population is 6 feet, the likelihood of observing a random sample of people with an average height of 5 feet would be low.</p>

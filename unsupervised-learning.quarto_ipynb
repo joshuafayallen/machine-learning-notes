@@ -1,0 +1,131 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "# Unsupervised Learning\n",
+        "\n",
+        "In the prior \"chapters\" we covered a variety of supervised learning techniques. By supervised we have some direct control over hyperparameter tuning and how we enter things into the model to predict a response. Unsupervised learning doesn't neccessarily have a dependent variable that we are trying to predict. Instead the unsupervised techniques covered in ISLR and ESLR look at unsupervised learning as an approach to help us uncover hidden groups in our data. They focus on PCA and various clustering methods. There are no hard and fast rules with this and we often think of it as an EDA excercise or a way to reduce the dimensionality of our data. In effect supervised learning is learning the relationship of data without labels. So say we need to build a classifier. We label the data as penguin not a penguin without then we train a model on these things. For an unsupervised model we may not care so much but may want to throw everything in a model and then see if the model can uncover groupings of penguin not penguin. \n",
+        "\n",
+        "\n",
+        "## The Curse \n",
+        "\n",
+        "The curse of dimensionality frequently comes up in machine learning because we often have a ton of predictors. The curse of dimensionality can be a little weird if you don't deal with math a whole lot. The general idea of the curse of dimensionality is that as the number of dimensions increase our models are going to start to break down because as the number of dimensions increase our model is going to find data points standing all alone. We may not know that because our model starts to do well finding things that are alone in a neighborhood. A good model will be able to find these points hiding in a crowd a bad model wouldn't! Both good and bad models will find points by themselves which is not neccessarily helpful as we start to introduce new data points the model's performance will start to detoriate. \n",
+        "\n",
+        "\n",
+        "The thing with the curse of dimensionality is that we never escape it because we are going to run into when modeling variables. For OLS the curse of dimensionality enters as we start to add more and more variables because we are stratiying our data by more and more information. Even when we are doing something like inverse propensity score weighting and then using these weights in a bivariate OLS you are running into the curse in the propensity score equation. \n",
+        "\n",
+        "\n",
+        "## What can we do about the curse?\n",
+        "\n",
+        "We can use methods like PCA to reduce the number of dimensions. The general idea is that we are trying to map high dimensional relationships into lower dimesional proxies. \n"
+      ],
+      "id": "53188e9e"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import polars as pl\n",
+        "import polars.selectors as cs \n",
+        "import matplotlib.pyplot as plt\n",
+        "from palmerpenguins import load_penguins\n",
+        "\n",
+        "pengs = pl.from_pandas(load_penguins())\n",
+        "\n",
+        "pengs.select(pl.exclude('year', 'species', 'sex', 'island')).drop_nans().corr()"
+      ],
+      "id": "e5a40d41",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "Each of these variables map on to some measure of penguin bigness some of them are more correlated with each other but if we had flipper width or bill width or some other measure of penguins bigness there is going to significant overlap. Once we enter these into a regression these models are going to pretty good job at descrbing penguin weirdness. A way to help us is to summarize these variables into what we call principal components. \n",
+        "\n",
+        "Principal components are a way to summarize the variation in these overlapping variables in a minimal set of variables. \n"
+      ],
+      "id": "b968be00"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "from sklearn.decomposition import PCA\n",
+        "\n",
+        "normalized = pengs.select(cs.numeric(), pl.col('species')).select(pl.exclude('year')).with_columns(\n",
+        "        (cs.numeric() - cs.numeric().mean() / cs.numeric().std())\n",
+        "    ).drop_nulls()\n",
+        "\n",
+        "pca = PCA()\n",
+        "numeric_data = normalized.select(cs.numeric())\n",
+        "pca.fit(numeric_data)\n",
+        "\n",
+        "# Transform the data and include species labels\n",
+        "tr_df = pca.transform(numeric_data)\n",
+        "pca_components = pl.DataFrame(\n",
+        "    tr_df,\n",
+        "    schema=[f'PC{i+1}' for i in range(tr_df.shape[1])]\n",
+        ").with_columns(normalized['species']) \n",
+        "\n",
+        "pca_df = pca_components.to_pandas()\n",
+        "\n",
+        "# Define a color map for the species\n",
+        "color_map = {\n",
+        "    \"Adelie\": \"red\",\n",
+        "    \"Gentoo\": \"blue\",\n",
+        "    \"Chinstrap\": \"green\"\n",
+        "}\n",
+        "\n",
+        "# Create the scatter plot\n",
+        "plt.figure(figsize=(8, 6))\n",
+        "for species, color in color_map.items():\n",
+        "    subset = pca_df[pca_df['species'] == species]\n",
+        "    plt.scatter(\n",
+        "        subset['PC1'], \n",
+        "        subset['PC2'], \n",
+        "        label=species, \n",
+        "        color=color, \n",
+        "        alpha=0.7\n",
+        "    )\n",
+        "\n",
+        "# Add plot details\n",
+        "plt.title('PCA: First Two Principal Components')\n",
+        "plt.xlabel('Principal Component 1')\n",
+        "plt.ylabel('Principal Component 2')\n",
+        "plt.legend(title='Species')\n",
+        "plt.grid()\n",
+        "plt.show()"
+      ],
+      "id": "09ee2478",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "We can see that these two variables do a reasonable enough job of distinguishing the species from each other. What is going on underneath the hood is that we are creating some linear combinations of these variables. We can relax this constraint using gams if we want but in practice we do this linearly alot. \n",
+        "\n",
+        "\n",
+        "## Clustering \n",
+        "\n",
+        "In a sense we are finding subgroups with this PCA example but we can also use clustering algorithms. Basically clustering algorithms will try to ifer subgroups from the data either through minimizing a distance measure if we are using k-means. We could also use mixture clustering where we make some assumptions of the distributions but can let more moment conditions enter into the clustering algorithm."
+      ],
+      "id": "6298a15f"
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "name": "python3",
+      "language": "python",
+      "display_name": "Python 3 (ipykernel)",
+      "path": "/Users/josh/Library/Python/3.11/share/jupyter/kernels/python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
