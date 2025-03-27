@@ -12,4 +12,4 @@ wheels/
 /.quarto/
 /_site/
 .Rproj.user
-docs/
+/_book/
