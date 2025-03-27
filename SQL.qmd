@@ -11,6 +11,7 @@ For the majority of this `palmerpenguins` dataset not because you really need to
 ```{r}
 library(DBI)
 library(arrow)
+library(tinytable)
 library(dbplyr)
 library(tidyverse)
 
@@ -1031,7 +1032,7 @@ dat = tribble(~Subquery, ~`Common Table Expression`,
                'Inner queries that allow us to filter and perform calculations to be used later. Only used in the FROM Clause', 'Effectively a table we can refer back to using FROM small_table')
 
 dat |>
-    gt::gt()
+    tt()
 
 
 
@@ -1165,6 +1166,88 @@ tbl(artists_con, sql(
 ```
 
 
+### Inner Joins 
+
+Inner joins come up a lot in SQL interview questions. Part of the reason is that they have a lot of utility in data cleaning generally but especially when we have to kind of contort ourselves around our tools. Take two different problems 
+
+Suppose we want to know which manager makes less than their direct report from this table. 
+
+```{r}
+employees = tribble(
+~employee_id,	~name,	~salary,	~department_id,	~manager_id,
+1,	"Emma Thompson",	3800,	1,	6,
+2,	"Daniel Rodriguez",	2230,	1,	7,
+3,	'Olivia Smith',	   7000,	1,	 8,
+4,	'Noah Johnson',	  6800,	2,	9,
+5,	'Sophia Martinez',	1750,	1,	11,
+6,	'Liam Brown',	13000,	 3,	NA,
+7,	'Ava Garcia',  12500,	3,	NA,
+8,	'William Davis',	6800,	2,	NA,
+10,	'James Anderson',	4000,	1,	11) 
+
+tt(employees)
+
+
+```
+
+I think the data in the original data lemur question is a bit messed up since it should indicate that Olivia Smith is in the same department as her manager William Davis. 
+
+```{r}
+employees_fixed = employees |>
+    mutate(department_id = ifelse(name == 'Olivia Smith', 2, department_id)) 
+
+
+```
+
+Since we know managers don't have a manager id and the manager id is denoted by their employee id we can just create a separate tibble and then join on the manager id column
+
+```{r}
+managers = employees_fixed |>
+    filter(is.na(manager_id)) |>
+    select(-manager_id) |>
+    rename(manager_id = employee_id, 
+          manager_salary = salary) 
+
+
+employees_fixed |>
+    filter(!is.na(manager_id)) |>
+    left_join(managers, join_by(manager_id)) |>
+    filter(salary > manager_salary)
+
+
+```
+
+Which gives us the correct answer. In SQL we would have to do something a bit different. We have to join the table to itself to create the same effect. 
+
+
+```{r}
+
+inner_join_con = src_memdb()
+
+employees_fixed_db = copy_to(inner_join_con, employees_fixed)
+
+tbl(inner_join_con, sql(
+    "
+    SELECT 
+    mgr.employee_id AS manager_id,
+    mgr.name AS manager_name,
+    mgr.salary AS manager_salary,
+    emp.employee_id AS employee_id,
+    emp.salary AS salary,
+    emp.name AS employee_name
+    FROM employees_fixed AS MGR
+    INNER JOIN employees_fixed AS emp
+    ON mgr.employee_id = emp.manager_id
+    WHERE emp.salary > mgr.salary
+    "
+))
+
+
+```
+
+Effectively we are using select to create a mini table and then from there we would just reference the 
+
+
 ### Window Functions
 
 Window functions are kid of just grouped mutates in dplyr. We define the windows using `OVER` and `PARTITION BY`. We are diving up an existing table into smaller windows that that let us run various aggregation functions or define groups. There are three parts to a window function 
@@ -1176,10 +1259,14 @@ So effectively we can think of it as this
 
 ```{r}
 penguins |>
-    mutate(avg_pengs = mean(body_mass_g, na.rm = TRUE), .by = species)
+    mutate(avg_pengs = mean(body_mass_g, na.rm = TRUE), .by = species) |>
+    filter()
 
 
 ```
+
+So what we would do in dplyr would be something like this. 
+
 
 
 ## SQL practice 
