@@ -1235,7 +1235,7 @@ tbl(inner_join_con, sql(
     emp.employee_id AS employee_id,
     emp.salary AS salary,
     emp.name AS employee_name
-    FROM employees_fixed AS MGR
+    FROM employees_fixed AS mgr 
     INNER JOIN employees_fixed AS emp
     ON mgr.employee_id = emp.manager_id
     WHERE emp.salary > mgr.salary
@@ -1259,13 +1259,33 @@ So effectively we can think of it as this
 
 ```{r}
 penguins |>
-    mutate(avg_pengs = mean(body_mass_g, na.rm = TRUE), .by = species) |>
-    filter()
-
+    mutate(avg_pengs = mean(body_mass_g, na.rm = TRUE), .by = species)
 
 ```
 
-So what we would do in dplyr would be something like this. 
+So what we would do in dplyr would be something like this. In SQL we would do something broadly similar just in the `SELECT` part of the query so this would become 
+
+```{r}
+
+employees_fixed2 = employees |>
+    mutate(department_id = ifelse(name == 'Olivia Smith', 2, department_id), 
+           is_manager = ifelse(is.na(manager_id), TRUE, FALSE)) 
+
+window_con = src_memdb()
+
+employees_fixed_db = copy_to(window_con, employees_fixed2)
+
+tbl(window_con, sql(
+    "
+    SELECT 
+    name,
+    AVG(salary) OVER(PARTITION BY is_manager) AS avg_salary
+    FROM employees_fixed2
+    "
+))
+
+
+```
 
 
 

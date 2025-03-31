@@ -54,7 +54,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -245,7 +265,10 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#how-to-set-priors" id="toc-how-to-set-priors" class="nav-link active" data-scroll-target="#how-to-set-priors"><span class="header-section-number">5.0.1</span> How to set priors</a></li>
+  <li><a href="#what-is-a-prior-really" id="toc-what-is-a-prior-really" class="nav-link active" data-scroll-target="#what-is-a-prior-really"><span class="header-section-number">5.0.1</span> What is a prior really?</a></li>
+  <li><a href="#how-to-set-priors" id="toc-how-to-set-priors" class="nav-link" data-scroll-target="#how-to-set-priors"><span class="header-section-number">5.0.2</span> How to set priors</a></li>
+  <li><a href="#simulating-worlds" id="toc-simulating-worlds" class="nav-link" data-scroll-target="#simulating-worlds"><span class="header-section-number">5.1</span> Simulating Worlds</a></li>
+  <li><a href="#checking-our-models" id="toc-checking-our-models" class="nav-link" data-scroll-target="#checking-our-models"><span class="header-section-number">5.2</span> Checking our Models</a></li>
   </ul>
 </nav>
     </div>
@@ -278,7 +301,7 @@ window.Quarto = {
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>prior_heads[<span class="dv">1</span>]<span class="sc">/</span><span class="fu">sum</span>(<span class="fu">c</span>(prior_heads[<span class="dv">1</span>], prior_heads[<span class="dv">2</span>]))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.5167323</code></pre>
+<pre><code>[1] 0.5014985</code></pre>
 </div>
 </div>
 <p>So in this case we are just stating that the probability of heads is about 50 percent over a thousand trials assuming a fair coin. However, lets say that we know the coin is biased in a known way that makes it come up heads 61% of the time. We could then set our prior that it willl come up heads as this</p>
@@ -291,8 +314,69 @@ window.Quarto = {
 Posterior = \frac{\text{Probability of Data} \times Prior}{\text{Mean probability of Data}}
 \]</span></p>
 <p>Where we are averaging the probability of the prior. If we derive this out more formally we will see that the posterior is actually proportional to the prodct of the prior and the probability of the data. We can overcome a bad prior given an infinite amount of data, but this process will be inefficient and critically we will never reach infinite data. Priors in Bayesian inference are important computationally as well as substantively.</p>
-<section id="how-to-set-priors" class="level3" data-number="5.0.1">
-<h3 data-number="5.0.1" class="anchored" data-anchor-id="how-to-set-priors"><span class="header-section-number">5.0.1</span> How to set priors</h3>
+<section id="what-is-a-prior-really" class="level3" data-number="5.0.1">
+<h3 data-number="5.0.1" class="anchored" data-anchor-id="what-is-a-prior-really"><span class="header-section-number">5.0.1</span> What is a prior really?</h3>
+<p>Setting a prior is one of the hardest things in Bayesian statistics and the subject a large and rich part of the literature. I think one really important thing to adjudicate is what a prior really is. That way we can reinforce the importance of setting a good one, what to check, and how to check it.</p>
+<p>According to <span class="citation" data-cites="gelman2013bayesian">Gelman et al. (<a href="#ref-gelman2013bayesian" role="doc-biblioref">2013</a>)</span> we can conceptualize the prior distribution along two different lines. There is the <em>population</em> interpretation. This is a little frequentisty but is definitely helpful. Lets say that we have some pseudo population of parameters that the candidate parameter <span class="math inline">\(\beta\)</span> is drawn from. For simplicity sake lets draw <span class="math inline">\(\beta\)</span> from as standard normal where we overlay the overall distribution</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>sim_data <span class="ot">=</span> \(<span class="at">beta_val =</span> <span class="dv">0</span>, <span class="at">beta_variance =</span> <span class="dv">1</span>, <span class="at">n =</span> <span class="dv">100</span>){</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  sim_dat <span class="ot">=</span> <span class="fu">tibble</span>(<span class="at">beta_values =</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> beta_val, <span class="at">sd =</span> beta_variance),</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">beta_mean =</span> <span class="fu">rep</span>(beta_val, <span class="at">length.out =</span> n),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">beta_variance =</span> <span class="fu">rep</span>(beta_variance, <span class="at">length.out =</span> n))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(sim_dat)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>pop_sims <span class="ot">=</span> <span class="fu">map</span>(<span class="fu">c</span>(<span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>), \(x) <span class="fu">sim_data</span>(<span class="at">beta_val =</span> x)) <span class="sc">|&gt;</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list_rbind</span>() </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>wide_version <span class="ot">=</span> pop_sims <span class="sc">|&gt;</span> </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> beta_mean, <span class="at">values_from =</span> beta_values, <span class="at">names_glue =</span> <span class="st">'mean_{beta_mean}'</span>) </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>plot_dat <span class="ot">=</span> wide_version <span class="sc">|&gt;</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">pop_total =</span> pop_sims<span class="sc">$</span>beta_values) <span class="sc">|&gt;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> mean_5<span class="sc">:</span>mean_15) <span class="sc">|&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">nice_labs =</span> <span class="fu">as.factor</span>(<span class="fu">str_to_title</span>(<span class="fu">str_replace</span>(name, <span class="st">'_'</span>, <span class="st">" "</span>))), </span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>           <span class="at">nice_labs  =</span> <span class="fu">fct_relevel</span>(nice_labs, <span class="st">'Mean 5'</span>, <span class="st">'Mean 10'</span>, <span class="st">'Mean 15'</span>))</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(plot_dat) <span class="sc">+</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">y =</span> <span class="fu">after_stat</span>(ncount),   <span class="at">fill =</span> nice_labs), </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>             <span class="at">stat =</span> <span class="st">"bin"</span>,  <span class="at">size =</span> <span class="fl">0.5</span>,</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span> </span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_density</span>(<span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> pop_total, <span class="at">y =</span> <span class="fu">after_stat</span>(ncount)), </span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>                 <span class="at">alpha =</span> <span class="fl">0.9</span>,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                 <span class="at">color =</span> <span class="st">"gray30"</span>, <span class="at">size =</span> <span class="fl">0.6</span>, </span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>             <span class="at">stat =</span> <span class="st">"bin"</span>,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>             <span class="at">direction =</span> <span class="st">"mid"</span>) <span class="sc">+</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>   <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(nice_labs)) <span class="sc">+</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>   MetBrewer<span class="sc">::</span><span class="fu">scale_fill_met_d</span>(<span class="at">name =</span> <span class="st">'Lakota'</span>) <span class="sc">+</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>   <span class="fu">labs</span>(<span class="at">fill =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">'Scaled Count'</span>) <span class="sc">+</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">'none'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>So in the population interpretation of priors we have kind of weird population by design. Depending on what ‘draw’ we get our prior could be <em>N(5,1)</em> or it could be <em>N(10,1)</em> where plausible values center around 5 or 10 with a standard deviation of 1. In this setting we are thinking about given the data what is a reasonable set of values that we would expect to see. In this setting we are kind of explicitly using a bit of frequentist logic to bridge the gap. However, instead of assuming that all values between 5-15 are equally plausible we are expliciltly stating that the mass of the distribution will be around some value and the amount of variation that we will have. This could be useful if we have a huge amount of experiments or results banked and we can imagine our plausible beta values as drawn from some distribution of the experiments.</p>
+<p>In the <em>state of knowledge</em> interpretation of priors we are still using our subject matter expertise of the phenomena, but there may not be a good population to ground our priors on. Say we are launching a completly new product or expanding our product into a new market. We may have some idea about what we are likely to see but we don’t have the same reference population that we can draw from, but we have at least some idea of what our expectation should be.</p>
+<p>An important thing to note about Bayes Rule is that we can think of Bayes rules along these lines</p>
+<p><span class="math display">\[
+Posterior = \frac{\overbrace{P(A)}^{\text{Prior}} \times \overbrace{\text{Probability of Data}}^{Likelihood}}{\text{Average Probability of Data}}
+\]</span></p>
+<p>What this means is that effectively the posterior is a bit of a compromise between our data and our beliefs as the size of the data get bigger our prior will have less of an influence on our posterior distribution, but it will never completely evaporate.</p>
+</section>
+<section id="how-to-set-priors" class="level3" data-number="5.0.2">
+<h3 data-number="5.0.2" class="anchored" data-anchor-id="how-to-set-priors"><span class="header-section-number">5.0.2</span> How to set priors</h3>
 <p>Most of the time people say just use your substantive knowledge. But that’s generally not helpful if you haven’t done that in a statistical setting. Lets take it step by step. First we generally outline what we link the distribution of our dependen variable would be. For our outcome variable we may think that its a normal distribution so we would write it like this</p>
 <p><span class="math display">\[
 Outcome \sim Normal(\mu, \sigma)
@@ -301,16 +385,720 @@ Outcome \sim Normal(\mu, \sigma)
 <p><span class="math display">\[
 Outcome \sim Bernouli(\text{Number of Trials},\text{Probability true})
 \]</span></p>
-<p>The next step is is we have to think about our generative model. So to ground our analysis it helps to start from a DAG. We generally have beliefs about an intervention in the world. It helps to start from a causal model because we generally have beliefs about what parts of the model we care about. That way we can start thinking about the potential relationships in our data. We then have to think of the plausible ranges for these values. From there once we get our model of the world we should start thinking about our prior we may start with a conservative prior that is written out like this</p>
+<p>The next step is is we have to think about our generative model. So to ground our analysis it helps to start from a DAG. We generally have beliefs about an intervention in the world. It helps to start from a causal model because we generally have beliefs about what parts of the model we care about. That way we can start thinking about the potential relationships in our data. We then have to think of the plausible ranges for these values and what the uncertainty around them.</p>
 <p><span class="math display">\[
 \begin{align}
 \textbf{Outcome} \sim N(\mu, \sigma) \\[8pt]
 \textbf{Predictor One} \sim N (3, 1)
 \end{align}
 \]</span></p>
-<p>Where we are shifting the mean a bit and putting a somewhat conservative prior. This is generally fine but there are lots of priors we can set. What we would want to do is simulate out our entire set of models and priors to see if this is a realistic version of the world that we have constructed.</p>
+<p>Where we are shifting the mean a bit and putting a somewhat conservative prior. This is generally fine but there are lots of priors we can set.</p>
+<p>Lets say that out in the real world by some miracle of god we have a true normal distribution where the mean is zero and the standard deviation is 1. We can set informative, weakly informative, flat/non-informative prior, and a conjugate prior. Conjugate priors are a little bit harder to visualize with the below schema because a conjugate prior is something that also relies on the posterior. Meaning that if it turns out the posterior of our mean comes from the same family then it turns out that our prior is conjugate.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">=</span> <span class="dv">1000</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>prior_df <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">pop =</span> <span class="fu">rnorm</span>(n),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">`</span><span class="at">Kinda Flat</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">rnorm</span>(n, <span class="at">sd =</span> <span class="dv">5</span>), </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">informative =</span> <span class="fu">rnorm</span>(n, <span class="at">mean =</span> <span class="fl">0.5</span>, <span class="at">sd =</span> <span class="dv">1</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">names_to =</span> <span class="st">'prior'</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">values_to =</span> <span class="st">'value'</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(prior_df, <span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">fill =</span> prior)) <span class="sc">+</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">'Kinda Flat'</span> <span class="ot">=</span> <span class="st">'#a40000'</span>, <span class="st">'informative'</span> <span class="ot">=</span> <span class="st">'#00b7a7'</span>, <span class="st">'pop'</span> <span class="ot">=</span> <span class="st">'#ffcd12'</span>)) <span class="sc">+</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying “the parameter of interest is somewhere between <span class="math inline">\(-\infty\)</span> and <span class="math inline">\(\infty\)</span>.” My flat prior in the plot is more akin to a weakly informative prior is more akin to having a little more humility. A weakly informative prior is more akin to like we wouldn’t expect the treatment effect to be all that big but it is not outside of the realm of possibility. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data.</p>
+</section>
+<section id="simulating-worlds" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="simulating-worlds"><span class="header-section-number">5.1</span> Simulating Worlds</h2>
+<p>Simulations are superpowerful because we get to play god in a way that we don’t normally get to do as social scientists. We can really simply simulate that you have roughly a 50/50 chance of getting heads or tails.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>coin_flips <span class="ot">=</span> <span class="fu">replicate</span>(<span class="dv">10000</span>, <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">'heads'</span>, <span class="st">'tails'</span>), <span class="dv">1</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>coin_flips <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as_tibble</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(value) <span class="sc">|&gt;</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">counts =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>() <span class="sc">|&gt;</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">probs =</span> counts<span class="sc">/</span><span class="fu">sum</span>(counts))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 3
+  value counts probs
+  &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt;
+1 heads   5079 0.508
+2 tails   4921 0.492</code></pre>
+</div>
+</div>
+<p>While this is intuitive we can see how this varies by number of flips.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>num_flips <span class="ot">=</span> <span class="dv">100</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>flips <span class="ot">=</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">'heads'</span>, <span class="st">'tails'</span>), <span class="at">size =</span> num_flips, <span class="at">replace =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>coin_flips <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">heads_frequency =</span> <span class="fu">cumsum</span>(flips <span class="sc">==</span> <span class="st">'heads'</span>)<span class="sc">/</span><span class="dv">1</span><span class="sc">:</span>num_flips,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">flip_number =</span> <span class="dv">1</span><span class="sc">:</span>num_flips</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(coin_flips, <span class="fu">aes</span>(<span class="at">x =</span> flip_number, <span class="at">y =</span> heads_frequency)) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_y_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Flip Number'</span>, <span class="at">y =</span> <span class="st">'Proportion of Heads'</span>) <span class="sc">+</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In expectation we start getting closer and closer to 50% heads. Neat, but why should we care? Well we can test how well our prior does on various situations with a known truth.</p>
+<p>Lets take a randomized control trial with unobserved confounding using the really excellent <code>DeclareDesign</code> package.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DeclareDesign)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>rct <span class="ot">&lt;-</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">100</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>                <span class="at">U =</span> <span class="fu">rnorm</span>(N),</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                <span class="fu">potential_outcomes</span>(Y <span class="sc">~</span> <span class="fl">0.2</span> <span class="sc">*</span> Z <span class="sc">+</span> U)) <span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0)) <span class="sc">+</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N, <span class="at">prob =</span> <span class="fl">0.5</span>)) <span class="sc">+</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">declare_measurement</span>(<span class="at">Y =</span> <span class="fu">reveal_outcomes</span>(Y <span class="sc">~</span> Z)) <span class="sc">+</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">inquiry =</span> <span class="st">"ATE"</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>fake_data <span class="ot">=</span> <span class="fu">draw_data</span>(rct)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>So now we have some fake data where we can display the ‘truth’ or in this case 0.2</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">diagnose_design</span>(rct)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Research design diagnosis based on 500 simulations. Diagnosis completed in 2 secs. Diagnosand estimates with bootstrapped standard errors in parentheses (100 replicates).
+
+ Design Inquiry Estimator Outcome Term N Sims Mean Estimand Mean Estimate
+    rct     ATE estimator       Y    Z    500          0.20          0.21
+                                                     (0.00)        (0.01)
+   Bias SD Estimate   RMSE  Power Coverage
+   0.01        0.20   0.20   0.19     0.95
+ (0.01)      (0.01) (0.01) (0.02)   (0.01)</code></pre>
+</div>
+</div>
+<p>When we go and estimate it on some fake data we can see how keeping or omitting the unobserved confounding.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>control_for_confounding <span class="ot">=</span> <span class="fu">lm</span>(Y <span class="sc">~</span> Z <span class="sc">+</span> U, <span class="at">data =</span> fake_data)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>no_controls <span class="ot">=</span> <span class="fu">lm</span>(Y <span class="sc">~</span> Z, <span class="at">data =</span> fake_data)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>modelsummary<span class="sc">::</span><span class="fu">modelsummary</span>(<span class="fu">list</span>(<span class="st">'Controls Added'</span> <span class="ot">=</span> control_for_confounding,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">'No Controls'</span> <span class="ot">=</span> no_controls),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>                          <span class="at">gof_map =</span> <span class="st">'nobs'</span>,</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>                          <span class="at">stars =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<!-- preamble start -->
+
+    <script>
+
+      function styleCell_4az1mx1bi97t2z1ay0vs(i, j, css_id) {
+          var table = document.getElementById("tinytable_4az1mx1bi97t2z1ay0vs");
+          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
+          if (cell) {
+              console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
+              cell.classList.add(css_id);
+          } else {
+              console.warn(`Cell at (${i}, ${j}) not found.`);
+          }
+      }
+      function insertSpanRow(i, colspan, content) {
+        var table = document.getElementById('tinytable_4az1mx1bi97t2z1ay0vs');
+        var newRow = table.insertRow(i);
+        var newCell = newRow.insertCell(0);
+        newCell.setAttribute("colspan", colspan);
+        // newCell.innerText = content;
+        // this may be unsafe, but innerText does not interpret <br>
+        newCell.innerHTML = content;
+      }
+      function spanCell_4az1mx1bi97t2z1ay0vs(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_4az1mx1bi97t2z1ay0vs");
+        const targetRow = table.rows[i];
+        const targetCell = targetRow.cells[j];
+        for (let r = 0; r < rowspan; r++) {
+          // Only start deleting cells to the right for the first row (r == 0)
+          if (r === 0) {
+            // Delete cells to the right of the target cell in the first row
+            for (let c = colspan - 1; c > 0; c--) {
+              if (table.rows[i + r].cells[j + c]) {
+                table.rows[i + r].deleteCell(j + c);
+              }
+            }
+          }
+          // For rows below the first, delete starting from the target column
+          if (r > 0) {
+            for (let c = colspan - 1; c >= 0; c--) {
+              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
+                table.rows[i + r].deleteCell(j);
+              }
+            }
+          }
+        }
+        // Set rowspan and colspan of the target cell
+        targetCell.rowSpan = rowspan;
+        targetCell.colSpan = colspan;
+      }
+      // tinytable span after
+      window.addEventListener('load', function () {
+          var cellsToStyle = [
+            // tinytable style arrays after
+          { positions: [ { i: 7, j: 1 }, { i: 7, j: 2 },  ], css_id: 'tinytable_css_xptmnugp4idmhf313hxj',}, 
+          { positions: [ { i: 7, j: 0 },  ], css_id: 'tinytable_css_tzkywlsojza126m15fre',}, 
+          { positions: [ { i: 6, j: 1 }, { i: 6, j: 2 },  ], css_id: 'tinytable_css_kuvw1ixs4967x2kukvjv',}, 
+          { positions: [ { i: 1, j: 1 }, { i: 2, j: 1 }, { i: 3, j: 1 }, { i: 5, j: 1 }, { i: 2, j: 2 }, { i: 3, j: 2 }, { i: 4, j: 1 }, { i: 1, j: 2 }, { i: 4, j: 2 }, { i: 5, j: 2 },  ], css_id: 'tinytable_css_bwc32omvb6beb0g1a5iu',}, 
+          { positions: [ { i: 6, j: 0 },  ], css_id: 'tinytable_css_46hnykl8mryg6yd9aqfd',}, 
+          { positions: [ { i: 1, j: 0 }, { i: 2, j: 0 }, { i: 3, j: 0 }, { i: 4, j: 0 }, { i: 5, j: 0 },  ], css_id: 'tinytable_css_3zafbwqu8hbyp4c44tk8',}, 
+          { positions: [ { i: 0, j: 1 }, { i: 0, j: 2 },  ], css_id: 'tinytable_css_2lafw4t4y71268d99rel',}, 
+          { positions: [ { i: 0, j: 0 },  ], css_id: 'tinytable_css_0p4gl8c3xltpswl89qns',}, 
+          ];
+
+          // Loop over the arrays to style the cells
+          cellsToStyle.forEach(function (group) {
+              group.positions.forEach(function (cell) {
+                  styleCell_4az1mx1bi97t2z1ay0vs(cell.i, cell.j, group.css_id);
+              });
+          });
+      });
+    </script>
+
+    <style>
+      /* tinytable css entries after */
+      .table td.tinytable_css_xptmnugp4idmhf313hxj, .table th.tinytable_css_xptmnugp4idmhf313hxj { text-align: center; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_tzkywlsojza126m15fre, .table th.tinytable_css_tzkywlsojza126m15fre { text-align: left; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_kuvw1ixs4967x2kukvjv, .table th.tinytable_css_kuvw1ixs4967x2kukvjv { text-align: center; border-bottom: solid black 0.05em; }
+      .table td.tinytable_css_bwc32omvb6beb0g1a5iu, .table th.tinytable_css_bwc32omvb6beb0g1a5iu { text-align: center; }
+      .table td.tinytable_css_46hnykl8mryg6yd9aqfd, .table th.tinytable_css_46hnykl8mryg6yd9aqfd { text-align: left; border-bottom: solid black 0.05em; }
+      .table td.tinytable_css_3zafbwqu8hbyp4c44tk8, .table th.tinytable_css_3zafbwqu8hbyp4c44tk8 { text-align: left; }
+      .table td.tinytable_css_2lafw4t4y71268d99rel, .table th.tinytable_css_2lafw4t4y71268d99rel { text-align: center; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_0p4gl8c3xltpswl89qns, .table th.tinytable_css_0p4gl8c3xltpswl89qns { text-align: left; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+    </style>
+    <div class="container">
+      <table class="table table-borderless" id="tinytable_4az1mx1bi97t2z1ay0vs" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+        <thead>
+        
+              <tr>
+                <th scope="col"> </th>
+                <th scope="col">Controls Added</th>
+                <th scope="col">No Controls</th>
+              </tr>
+        </thead>
+        <tfoot><tr><td colspan="3">+ p &lt; 0.1, * p &lt; 0.05, ** p &lt; 0.01, *** p &lt; 0.001</td></tr></tfoot>
+        <tbody>
+                <tr>
+                  <td>(Intercept)</td>
+                  <td>-0.000</td>
+                  <td>0.254+</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.000)</td>
+                  <td>(0.130)</td>
+                </tr>
+                <tr>
+                  <td>Z</td>
+                  <td>0.200***</td>
+                  <td>0.128</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.000)</td>
+                  <td>(0.185)</td>
+                </tr>
+                <tr>
+                  <td>U</td>
+                  <td>1.000***</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.000)</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>Num.Obs.</td>
+                  <td>100</td>
+                  <td>100</td>
+                </tr>
+        </tbody>
+      </table>
+    </div>
+<!-- hack to avoid NA insertion in last line -->
+</div>
+</div>
+<p>This is pretty cool to see how this can go if we don’t account for things that should be accounted for. The same general principle applies in Bayesian analysis. The reason we simulate out a RCT is that they are super expensive! We want to diagnose what could go wrong before we tell our partners what to do. The same idea applies for Bayes because we have two separate problems that can make it hard to tell what is going on. We have computational problems that can arise due to how Bayesian models are fit and we have modeling problems which are really just scientific problems. Conceptually these are somewhat distinct but practically these two run into each other all the time. We can isolate some of the computational mechanics of fitting a bad model on data we know is ‘good’. This makes fitting lots of models easier.</p>
+<p>How should we simulat the data? Typically we will define a parameter that seems reasonable! So if we are trying measure. So if we were trying to model the impact of a treatment on conversion rate aka how often do we move from a free user to a subscriber setting simulating a uniform distribution across treatment and control.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(modelsummary)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidybayes)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom.mixed)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>conversions_tibble <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">Control =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">100</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">Treatment =</span> <span class="fu">runif</span>(<span class="dv">100</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">max =</span> <span class="dv">100</span>),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(),</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">'condition'</span>,</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">'conversion_rate'</span>) </span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(conversions_tibble, <span class="fu">aes</span>(<span class="at">x =</span> conversion_rate, <span class="at">fill =</span> condition)) <span class="sc">+</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(condition), <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Conversion Rate'</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">'none'</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We wouldn’t expect that by doing nothing that conversion rate is uniformly distributed between 0 and 100 percent. Conversion rate for Netflix or established streaming services is probably closer to something that looks like this.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>conversions_tibble_reasonable <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co"># most in the control group don't convert </span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">Control =</span> <span class="fu">rbeta</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">shape1 =</span> <span class="dv">3</span>, <span class="at">shape2 =</span> <span class="dv">7</span>) <span class="sc">*</span> <span class="dv">10</span>,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># people in the control group are slightly more likely to convert</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">Treatment =</span> <span class="fu">rbeta</span>(<span class="at">n =</span> <span class="dv">100</span>, <span class="at">shape1 =</span> <span class="dv">6</span>, <span class="at">shape2 =</span> <span class="dv">4</span>) <span class="sc">*</span> <span class="dv">10</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="fu">everything</span>(),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">'condition'</span>,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">'conversion_rate'</span>) </span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(conversions_tibble_reasonable, <span class="fu">aes</span>(<span class="at">x =</span> conversion_rate, <span class="at">fill =</span> condition)) <span class="sc">+</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>() <span class="sc">+</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">facet_wrap</span>(<span class="fu">vars</span>(condition), <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>() <span class="sc">+</span> </span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">'Conversion Rate'</span>, <span class="at">y =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">'none'</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="checking-our-models" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="checking-our-models"><span class="header-section-number">5.2</span> Checking our Models</h2>
+<p>There are lots of ways to check our model! One way that is fairly common because Gelman reccomends it is prior predictive checks. The first is a prior predictive check which is just a way for us to check on what influence the prior is going to have on the posterior distribution. As our data grows the influence of our prior is going to decrease and the likelihood function is going to start to have more influence on the posterior distribution. Or in other words how probable the observed data is given different value of the model. However, they are not totally irrelevant the prior can impose a form of regularization shrinking the posterior predictions back towards the ‘true value.’ This is to say that even in large-n settings a well calibrated prior is still important in simple models. In much more complex models the prior is going to do a lot more.</p>
+<p>In a sense we did something similar but what we are doing is modeling the problem only using the priors.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>titanic <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">"https://vincentarelbundock.github.io/Rdatasets/csv/Stat2Data/Titanic.csv"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>titanic <span class="ot">&lt;-</span> <span class="fu">subset</span>(titanic, PClass <span class="sc">!=</span> <span class="st">"*"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> Survived <span class="sc">~</span> SexCode <span class="sc">+</span> Age <span class="sc">+</span> PClass</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>mod_prior <span class="ot">&lt;-</span> <span class="fu">brm</span>(PClass <span class="sc">~</span> SexCode <span class="sc">+</span> Age,</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> titanic,</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>     <span class="at">prior =</span> <span class="fu">c</span>(</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">3</span>), <span class="at">class =</span> b, <span class="at">dpar =</span> <span class="st">"mu2nd"</span>),</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">prior</span>(<span class="fu">normal</span>(<span class="dv">0</span>, <span class="dv">3</span>), <span class="at">class =</span> b, <span class="at">dpar =</span> <span class="st">"mu3rd"</span>)),</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">categorical</span>(<span class="at">link =</span> logit),</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample_prior =</span> <span class="st">"only"</span>)</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="fu">pp_check</span>(mod_prior)   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Bayesian-Stats_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>In this case we the prior does okay matching the observed data. It could definitely be better</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>Lets break down some <code>brms</code> syntax first.</p>
+<ul>
+<li><p><code>prior</code> - somewhat self explantory</p></li>
+<li><p><code>normal</code> - somewhat self explantory</p></li>
+<li><p><code>class = b</code> - Set the prior at the population level.</p></li>
+<li><p><code>dpar = 'class'</code> - Here we are telling it that we are making an assumption about the probability of being in second or 3rd class relative to 1st class</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>mod_prior <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">modelsummary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<!-- preamble start -->
+
+    <script>
+
+      function styleCell_dlsw5a7zyu2irmitye6v(i, j, css_id) {
+          var table = document.getElementById("tinytable_dlsw5a7zyu2irmitye6v");
+          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
+          if (cell) {
+              console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
+              cell.classList.add(css_id);
+          } else {
+              console.warn(`Cell at (${i}, ${j}) not found.`);
+          }
+      }
+      function insertSpanRow(i, colspan, content) {
+        var table = document.getElementById('tinytable_dlsw5a7zyu2irmitye6v');
+        var newRow = table.insertRow(i);
+        var newCell = newRow.insertCell(0);
+        newCell.setAttribute("colspan", colspan);
+        // newCell.innerText = content;
+        // this may be unsafe, but innerText does not interpret <br>
+        newCell.innerHTML = content;
+      }
+      function spanCell_dlsw5a7zyu2irmitye6v(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_dlsw5a7zyu2irmitye6v");
+        const targetRow = table.rows[i];
+        const targetCell = targetRow.cells[j];
+        for (let r = 0; r < rowspan; r++) {
+          // Only start deleting cells to the right for the first row (r == 0)
+          if (r === 0) {
+            // Delete cells to the right of the target cell in the first row
+            for (let c = colspan - 1; c > 0; c--) {
+              if (table.rows[i + r].cells[j + c]) {
+                table.rows[i + r].deleteCell(j + c);
+              }
+            }
+          }
+          // For rows below the first, delete starting from the target column
+          if (r > 0) {
+            for (let c = colspan - 1; c >= 0; c--) {
+              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
+                table.rows[i + r].deleteCell(j);
+              }
+            }
+          }
+        }
+        // Set rowspan and colspan of the target cell
+        targetCell.rowSpan = rowspan;
+        targetCell.colSpan = colspan;
+      }
+      // tinytable span after
+      window.addEventListener('load', function () {
+          var cellsToStyle = [
+            // tinytable style arrays after
+          { positions: [ { i: 0, j: 1 },  ], css_id: 'tinytable_css_upkck0eijyq67ulv8pqz',}, 
+          { positions: [ { i: 6, j: 0 },  ], css_id: 'tinytable_css_j93a4qiw68sj89649v0g',}, 
+          { positions: [ { i: 12, j: 0 },  ], css_id: 'tinytable_css_gk43dkguq4oj0b0nl0ht',}, 
+          { positions: [ { i: 12, j: 1 },  ], css_id: 'tinytable_css_dqxxx35fhtpptfnqvlcx',}, 
+          { positions: [ { i: 6, j: 1 },  ], css_id: 'tinytable_css_bgicvonllnv93ahz126h',}, 
+          { positions: [ { i: 1, j: 0 }, { i: 2, j: 0 }, { i: 3, j: 0 }, { i: 4, j: 0 }, { i: 5, j: 0 }, { i: 10, j: 0 }, { i: 7, j: 0 }, { i: 8, j: 0 }, { i: 9, j: 0 }, { i: 11, j: 0 },  ], css_id: 'tinytable_css_98oipwqgcrjm0w4vgj0e',}, 
+          { positions: [ { i: 0, j: 0 },  ], css_id: 'tinytable_css_8dsi8s5kxis758urboeg',}, 
+          { positions: [ { i: 1, j: 1 }, { i: 2, j: 1 }, { i: 3, j: 1 }, { i: 4, j: 1 }, { i: 5, j: 1 }, { i: 10, j: 1 }, { i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }, { i: 11, j: 1 },  ], css_id: 'tinytable_css_5vi52h3rd7g4zd3ta5xq',}, 
+          ];
+
+          // Loop over the arrays to style the cells
+          cellsToStyle.forEach(function (group) {
+              group.positions.forEach(function (cell) {
+                  styleCell_dlsw5a7zyu2irmitye6v(cell.i, cell.j, group.css_id);
+              });
+          });
+      });
+    </script>
+
+    <style>
+      /* tinytable css entries after */
+      .table td.tinytable_css_upkck0eijyq67ulv8pqz, .table th.tinytable_css_upkck0eijyq67ulv8pqz { text-align: center; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_j93a4qiw68sj89649v0g, .table th.tinytable_css_j93a4qiw68sj89649v0g { text-align: left; border-bottom: solid black 0.05em; }
+      .table td.tinytable_css_gk43dkguq4oj0b0nl0ht, .table th.tinytable_css_gk43dkguq4oj0b0nl0ht { text-align: left; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_dqxxx35fhtpptfnqvlcx, .table th.tinytable_css_dqxxx35fhtpptfnqvlcx { text-align: center; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_bgicvonllnv93ahz126h, .table th.tinytable_css_bgicvonllnv93ahz126h { text-align: center; border-bottom: solid black 0.05em; }
+      .table td.tinytable_css_98oipwqgcrjm0w4vgj0e, .table th.tinytable_css_98oipwqgcrjm0w4vgj0e { text-align: left; }
+      .table td.tinytable_css_8dsi8s5kxis758urboeg, .table th.tinytable_css_8dsi8s5kxis758urboeg { text-align: left; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_5vi52h3rd7g4zd3ta5xq, .table th.tinytable_css_5vi52h3rd7g4zd3ta5xq { text-align: center; }
+    </style>
+    <div class="container">
+      <table class="table table-borderless" id="tinytable_dlsw5a7zyu2irmitye6v" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+        <thead>
+        
+              <tr>
+                <th scope="col"> </th>
+                <th scope="col">(1)</th>
+              </tr>
+        </thead>
+        
+        <tbody>
+                <tr>
+                  <td>b_mu2nd_Intercept</td>
+                  <td>0.966</td>
+                </tr>
+                <tr>
+                  <td>b_mu3rd_Intercept</td>
+                  <td>1.859</td>
+                </tr>
+                <tr>
+                  <td>b_mu2nd_SexCode</td>
+                  <td>0.060</td>
+                </tr>
+                <tr>
+                  <td>b_mu2nd_Age</td>
+                  <td>-0.022</td>
+                </tr>
+                <tr>
+                  <td>b_mu3rd_SexCode</td>
+                  <td>-0.058</td>
+                </tr>
+                <tr>
+                  <td>b_mu3rd_Age</td>
+                  <td>-0.055</td>
+                </tr>
+                <tr>
+                  <td>Num.Obs.</td>
+                  <td>756</td>
+                </tr>
+                <tr>
+                  <td>ELPD</td>
+                  <td>-111346.9</td>
+                </tr>
+                <tr>
+                  <td>ELPD s.e.</td>
+                  <td>2853.9</td>
+                </tr>
+                <tr>
+                  <td>LOOIC</td>
+                  <td>222693.9</td>
+                </tr>
+                <tr>
+                  <td>LOOIC s.e.</td>
+                  <td>5707.9</td>
+                </tr>
+                <tr>
+                  <td>WAIC</td>
+                  <td>1622021.9</td>
+                </tr>
+        </tbody>
+      </table>
+    </div>
+<!-- hack to avoid NA insertion in last line -->
+</div>
+</div>
+<p>One important thing to note is that <code>brms</code> is based off of <code>lme4</code> which is one of the premier multilevel modeling packages for frequentist. As a political scientist we aren’t really multilevel model people we are more throw OLS at everything people so some of the terminology around is different.</p>
+<p>In OLS political science land we would say we include ‘class fixed effects’ to refer to a model that does something like this.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># this is a bad model don't judge </span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>logit_fe <span class="ot">=</span> <span class="fu">glm</span>(Survived <span class="sc">~</span> Age <span class="sc">+</span> SexCode <span class="sc">+</span> <span class="fu">factor</span>(PClass), <span class="at">data =</span> titanic, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">'logit'</span>))</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="fu">modelsummary</span>(logit_fe)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<!-- preamble start -->
+
+    <script>
+
+      function styleCell_3g2jn5o4lsfh1fmckc2h(i, j, css_id) {
+          var table = document.getElementById("tinytable_3g2jn5o4lsfh1fmckc2h");
+          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
+          if (cell) {
+              console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
+              cell.classList.add(css_id);
+          } else {
+              console.warn(`Cell at (${i}, ${j}) not found.`);
+          }
+      }
+      function insertSpanRow(i, colspan, content) {
+        var table = document.getElementById('tinytable_3g2jn5o4lsfh1fmckc2h');
+        var newRow = table.insertRow(i);
+        var newCell = newRow.insertCell(0);
+        newCell.setAttribute("colspan", colspan);
+        // newCell.innerText = content;
+        // this may be unsafe, but innerText does not interpret <br>
+        newCell.innerHTML = content;
+      }
+      function spanCell_3g2jn5o4lsfh1fmckc2h(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_3g2jn5o4lsfh1fmckc2h");
+        const targetRow = table.rows[i];
+        const targetCell = targetRow.cells[j];
+        for (let r = 0; r < rowspan; r++) {
+          // Only start deleting cells to the right for the first row (r == 0)
+          if (r === 0) {
+            // Delete cells to the right of the target cell in the first row
+            for (let c = colspan - 1; c > 0; c--) {
+              if (table.rows[i + r].cells[j + c]) {
+                table.rows[i + r].deleteCell(j + c);
+              }
+            }
+          }
+          // For rows below the first, delete starting from the target column
+          if (r > 0) {
+            for (let c = colspan - 1; c >= 0; c--) {
+              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
+                table.rows[i + r].deleteCell(j);
+              }
+            }
+          }
+        }
+        // Set rowspan and colspan of the target cell
+        targetCell.rowSpan = rowspan;
+        targetCell.colSpan = colspan;
+      }
+      // tinytable span after
+      window.addEventListener('load', function () {
+          var cellsToStyle = [
+            // tinytable style arrays after
+          { positions: [ { i: 1, j: 0 }, { i: 2, j: 0 }, { i: 3, j: 0 }, { i: 4, j: 0 }, { i: 5, j: 0 }, { i: 6, j: 0 }, { i: 7, j: 0 }, { i: 8, j: 0 }, { i: 9, j: 0 }, { i: 14, j: 0 }, { i: 11, j: 0 }, { i: 12, j: 0 }, { i: 13, j: 0 }, { i: 15, j: 0 },  ], css_id: 'tinytable_css_xk83u1zkx9a8ryybgur9',}, 
+          { positions: [ { i: 10, j: 1 },  ], css_id: 'tinytable_css_wz93iv7spwh81g6wzbl7',}, 
+          { positions: [ { i: 1, j: 1 }, { i: 2, j: 1 }, { i: 3, j: 1 }, { i: 4, j: 1 }, { i: 5, j: 1 }, { i: 6, j: 1 }, { i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }, { i: 14, j: 1 }, { i: 11, j: 1 }, { i: 12, j: 1 }, { i: 13, j: 1 }, { i: 15, j: 1 },  ], css_id: 'tinytable_css_o90hwnt4pnxx514lziod',}, 
+          { positions: [ { i: 0, j: 0 },  ], css_id: 'tinytable_css_jmnqxgku5b5iqla86174',}, 
+          { positions: [ { i: 0, j: 1 },  ], css_id: 'tinytable_css_gq2j81bq6p0z6iskjzqc',}, 
+          { positions: [ { i: 16, j: 0 },  ], css_id: 'tinytable_css_fesvjkdtpsi0w0noqywn',}, 
+          { positions: [ { i: 16, j: 1 },  ], css_id: 'tinytable_css_e215scvor9n56xww6l79',}, 
+          { positions: [ { i: 10, j: 0 },  ], css_id: 'tinytable_css_6ib1fntp75ekrlaix9be',}, 
+          ];
+
+          // Loop over the arrays to style the cells
+          cellsToStyle.forEach(function (group) {
+              group.positions.forEach(function (cell) {
+                  styleCell_3g2jn5o4lsfh1fmckc2h(cell.i, cell.j, group.css_id);
+              });
+          });
+      });
+    </script>
+
+    <style>
+      /* tinytable css entries after */
+      .table td.tinytable_css_xk83u1zkx9a8ryybgur9, .table th.tinytable_css_xk83u1zkx9a8ryybgur9 { text-align: left; }
+      .table td.tinytable_css_wz93iv7spwh81g6wzbl7, .table th.tinytable_css_wz93iv7spwh81g6wzbl7 { text-align: center; border-bottom: solid black 0.05em; }
+      .table td.tinytable_css_o90hwnt4pnxx514lziod, .table th.tinytable_css_o90hwnt4pnxx514lziod { text-align: center; }
+      .table td.tinytable_css_jmnqxgku5b5iqla86174, .table th.tinytable_css_jmnqxgku5b5iqla86174 { text-align: left; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_gq2j81bq6p0z6iskjzqc, .table th.tinytable_css_gq2j81bq6p0z6iskjzqc { text-align: center; border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_fesvjkdtpsi0w0noqywn, .table th.tinytable_css_fesvjkdtpsi0w0noqywn { text-align: left; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_e215scvor9n56xww6l79, .table th.tinytable_css_e215scvor9n56xww6l79 { text-align: center; border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_6ib1fntp75ekrlaix9be, .table th.tinytable_css_6ib1fntp75ekrlaix9be { text-align: left; border-bottom: solid black 0.05em; }
+    </style>
+    <div class="container">
+      <table class="table table-borderless" id="tinytable_3g2jn5o4lsfh1fmckc2h" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+        <thead>
+        
+              <tr>
+                <th scope="col"> </th>
+                <th scope="col">(1)</th>
+              </tr>
+        </thead>
+        
+        <tbody>
+                <tr>
+                  <td>(Intercept)</td>
+                  <td>1.128</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.351)</td>
+                </tr>
+                <tr>
+                  <td>Age</td>
+                  <td>-0.039</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.008)</td>
+                </tr>
+                <tr>
+                  <td>SexCode</td>
+                  <td>2.631</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.202)</td>
+                </tr>
+                <tr>
+                  <td>factor(PClass)2nd</td>
+                  <td>-1.292</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.260)</td>
+                </tr>
+                <tr>
+                  <td>factor(PClass)3rd</td>
+                  <td>-2.521</td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td>(0.277)</td>
+                </tr>
+                <tr>
+                  <td>Num.Obs.</td>
+                  <td>756</td>
+                </tr>
+                <tr>
+                  <td>AIC</td>
+                  <td>705.1</td>
+                </tr>
+                <tr>
+                  <td>BIC</td>
+                  <td>728.3</td>
+                </tr>
+                <tr>
+                  <td>Log.Lik.</td>
+                  <td>-347.570</td>
+                </tr>
+                <tr>
+                  <td>F</td>
+                  <td>50.339</td>
+                </tr>
+                <tr>
+                  <td>RMSE</td>
+                  <td>0.38</td>
+                </tr>
+        </tbody>
+      </table>
+    </div>
+<!-- hack to avoid NA insertion in last line -->
+</div>
+</div>
+<p>When we say class fixed effects we really just mean including an intercept per classs. In multilevel land what we mean by a fixed effect is really just saying that these effects are constant across groups. So think of the effect of school on classroom performance or the effect of product popularity on ROI on adverstising channels. The way we would replicate the this is something to the effect of</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">brm</span>(Survived <span class="sc">~</span> Age <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>PClass), <span class="at">data =</span> titanic) <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>   <span class="fu">modelsummary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Admittedly also a really bad model but you get the idea.</p>
+</div>
+</div>
+</div>
+<p>We can then check our priors. We can also set priors on the intercept in our Titanic example if we stripped away age, class, and sex what would our baseline expectation of survival be? In an RCT this is really just what is a reasonable expectation for our control group. For other more complex models we could put priors on the effect of time, space, interactions between groupings and so much more.</p>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-gelman2013bayesian" class="csl-entry" role="listitem">
+Gelman, Andrew, John B Carlin, Hal S Stern, David B Dunson, Aki Vehtari, and Donald B Rubin. 2013. <em>Bayesian Data Analysis Third Edition</em>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

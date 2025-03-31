@@ -1792,8 +1792,8 @@ FROM `example`</code></pre>
 
     <script>
 
-      function styleCell_7jgzri5n2ua1qcwypun0(i, j, css_id) {
-          var table = document.getElementById("tinytable_7jgzri5n2ua1qcwypun0");
+      function styleCell_tcf1m70xtzvop7purtsh(i, j, css_id) {
+          var table = document.getElementById("tinytable_tcf1m70xtzvop7purtsh");
           var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
           if (cell) {
               console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
@@ -1803,7 +1803,7 @@ FROM `example`</code></pre>
           }
       }
       function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_7jgzri5n2ua1qcwypun0');
+        var table = document.getElementById('tinytable_tcf1m70xtzvop7purtsh');
         var newRow = table.insertRow(i);
         var newCell = newRow.insertCell(0);
         newCell.setAttribute("colspan", colspan);
@@ -1811,8 +1811,8 @@ FROM `example`</code></pre>
         // this may be unsafe, but innerText does not interpret <br>
         newCell.innerHTML = content;
       }
-      function spanCell_7jgzri5n2ua1qcwypun0(i, j, rowspan, colspan) {
-        var table = document.getElementById("tinytable_7jgzri5n2ua1qcwypun0");
+      function spanCell_tcf1m70xtzvop7purtsh(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_tcf1m70xtzvop7purtsh");
         const targetRow = table.rows[i];
         const targetCell = targetRow.cells[j];
         for (let r = 0; r < rowspan; r++) {
@@ -1842,14 +1842,14 @@ FROM `example`</code></pre>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: 1, j: 0 }, { i: 1, j: 1 },  ], css_id: 'tinytable_css_xknfj4h56u0p8g189u9l',}, 
-          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 },  ], css_id: 'tinytable_css_3enm2eml9hv8ewlhx0qi',}, 
+          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 },  ], css_id: 'tinytable_css_zrpnr4dsboq6cil7g2o8',}, 
+          { positions: [ { i: 1, j: 0 }, { i: 1, j: 1 },  ], css_id: 'tinytable_css_a0ng3io6vu3yi1u76fc9',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  styleCell_7jgzri5n2ua1qcwypun0(cell.i, cell.j, group.css_id);
+                  styleCell_tcf1m70xtzvop7purtsh(cell.i, cell.j, group.css_id);
               });
           });
       });
@@ -1857,11 +1857,11 @@ FROM `example`</code></pre>
 
     <style>
       /* tinytable css entries after */
-      .table td.tinytable_css_xknfj4h56u0p8g189u9l, .table th.tinytable_css_xknfj4h56u0p8g189u9l { border-bottom: solid #d3d8dc 0.1em; }
-      .table td.tinytable_css_3enm2eml9hv8ewlhx0qi, .table th.tinytable_css_3enm2eml9hv8ewlhx0qi { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_zrpnr4dsboq6cil7g2o8, .table th.tinytable_css_zrpnr4dsboq6cil7g2o8 { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_a0ng3io6vu3yi1u76fc9, .table th.tinytable_css_a0ng3io6vu3yi1u76fc9 { border-bottom: solid #d3d8dc 0.1em; }
     </style>
     <div class="container">
-      <table class="table table-borderless" id="tinytable_7jgzri5n2ua1qcwypun0" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table table-borderless" id="tinytable_tcf1m70xtzvop7purtsh" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
         <thead>
         
               <tr>
@@ -2013,8 +2013,8 @@ FROM `example`</code></pre>
 
     <script>
 
-      function styleCell_r1ahlr07qg0z4kmmmu9v(i, j, css_id) {
-          var table = document.getElementById("tinytable_r1ahlr07qg0z4kmmmu9v");
+      function styleCell_qigj71t5kxih93phv68f(i, j, css_id) {
+          var table = document.getElementById("tinytable_qigj71t5kxih93phv68f");
           var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
           if (cell) {
               console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
@@ -2024,7 +2024,7 @@ FROM `example`</code></pre>
           }
       }
       function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_r1ahlr07qg0z4kmmmu9v');
+        var table = document.getElementById('tinytable_qigj71t5kxih93phv68f');
         var newRow = table.insertRow(i);
         var newCell = newRow.insertCell(0);
         newCell.setAttribute("colspan", colspan);
@@ -2032,8 +2032,8 @@ FROM `example`</code></pre>
         // this may be unsafe, but innerText does not interpret <br>
         newCell.innerHTML = content;
       }
-      function spanCell_r1ahlr07qg0z4kmmmu9v(i, j, rowspan, colspan) {
-        var table = document.getElementById("tinytable_r1ahlr07qg0z4kmmmu9v");
+      function spanCell_qigj71t5kxih93phv68f(i, j, rowspan, colspan) {
+        var table = document.getElementById("tinytable_qigj71t5kxih93phv68f");
         const targetRow = table.rows[i];
         const targetCell = targetRow.cells[j];
         for (let r = 0; r < rowspan; r++) {
@@ -2063,14 +2063,14 @@ FROM `example`</code></pre>
       window.addEventListener('load', function () {
           var cellsToStyle = [
             // tinytable style arrays after
-          { positions: [ { i: 9, j: 0 }, { i: 9, j: 1 }, { i: 9, j: 2 }, { i: 9, j: 3 }, { i: 9, j: 4 },  ], css_id: 'tinytable_css_ielxw1l62aekdfhwefvw',}, 
-          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 }, { i: 0, j: 2 }, { i: 0, j: 3 }, { i: 0, j: 4 },  ], css_id: 'tinytable_css_ae5vuirjuhdsvs5qcdtw',}, 
+          { positions: [ { i: 9, j: 0 }, { i: 9, j: 1 }, { i: 9, j: 2 }, { i: 9, j: 3 }, { i: 9, j: 4 },  ], css_id: 'tinytable_css_qbpe7oglqpsjfzaazvt7',}, 
+          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 }, { i: 0, j: 2 }, { i: 0, j: 3 }, { i: 0, j: 4 },  ], css_id: 'tinytable_css_42rn0l5r2wau6961da93',}, 
           ];
 
           // Loop over the arrays to style the cells
           cellsToStyle.forEach(function (group) {
               group.positions.forEach(function (cell) {
-                  styleCell_r1ahlr07qg0z4kmmmu9v(cell.i, cell.j, group.css_id);
+                  styleCell_qigj71t5kxih93phv68f(cell.i, cell.j, group.css_id);
               });
           });
       });
@@ -2078,11 +2078,11 @@ FROM `example`</code></pre>
 
     <style>
       /* tinytable css entries after */
-      .table td.tinytable_css_ielxw1l62aekdfhwefvw, .table th.tinytable_css_ielxw1l62aekdfhwefvw { border-bottom: solid #d3d8dc 0.1em; }
-      .table td.tinytable_css_ae5vuirjuhdsvs5qcdtw, .table th.tinytable_css_ae5vuirjuhdsvs5qcdtw { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
+      .table td.tinytable_css_qbpe7oglqpsjfzaazvt7, .table th.tinytable_css_qbpe7oglqpsjfzaazvt7 { border-bottom: solid #d3d8dc 0.1em; }
+      .table td.tinytable_css_42rn0l5r2wau6961da93, .table th.tinytable_css_42rn0l5r2wau6961da93 { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
     </style>
     <div class="container">
-      <table class="table table-borderless" id="tinytable_r1ahlr07qg0z4kmmmu9v" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
+      <table class="table table-borderless" id="tinytable_qigj71t5kxih93phv68f" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
         <thead>
         
               <tr>
@@ -2205,7 +2205,7 @@ FROM `example`</code></pre>
 <span id="cb138-11"><a href="#cb138-11" aria-hidden="true" tabindex="-1"></a><span class="st">    emp.employee_id AS employee_id,</span></span>
 <span id="cb138-12"><a href="#cb138-12" aria-hidden="true" tabindex="-1"></a><span class="st">    emp.salary AS salary,</span></span>
 <span id="cb138-13"><a href="#cb138-13" aria-hidden="true" tabindex="-1"></a><span class="st">    emp.name AS employee_name</span></span>
-<span id="cb138-14"><a href="#cb138-14" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM employees_fixed AS MGR</span></span>
+<span id="cb138-14"><a href="#cb138-14" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM employees_fixed AS mgr </span></span>
 <span id="cb138-15"><a href="#cb138-15" aria-hidden="true" tabindex="-1"></a><span class="st">    INNER JOIN employees_fixed AS emp</span></span>
 <span id="cb138-16"><a href="#cb138-16" aria-hidden="true" tabindex="-1"></a><span class="st">    ON mgr.employee_id = emp.manager_id</span></span>
 <span id="cb138-17"><a href="#cb138-17" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE emp.salary &gt; mgr.salary</span></span>
@@ -2231,8 +2231,7 @@ FROM `example`</code></pre>
 </ul>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb140"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb140-1"><a href="#cb140-1" aria-hidden="true" tabindex="-1"></a>penguins <span class="sc">|&gt;</span></span>
-<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">avg_pengs =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.by =</span> species) <span class="sc">|&gt;</span></span>
-<span id="cb140-3"><a href="#cb140-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb140-2"><a href="#cb140-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">avg_pengs =</span> <span class="fu">mean</span>(body_mass_g, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.by =</span> species)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 344 × 9
    species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
@@ -2251,7 +2250,40 @@ FROM `example`</code></pre>
 # ℹ 3 more variables: sex &lt;fct&gt;, year &lt;int&gt;, avg_pengs &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<p>So what we would do in dplyr would be something like this.</p>
+<p>So what we would do in dplyr would be something like this. In SQL we would do something broadly similar just in the <code>SELECT</code> part of the query so this would become</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>employees_fixed2 <span class="ot">=</span> employees <span class="sc">|&gt;</span></span>
+<span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">department_id =</span> <span class="fu">ifelse</span>(name <span class="sc">==</span> <span class="st">'Olivia Smith'</span>, <span class="dv">2</span>, department_id), </span>
+<span id="cb142-3"><a href="#cb142-3" aria-hidden="true" tabindex="-1"></a>           <span class="at">is_manager =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(manager_id), <span class="cn">TRUE</span>, <span class="cn">FALSE</span>)) </span>
+<span id="cb142-4"><a href="#cb142-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-5"><a href="#cb142-5" aria-hidden="true" tabindex="-1"></a>window_con <span class="ot">=</span> <span class="fu">src_memdb</span>()</span>
+<span id="cb142-6"><a href="#cb142-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-7"><a href="#cb142-7" aria-hidden="true" tabindex="-1"></a>employees_fixed_db <span class="ot">=</span> <span class="fu">copy_to</span>(window_con, employees_fixed2)</span>
+<span id="cb142-8"><a href="#cb142-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb142-9"><a href="#cb142-9" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(window_con, <span class="fu">sql</span>(</span>
+<span id="cb142-10"><a href="#cb142-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span></span>
+<span id="cb142-11"><a href="#cb142-11" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT </span></span>
+<span id="cb142-12"><a href="#cb142-12" aria-hidden="true" tabindex="-1"></a><span class="st">    name,</span></span>
+<span id="cb142-13"><a href="#cb142-13" aria-hidden="true" tabindex="-1"></a><span class="st">    AVG(salary) OVER(PARTITION BY is_manager) AS avg_salary</span></span>
+<span id="cb142-14"><a href="#cb142-14" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM employees_fixed2</span></span>
+<span id="cb142-15"><a href="#cb142-15" aria-hidden="true" tabindex="-1"></a><span class="st">    "</span></span>
+<span id="cb142-16"><a href="#cb142-16" aria-hidden="true" tabindex="-1"></a>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># Source:   SQL [?? x 2]
+# Database: sqlite 3.47.1 [:memory:]
+  name             avg_salary
+  &lt;chr&gt;                 &lt;dbl&gt;
+1 Emma Thompson         4263.
+2 Daniel Rodriguez      4263.
+3 Olivia Smith          4263.
+4 Noah Johnson          4263.
+5 Sophia Martinez       4263.
+6 James Anderson        4263.
+7 Liam Brown           10767.
+8 Ava Garcia           10767.
+9 William Davis        10767.</code></pre>
+</div>
+</div>
 </section>
 </section>
 <section id="sql-practice" class="level2" data-number="4.7">
@@ -2262,19 +2294,19 @@ FROM `example`</code></pre>
 <p>In other words, group the users by the number of tweets they posted in 2022 and count the number of users in each group.</p>
 <p>This question is a little bit weird since I didn’t quite understand what is going on. Basically we need to do something like this.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb142"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb142-1"><a href="#cb142-1" aria-hidden="true" tabindex="-1"></a>fake_user_data <span class="ot">=</span> <span class="fu">tibble</span>(</span>
-<span id="cb142-2"><a href="#cb142-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">tweet_id =</span> <span class="fu">c</span>(<span class="dv">12321</span>,<span class="dv">12312123</span>,<span class="dv">1234231231</span>,<span class="dv">1232342341</span>,<span class="dv">1234234231212</span>),</span>
-<span id="cb142-3"><a href="#cb142-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="fu">c</span>(<span class="dv">111</span>,<span class="dv">111</span>,<span class="dv">111</span>,<span class="dv">254</span>,<span class="dv">148</span>),</span>
-<span id="cb142-4"><a href="#cb142-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">tweet_date =</span> <span class="fu">c</span>(<span class="fu">mdy_hms</span>(<span class="st">'12/30/2021 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'01/01/2022 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'02/14/2022 00:00:00'</span>),</span>
-<span id="cb142-5"><a href="#cb142-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mdy_hms</span>(<span class="st">'03/01/2022 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'03/23/2022 00:00:00'</span>))</span>
-<span id="cb142-6"><a href="#cb142-6" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb142-7"><a href="#cb142-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb142-8"><a href="#cb142-8" aria-hidden="true" tabindex="-1"></a>fake_user_data <span class="sc">|&gt;</span></span>
-<span id="cb142-9"><a href="#cb142-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">year</span>(tweet_date) <span class="sc">==</span> <span class="dv">2022</span>) <span class="sc">|&gt;</span></span>
-<span id="cb142-10"><a href="#cb142-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(user_id) <span class="sc">|&gt;</span></span>
-<span id="cb142-11"><a href="#cb142-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">tweet_count_per_user =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">|&gt;</span></span>
-<span id="cb142-12"><a href="#cb142-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">tweet_bucket =</span> <span class="fu">n</span>(), <span class="at">.by =</span> tweet_count_per_user) <span class="sc">|&gt;</span></span>
-<span id="cb142-13"><a href="#cb142-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">users_num =</span> tweet_count_per_user)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb144"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>fake_user_data <span class="ot">=</span> <span class="fu">tibble</span>(</span>
+<span id="cb144-2"><a href="#cb144-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">tweet_id =</span> <span class="fu">c</span>(<span class="dv">12321</span>,<span class="dv">12312123</span>,<span class="dv">1234231231</span>,<span class="dv">1232342341</span>,<span class="dv">1234234231212</span>),</span>
+<span id="cb144-3"><a href="#cb144-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">user_id =</span> <span class="fu">c</span>(<span class="dv">111</span>,<span class="dv">111</span>,<span class="dv">111</span>,<span class="dv">254</span>,<span class="dv">148</span>),</span>
+<span id="cb144-4"><a href="#cb144-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">tweet_date =</span> <span class="fu">c</span>(<span class="fu">mdy_hms</span>(<span class="st">'12/30/2021 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'01/01/2022 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'02/14/2022 00:00:00'</span>),</span>
+<span id="cb144-5"><a href="#cb144-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">mdy_hms</span>(<span class="st">'03/01/2022 00:00:00'</span>), <span class="fu">mdy_hms</span>(<span class="st">'03/23/2022 00:00:00'</span>))</span>
+<span id="cb144-6"><a href="#cb144-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb144-7"><a href="#cb144-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb144-8"><a href="#cb144-8" aria-hidden="true" tabindex="-1"></a>fake_user_data <span class="sc">|&gt;</span></span>
+<span id="cb144-9"><a href="#cb144-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">year</span>(tweet_date) <span class="sc">==</span> <span class="dv">2022</span>) <span class="sc">|&gt;</span></span>
+<span id="cb144-10"><a href="#cb144-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(user_id) <span class="sc">|&gt;</span></span>
+<span id="cb144-11"><a href="#cb144-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">tweet_count_per_user =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">|&gt;</span></span>
+<span id="cb144-12"><a href="#cb144-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">tweet_bucket =</span> <span class="fu">n</span>(), <span class="at">.by =</span> tweet_count_per_user) <span class="sc">|&gt;</span></span>
+<span id="cb144-13"><a href="#cb144-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">users_num =</span> tweet_count_per_user)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 2
   users_num tweet_bucket
@@ -2285,34 +2317,34 @@ FROM `example`</code></pre>
 </div>
 <p>So kind of something that I don’t do a lot. The question is effectively just testing if you can use subqueries. So this mess becomes. A query that looks like this</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb144"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb144-1"><a href="#cb144-1" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="ot">=</span> <span class="fu">dbConnect</span>(</span>
-<span id="cb144-2"><a href="#cb144-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
-<span id="cb144-3"><a href="#cb144-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb144-4"><a href="#cb144-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
-<span id="cb144-5"><a href="#cb144-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
-<span id="cb144-6"><a href="#cb144-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb144-7"><a href="#cb144-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
-<span id="cb144-8"><a href="#cb144-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb144-9"><a href="#cb144-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb144-10"><a href="#cb144-10" aria-hidden="true" tabindex="-1"></a>fake_tweet_post <span class="ot">=</span> <span class="fu">copy_to</span>(twitter_bucket, fake_user_data, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb144-11"><a href="#cb144-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb144-12"><a href="#cb144-12" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="ot">&lt;-</span> <span class="fu">tbl</span>(twitter_bucket, <span class="fu">sql</span>(<span class="st">"</span></span>
-<span id="cb144-13"><a href="#cb144-13" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT </span></span>
-<span id="cb144-14"><a href="#cb144-14" aria-hidden="true" tabindex="-1"></a><span class="st">        tweet_count_per_user AS tweet_bucket, </span></span>
-<span id="cb144-15"><a href="#cb144-15" aria-hidden="true" tabindex="-1"></a><span class="st">        COUNT(user_id) AS users_num</span></span>
-<span id="cb144-16"><a href="#cb144-16" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM (</span></span>
-<span id="cb144-17"><a href="#cb144-17" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT </span></span>
-<span id="cb144-18"><a href="#cb144-18" aria-hidden="true" tabindex="-1"></a><span class="st">            user_id, </span></span>
-<span id="cb144-19"><a href="#cb144-19" aria-hidden="true" tabindex="-1"></a><span class="st">            COUNT(tweet_id) AS tweet_count_per_user</span></span>
-<span id="cb144-20"><a href="#cb144-20" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM fake_user_data</span></span>
-<span id="cb144-21"><a href="#cb144-21" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE EXTRACT(YEAR FROM tweet_date) = 2022</span></span>
-<span id="cb144-22"><a href="#cb144-22" aria-hidden="true" tabindex="-1"></a><span class="st">        GROUP BY user_id</span></span>
-<span id="cb144-23"><a href="#cb144-23" aria-hidden="true" tabindex="-1"></a><span class="st">    ) AS total_tweets</span></span>
-<span id="cb144-24"><a href="#cb144-24" aria-hidden="true" tabindex="-1"></a><span class="st">    GROUP BY tweet_count_per_user</span></span>
-<span id="cb144-25"><a href="#cb144-25" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>))</span>
-<span id="cb144-26"><a href="#cb144-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb144-27"><a href="#cb144-27" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="sc">|&gt;</span></span>
-<span id="cb144-28"><a href="#cb144-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb146"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb146-1"><a href="#cb146-1" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="ot">=</span> <span class="fu">dbConnect</span>(</span>
+<span id="cb146-2"><a href="#cb146-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
+<span id="cb146-3"><a href="#cb146-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb146-4"><a href="#cb146-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
+<span id="cb146-5"><a href="#cb146-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
+<span id="cb146-6"><a href="#cb146-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb146-7"><a href="#cb146-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
+<span id="cb146-8"><a href="#cb146-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb146-9"><a href="#cb146-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb146-10"><a href="#cb146-10" aria-hidden="true" tabindex="-1"></a>fake_tweet_post <span class="ot">=</span> <span class="fu">copy_to</span>(twitter_bucket, fake_user_data, <span class="at">overwrite =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb146-11"><a href="#cb146-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb146-12"><a href="#cb146-12" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="ot">&lt;-</span> <span class="fu">tbl</span>(twitter_bucket, <span class="fu">sql</span>(<span class="st">"</span></span>
+<span id="cb146-13"><a href="#cb146-13" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT </span></span>
+<span id="cb146-14"><a href="#cb146-14" aria-hidden="true" tabindex="-1"></a><span class="st">        tweet_count_per_user AS tweet_bucket, </span></span>
+<span id="cb146-15"><a href="#cb146-15" aria-hidden="true" tabindex="-1"></a><span class="st">        COUNT(user_id) AS users_num</span></span>
+<span id="cb146-16"><a href="#cb146-16" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM (</span></span>
+<span id="cb146-17"><a href="#cb146-17" aria-hidden="true" tabindex="-1"></a><span class="st">        SELECT </span></span>
+<span id="cb146-18"><a href="#cb146-18" aria-hidden="true" tabindex="-1"></a><span class="st">            user_id, </span></span>
+<span id="cb146-19"><a href="#cb146-19" aria-hidden="true" tabindex="-1"></a><span class="st">            COUNT(tweet_id) AS tweet_count_per_user</span></span>
+<span id="cb146-20"><a href="#cb146-20" aria-hidden="true" tabindex="-1"></a><span class="st">        FROM fake_user_data</span></span>
+<span id="cb146-21"><a href="#cb146-21" aria-hidden="true" tabindex="-1"></a><span class="st">        WHERE EXTRACT(YEAR FROM tweet_date) = 2022</span></span>
+<span id="cb146-22"><a href="#cb146-22" aria-hidden="true" tabindex="-1"></a><span class="st">        GROUP BY user_id</span></span>
+<span id="cb146-23"><a href="#cb146-23" aria-hidden="true" tabindex="-1"></a><span class="st">    ) AS total_tweets</span></span>
+<span id="cb146-24"><a href="#cb146-24" aria-hidden="true" tabindex="-1"></a><span class="st">    GROUP BY tweet_count_per_user</span></span>
+<span id="cb146-25"><a href="#cb146-25" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>))</span>
+<span id="cb146-26"><a href="#cb146-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb146-27"><a href="#cb146-27" aria-hidden="true" tabindex="-1"></a>twitter_bucket <span class="sc">|&gt;</span></span>
+<span id="cb146-28"><a href="#cb146-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 </section>
@@ -2322,24 +2354,24 @@ FROM `example`</code></pre>
 <p>Write a query to list the candidates who possess all of the required skills for the job. Sort the output by candidate ID in ascending order.</p>
 <p>So one thing that is interesting is that we have SQL has this having count function that makes life a little easier. Basically WHERE clauses can’t be done sequentially so instead of doing somethign like this</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a>canidates <span class="ot">=</span> <span class="fu">tribble</span>(</span>
-<span id="cb145-2"><a href="#cb145-2" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>candidate_id, <span class="sc">~</span>skill,</span>
-<span id="cb145-3"><a href="#cb145-3" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'Python'</span>,</span>
-<span id="cb145-4"><a href="#cb145-4" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'Tableau'</span>,</span>
-<span id="cb145-5"><a href="#cb145-5" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'PostgreSQL'</span>,</span>
-<span id="cb145-6"><a href="#cb145-6" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'R'</span>,</span>
-<span id="cb145-7"><a href="#cb145-7" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'PowerBI'</span>,</span>
-<span id="cb145-8"><a href="#cb145-8" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'SQL Server'</span>,</span>
-<span id="cb145-9"><a href="#cb145-9" aria-hidden="true" tabindex="-1"></a><span class="dv">345</span>,    <span class="st">'Python'</span>,</span>
-<span id="cb145-10"><a href="#cb145-10" aria-hidden="true" tabindex="-1"></a><span class="dv">345</span>,    <span class="st">'Tableau'</span>)</span>
-<span id="cb145-11"><a href="#cb145-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb145-12"><a href="#cb145-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb145-13"><a href="#cb145-13" aria-hidden="true" tabindex="-1"></a>canidates <span class="sc">|&gt;</span></span>
-<span id="cb145-14"><a href="#cb145-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(skill <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">'Python'</span>, <span class="st">'PostgreSQL'</span>, <span class="st">'Tableau'</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb145-15"><a href="#cb145-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(candidate_id) <span class="sc">|&gt;</span></span>
-<span id="cb145-16"><a href="#cb145-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">total =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">|&gt;</span></span>
-<span id="cb145-17"><a href="#cb145-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(total <span class="sc">==</span> <span class="dv">3</span>)  <span class="sc">|&gt;</span></span>
-<span id="cb145-18"><a href="#cb145-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(candidate_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a>canidates <span class="ot">=</span> <span class="fu">tribble</span>(</span>
+<span id="cb147-2"><a href="#cb147-2" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>candidate_id, <span class="sc">~</span>skill,</span>
+<span id="cb147-3"><a href="#cb147-3" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'Python'</span>,</span>
+<span id="cb147-4"><a href="#cb147-4" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'Tableau'</span>,</span>
+<span id="cb147-5"><a href="#cb147-5" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'PostgreSQL'</span>,</span>
+<span id="cb147-6"><a href="#cb147-6" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'R'</span>,</span>
+<span id="cb147-7"><a href="#cb147-7" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'PowerBI'</span>,</span>
+<span id="cb147-8"><a href="#cb147-8" aria-hidden="true" tabindex="-1"></a><span class="dv">234</span>,    <span class="st">'SQL Server'</span>,</span>
+<span id="cb147-9"><a href="#cb147-9" aria-hidden="true" tabindex="-1"></a><span class="dv">345</span>,    <span class="st">'Python'</span>,</span>
+<span id="cb147-10"><a href="#cb147-10" aria-hidden="true" tabindex="-1"></a><span class="dv">345</span>,    <span class="st">'Tableau'</span>)</span>
+<span id="cb147-11"><a href="#cb147-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb147-12"><a href="#cb147-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb147-13"><a href="#cb147-13" aria-hidden="true" tabindex="-1"></a>canidates <span class="sc">|&gt;</span></span>
+<span id="cb147-14"><a href="#cb147-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(skill <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">'Python'</span>, <span class="st">'PostgreSQL'</span>, <span class="st">'Tableau'</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb147-15"><a href="#cb147-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(candidate_id) <span class="sc">|&gt;</span></span>
+<span id="cb147-16"><a href="#cb147-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">total =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>) <span class="sc">|&gt;</span></span>
+<span id="cb147-17"><a href="#cb147-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(total <span class="sc">==</span> <span class="dv">3</span>)  <span class="sc">|&gt;</span></span>
+<span id="cb147-18"><a href="#cb147-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(candidate_id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 1 × 1
   candidate_id
@@ -2349,125 +2381,125 @@ FROM `example`</code></pre>
 </div>
 <p>so this becomes</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb147"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb147-1"><a href="#cb147-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
-<span id="cb147-2"><a href="#cb147-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RPostgres)</span>
-<span id="cb147-3"><a href="#cb147-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-4"><a href="#cb147-4" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
-<span id="cb147-5"><a href="#cb147-5" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
-<span id="cb147-6"><a href="#cb147-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb147-7"><a href="#cb147-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
-<span id="cb147-8"><a href="#cb147-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
-<span id="cb147-9"><a href="#cb147-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb147-10"><a href="#cb147-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
-<span id="cb147-11"><a href="#cb147-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-12"><a href="#cb147-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-13"><a href="#cb147-13" aria-hidden="true" tabindex="-1"></a>candidates_data <span class="ot">=</span> <span class="fu">copy_to</span>(con, canidates)</span>
-<span id="cb147-14"><a href="#cb147-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-15"><a href="#cb147-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-16"><a href="#cb147-16" aria-hidden="true" tabindex="-1"></a>find_qual <span class="ot">=</span> <span class="fu">tbl</span>(con, <span class="fu">sql</span>(<span class="st">"</span></span>
-<span id="cb147-17"><a href="#cb147-17" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT candidate_id </span></span>
-<span id="cb147-18"><a href="#cb147-18" aria-hidden="true" tabindex="-1"></a><span class="st">FROM canidates</span></span>
-<span id="cb147-19"><a href="#cb147-19" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE skill IN ('Python', 'Tableau', 'PostgreSQL')</span></span>
-<span id="cb147-20"><a href="#cb147-20" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY candidate_id</span></span>
-<span id="cb147-21"><a href="#cb147-21" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(skill) = 3</span></span>
-<span id="cb147-22"><a href="#cb147-22" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>))</span>
-<span id="cb147-23"><a href="#cb147-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb147-24"><a href="#cb147-24" aria-hidden="true" tabindex="-1"></a>find_qual <span class="sc">|&gt;</span></span>
-<span id="cb147-25"><a href="#cb147-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DBI)</span>
+<span id="cb149-2"><a href="#cb149-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(RPostgres)</span>
+<span id="cb149-3"><a href="#cb149-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-4"><a href="#cb149-4" aria-hidden="true" tabindex="-1"></a>con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
+<span id="cb149-5"><a href="#cb149-5" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
+<span id="cb149-6"><a href="#cb149-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb149-7"><a href="#cb149-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
+<span id="cb149-8"><a href="#cb149-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
+<span id="cb149-9"><a href="#cb149-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb149-10"><a href="#cb149-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
+<span id="cb149-11"><a href="#cb149-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-12"><a href="#cb149-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-13"><a href="#cb149-13" aria-hidden="true" tabindex="-1"></a>candidates_data <span class="ot">=</span> <span class="fu">copy_to</span>(con, canidates)</span>
+<span id="cb149-14"><a href="#cb149-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-15"><a href="#cb149-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-16"><a href="#cb149-16" aria-hidden="true" tabindex="-1"></a>find_qual <span class="ot">=</span> <span class="fu">tbl</span>(con, <span class="fu">sql</span>(<span class="st">"</span></span>
+<span id="cb149-17"><a href="#cb149-17" aria-hidden="true" tabindex="-1"></a><span class="st">SELECT candidate_id </span></span>
+<span id="cb149-18"><a href="#cb149-18" aria-hidden="true" tabindex="-1"></a><span class="st">FROM canidates</span></span>
+<span id="cb149-19"><a href="#cb149-19" aria-hidden="true" tabindex="-1"></a><span class="st">WHERE skill IN ('Python', 'Tableau', 'PostgreSQL')</span></span>
+<span id="cb149-20"><a href="#cb149-20" aria-hidden="true" tabindex="-1"></a><span class="st">GROUP BY candidate_id</span></span>
+<span id="cb149-21"><a href="#cb149-21" aria-hidden="true" tabindex="-1"></a><span class="st">HAVING COUNT(skill) = 3</span></span>
+<span id="cb149-22"><a href="#cb149-22" aria-hidden="true" tabindex="-1"></a><span class="st">"</span>))</span>
+<span id="cb149-23"><a href="#cb149-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb149-24"><a href="#cb149-24" aria-hidden="true" tabindex="-1"></a>find_qual <span class="sc">|&gt;</span></span>
+<span id="cb149-25"><a href="#cb149-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>One thing that can be kind of annoying is that when we have something like a left join we need to be pretty explicit about what we are grabbing things from and what we are referencing from</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb148"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a>pages_con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
-<span id="cb148-2"><a href="#cb148-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
-<span id="cb148-3"><a href="#cb148-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb148-4"><a href="#cb148-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
-<span id="cb148-5"><a href="#cb148-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
-<span id="cb148-6"><a href="#cb148-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb148-7"><a href="#cb148-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
-<span id="cb148-8"><a href="#cb148-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-9"><a href="#cb148-9" aria-hidden="true" tabindex="-1"></a>pages <span class="ot">=</span> <span class="fu">tribble</span>(</span>
-<span id="cb148-10"><a href="#cb148-10" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>page_id, <span class="sc">~</span>page_name,</span>
-<span id="cb148-11"><a href="#cb148-11" aria-hidden="true" tabindex="-1"></a><span class="dv">20001</span>,  <span class="st">'SQL Solutions'</span>,</span>
-<span id="cb148-12"><a href="#cb148-12" aria-hidden="true" tabindex="-1"></a><span class="dv">20045</span>,  <span class="st">'Brain Exercises'</span>,</span>
-<span id="cb148-13"><a href="#cb148-13" aria-hidden="true" tabindex="-1"></a><span class="dv">20701</span>,  <span class="st">'Tips for Data Analysts'</span>,</span>
-<span id="cb148-14"><a href="#cb148-14" aria-hidden="true" tabindex="-1"></a><span class="dv">31111</span>,  <span class="st">'Postgres Crash Course'</span>,</span>
-<span id="cb148-15"><a href="#cb148-15" aria-hidden="true" tabindex="-1"></a><span class="dv">32728</span>,  <span class="st">'Break the thread'</span></span>
-<span id="cb148-16"><a href="#cb148-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-17"><a href="#cb148-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb148-18"><a href="#cb148-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-19"><a href="#cb148-19" aria-hidden="true" tabindex="-1"></a>pages <span class="ot">=</span> <span class="fu">copy_to</span>(pages_con, pages)</span>
-<span id="cb148-20"><a href="#cb148-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-21"><a href="#cb148-21" aria-hidden="true" tabindex="-1"></a>page_likes_con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
-<span id="cb148-22"><a href="#cb148-22" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
-<span id="cb148-23"><a href="#cb148-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb148-24"><a href="#cb148-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
-<span id="cb148-25"><a href="#cb148-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
-<span id="cb148-26"><a href="#cb148-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb148-27"><a href="#cb148-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span>  <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
-<span id="cb148-28"><a href="#cb148-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-29"><a href="#cb148-29" aria-hidden="true" tabindex="-1"></a>page_likes <span class="ot">=</span> <span class="fu">tribble</span>(</span>
-<span id="cb148-30"><a href="#cb148-30" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>user_id, <span class="sc">~</span>page_id, <span class="sc">~</span>liked_date,</span>
-<span id="cb148-31"><a href="#cb148-31" aria-hidden="true" tabindex="-1"></a><span class="dv">111</span>,    <span class="dv">20001</span>,  <span class="st">'04/08/2022 00:00:00'</span>,</span>
-<span id="cb148-32"><a href="#cb148-32" aria-hidden="true" tabindex="-1"></a><span class="dv">121</span>,    <span class="dv">20045</span>,  <span class="st">'03/12/2022 00:00:00'</span>,</span>
-<span id="cb148-33"><a href="#cb148-33" aria-hidden="true" tabindex="-1"></a><span class="dv">156</span>,    <span class="dv">20001</span>,  <span class="st">'07/25/2022 00:00:00'</span>,</span>
-<span id="cb148-34"><a href="#cb148-34" aria-hidden="true" tabindex="-1"></a><span class="dv">255</span>,    <span class="dv">20045</span>,  <span class="st">'07/19/2022 00:00:00'</span>,</span>
-<span id="cb148-35"><a href="#cb148-35" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="dv">20001</span>,  <span class="st">'07/19/2022 00:00:00'</span>,</span>
-<span id="cb148-36"><a href="#cb148-36" aria-hidden="true" tabindex="-1"></a><span class="dv">144</span>,    <span class="dv">31111</span>,  <span class="st">'06/21/2022 00:00:00'</span>,</span>
-<span id="cb148-37"><a href="#cb148-37" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="dv">31111</span>,  <span class="st">'07/04/2022 00:00:00'</span>) <span class="sc">|&gt;</span></span>
-<span id="cb148-38"><a href="#cb148-38" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">liked_date =</span> <span class="fu">mdy_hms</span>(liked_date))</span>
-<span id="cb148-39"><a href="#cb148-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-40"><a href="#cb148-40" aria-hidden="true" tabindex="-1"></a>page_likes <span class="ot">=</span> <span class="fu">copy_to</span>(page_likes_con, page_likes, <span class="at">overwrite =</span> <span class="cn">TRUE</span>, <span class="at">temporary =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb148-41"><a href="#cb148-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb148-42"><a href="#cb148-42" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(pages_con, <span class="fu">sql</span>(</span>
-<span id="cb148-43"><a href="#cb148-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">'</span></span>
-<span id="cb148-44"><a href="#cb148-44" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT pages.page_id</span></span>
-<span id="cb148-45"><a href="#cb148-45" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM pages</span></span>
-<span id="cb148-46"><a href="#cb148-46" aria-hidden="true" tabindex="-1"></a><span class="st">    LEFT JOIN page_likes ON(</span></span>
-<span id="cb148-47"><a href="#cb148-47" aria-hidden="true" tabindex="-1"></a><span class="st">    pages.page_id = page_likes.page_id)</span></span>
-<span id="cb148-48"><a href="#cb148-48" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE liked_date is NULL</span></span>
-<span id="cb148-49"><a href="#cb148-49" aria-hidden="true" tabindex="-1"></a><span class="st">    ORDER BY page_id ASC</span></span>
-<span id="cb148-50"><a href="#cb148-50" aria-hidden="true" tabindex="-1"></a><span class="st">    '</span></span>
-<span id="cb148-51"><a href="#cb148-51" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
-<span id="cb148-52"><a href="#cb148-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb150"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb150-1"><a href="#cb150-1" aria-hidden="true" tabindex="-1"></a>pages_con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
+<span id="cb150-2"><a href="#cb150-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
+<span id="cb150-3"><a href="#cb150-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb150-4"><a href="#cb150-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
+<span id="cb150-5"><a href="#cb150-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
+<span id="cb150-6"><a href="#cb150-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb150-7"><a href="#cb150-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span> <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
+<span id="cb150-8"><a href="#cb150-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-9"><a href="#cb150-9" aria-hidden="true" tabindex="-1"></a>pages <span class="ot">=</span> <span class="fu">tribble</span>(</span>
+<span id="cb150-10"><a href="#cb150-10" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>page_id, <span class="sc">~</span>page_name,</span>
+<span id="cb150-11"><a href="#cb150-11" aria-hidden="true" tabindex="-1"></a><span class="dv">20001</span>,  <span class="st">'SQL Solutions'</span>,</span>
+<span id="cb150-12"><a href="#cb150-12" aria-hidden="true" tabindex="-1"></a><span class="dv">20045</span>,  <span class="st">'Brain Exercises'</span>,</span>
+<span id="cb150-13"><a href="#cb150-13" aria-hidden="true" tabindex="-1"></a><span class="dv">20701</span>,  <span class="st">'Tips for Data Analysts'</span>,</span>
+<span id="cb150-14"><a href="#cb150-14" aria-hidden="true" tabindex="-1"></a><span class="dv">31111</span>,  <span class="st">'Postgres Crash Course'</span>,</span>
+<span id="cb150-15"><a href="#cb150-15" aria-hidden="true" tabindex="-1"></a><span class="dv">32728</span>,  <span class="st">'Break the thread'</span></span>
+<span id="cb150-16"><a href="#cb150-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-17"><a href="#cb150-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb150-18"><a href="#cb150-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-19"><a href="#cb150-19" aria-hidden="true" tabindex="-1"></a>pages <span class="ot">=</span> <span class="fu">copy_to</span>(pages_con, pages)</span>
+<span id="cb150-20"><a href="#cb150-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-21"><a href="#cb150-21" aria-hidden="true" tabindex="-1"></a>page_likes_con <span class="ot">&lt;-</span> <span class="fu">dbConnect</span>(</span>
+<span id="cb150-22"><a href="#cb150-22" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
+<span id="cb150-23"><a href="#cb150-23" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb150-24"><a href="#cb150-24" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
+<span id="cb150-25"><a href="#cb150-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
+<span id="cb150-26"><a href="#cb150-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb150-27"><a href="#cb150-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span>  <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
+<span id="cb150-28"><a href="#cb150-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-29"><a href="#cb150-29" aria-hidden="true" tabindex="-1"></a>page_likes <span class="ot">=</span> <span class="fu">tribble</span>(</span>
+<span id="cb150-30"><a href="#cb150-30" aria-hidden="true" tabindex="-1"></a><span class="sc">~</span>user_id, <span class="sc">~</span>page_id, <span class="sc">~</span>liked_date,</span>
+<span id="cb150-31"><a href="#cb150-31" aria-hidden="true" tabindex="-1"></a><span class="dv">111</span>,    <span class="dv">20001</span>,  <span class="st">'04/08/2022 00:00:00'</span>,</span>
+<span id="cb150-32"><a href="#cb150-32" aria-hidden="true" tabindex="-1"></a><span class="dv">121</span>,    <span class="dv">20045</span>,  <span class="st">'03/12/2022 00:00:00'</span>,</span>
+<span id="cb150-33"><a href="#cb150-33" aria-hidden="true" tabindex="-1"></a><span class="dv">156</span>,    <span class="dv">20001</span>,  <span class="st">'07/25/2022 00:00:00'</span>,</span>
+<span id="cb150-34"><a href="#cb150-34" aria-hidden="true" tabindex="-1"></a><span class="dv">255</span>,    <span class="dv">20045</span>,  <span class="st">'07/19/2022 00:00:00'</span>,</span>
+<span id="cb150-35"><a href="#cb150-35" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="dv">20001</span>,  <span class="st">'07/19/2022 00:00:00'</span>,</span>
+<span id="cb150-36"><a href="#cb150-36" aria-hidden="true" tabindex="-1"></a><span class="dv">144</span>,    <span class="dv">31111</span>,  <span class="st">'06/21/2022 00:00:00'</span>,</span>
+<span id="cb150-37"><a href="#cb150-37" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="dv">31111</span>,  <span class="st">'07/04/2022 00:00:00'</span>) <span class="sc">|&gt;</span></span>
+<span id="cb150-38"><a href="#cb150-38" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">liked_date =</span> <span class="fu">mdy_hms</span>(liked_date))</span>
+<span id="cb150-39"><a href="#cb150-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-40"><a href="#cb150-40" aria-hidden="true" tabindex="-1"></a>page_likes <span class="ot">=</span> <span class="fu">copy_to</span>(page_likes_con, page_likes, <span class="at">overwrite =</span> <span class="cn">TRUE</span>, <span class="at">temporary =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb150-41"><a href="#cb150-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb150-42"><a href="#cb150-42" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(pages_con, <span class="fu">sql</span>(</span>
+<span id="cb150-43"><a href="#cb150-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">'</span></span>
+<span id="cb150-44"><a href="#cb150-44" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT pages.page_id</span></span>
+<span id="cb150-45"><a href="#cb150-45" aria-hidden="true" tabindex="-1"></a><span class="st">    FROM pages</span></span>
+<span id="cb150-46"><a href="#cb150-46" aria-hidden="true" tabindex="-1"></a><span class="st">    LEFT JOIN page_likes ON(</span></span>
+<span id="cb150-47"><a href="#cb150-47" aria-hidden="true" tabindex="-1"></a><span class="st">    pages.page_id = page_likes.page_id)</span></span>
+<span id="cb150-48"><a href="#cb150-48" aria-hidden="true" tabindex="-1"></a><span class="st">    WHERE liked_date is NULL</span></span>
+<span id="cb150-49"><a href="#cb150-49" aria-hidden="true" tabindex="-1"></a><span class="st">    ORDER BY page_id ASC</span></span>
+<span id="cb150-50"><a href="#cb150-50" aria-hidden="true" tabindex="-1"></a><span class="st">    '</span></span>
+<span id="cb150-51"><a href="#cb150-51" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
+<span id="cb150-52"><a href="#cb150-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Tesla is investigating production bottlenecks and they need your help to extract the relevant data. Write a query to determine which parts have begun the assembly process but are not yet finished.</p>
 <p>Assume you’re given the table on user viewership categorised by device type where the three types are laptop, tablet, and phone.</p>
 <p>Write a query that calculates the total viewership for laptops and mobile devices where mobile is defined as the sum of tablet and phone viewership. Output the total viewership for laptops as laptop_reviews and the total viewership for mobile devices as mobile_views</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb149"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb149-1"><a href="#cb149-1" aria-hidden="true" tabindex="-1"></a>con_nyt <span class="ot">=</span> <span class="fu">dbConnect</span>(</span>
-<span id="cb149-2"><a href="#cb149-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
-<span id="cb149-3"><a href="#cb149-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb149-4"><a href="#cb149-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
-<span id="cb149-5"><a href="#cb149-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
-<span id="cb149-6"><a href="#cb149-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
-<span id="cb149-7"><a href="#cb149-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span>  <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
-<span id="cb149-8"><a href="#cb149-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb149-9"><a href="#cb149-9" aria-hidden="true" tabindex="-1"></a>viewership <span class="ot">=</span> <span class="fu">tribble</span>(</span>
-<span id="cb149-10"><a href="#cb149-10" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span>user_id    ,<span class="sc">~</span>device_type   , <span class="sc">~</span>view_time,</span>
-<span id="cb149-11"><a href="#cb149-11" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'tablet'</span>,   <span class="st">'01/02/2022 00:00:00'</span>,</span>
-<span id="cb149-12"><a href="#cb149-12" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="st">'laptop'</span>,   <span class="st">'01/07/2022 00:00:00'</span>,</span>
-<span id="cb149-13"><a href="#cb149-13" aria-hidden="true" tabindex="-1"></a><span class="dv">128</span>,    <span class="st">'laptop'</span>,   <span class="st">'02/09/2022 00:00:00'</span>,</span>
-<span id="cb149-14"><a href="#cb149-14" aria-hidden="true" tabindex="-1"></a><span class="dv">129</span>,    <span class="st">'phone'</span>,    <span class="st">'02/09/2022 00:00:00'</span>,</span>
-<span id="cb149-15"><a href="#cb149-15" aria-hidden="true" tabindex="-1"></a><span class="dv">145</span>,    <span class="st">'tablet'</span>,   <span class="st">'02/24/2022 00:00:00'</span></span>
-<span id="cb149-16"><a href="#cb149-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb149-17"><a href="#cb149-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb149-18"><a href="#cb149-18" aria-hidden="true" tabindex="-1"></a>viewership <span class="ot">=</span> <span class="fu">copy_to</span>(con_nyt, viewership)</span>
-<span id="cb149-19"><a href="#cb149-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb149-20"><a href="#cb149-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb149-21"><a href="#cb149-21" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con_nyt, <span class="fu">sql</span>(</span>
-<span id="cb149-22"><a href="#cb149-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span></span>
-<span id="cb149-23"><a href="#cb149-23" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT</span></span>
-<span id="cb149-24"><a href="#cb149-24" aria-hidden="true" tabindex="-1"></a><span class="st">  SUM(laptop_views) AS laptop_views_count,</span></span>
-<span id="cb149-25"><a href="#cb149-25" aria-hidden="true" tabindex="-1"></a><span class="st">  SUM(mobile_views) AS mobile_views_count</span></span>
-<span id="cb149-26"><a href="#cb149-26" aria-hidden="true" tabindex="-1"></a><span class="st">FROM (</span></span>
-<span id="cb149-27"><a href="#cb149-27" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT *,</span></span>
-<span id="cb149-28"><a href="#cb149-28" aria-hidden="true" tabindex="-1"></a><span class="st">         CASE WHEN device_type = 'laptop' THEN 1 ELSE 0 END AS laptop_views, </span></span>
-<span id="cb149-29"><a href="#cb149-29" aria-hidden="true" tabindex="-1"></a><span class="st">         CASE WHEN device_type IN ('tablet', 'phone') THEN 1 ELSE 0 END AS mobile_views</span></span>
-<span id="cb149-30"><a href="#cb149-30" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM viewership</span></span>
-<span id="cb149-31"><a href="#cb149-31" aria-hidden="true" tabindex="-1"></a><span class="st">) AS viwership</span></span>
-<span id="cb149-32"><a href="#cb149-32" aria-hidden="true" tabindex="-1"></a><span class="st">    "</span></span>
-<span id="cb149-33"><a href="#cb149-33" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
-<span id="cb149-34"><a href="#cb149-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a>con_nyt <span class="ot">=</span> <span class="fu">dbConnect</span>(</span>
+<span id="cb151-2"><a href="#cb151-2" aria-hidden="true" tabindex="-1"></a>  RPostgres<span class="sc">::</span><span class="fu">Postgres</span>(),</span>
+<span id="cb151-3"><a href="#cb151-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dbname =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb151-4"><a href="#cb151-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">host =</span> <span class="st">"localhost"</span>,</span>
+<span id="cb151-5"><a href="#cb151-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">port =</span> <span class="dv">5432</span>,</span>
+<span id="cb151-6"><a href="#cb151-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">user =</span> <span class="st">"postgres"</span>,</span>
+<span id="cb151-7"><a href="#cb151-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">password =</span>  <span class="fu">Sys.getenv</span>(<span class="st">'PASSWORD'</span>))</span>
+<span id="cb151-8"><a href="#cb151-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-9"><a href="#cb151-9" aria-hidden="true" tabindex="-1"></a>viewership <span class="ot">=</span> <span class="fu">tribble</span>(</span>
+<span id="cb151-10"><a href="#cb151-10" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span>user_id    ,<span class="sc">~</span>device_type   , <span class="sc">~</span>view_time,</span>
+<span id="cb151-11"><a href="#cb151-11" aria-hidden="true" tabindex="-1"></a><span class="dv">123</span>,    <span class="st">'tablet'</span>,   <span class="st">'01/02/2022 00:00:00'</span>,</span>
+<span id="cb151-12"><a href="#cb151-12" aria-hidden="true" tabindex="-1"></a><span class="dv">125</span>,    <span class="st">'laptop'</span>,   <span class="st">'01/07/2022 00:00:00'</span>,</span>
+<span id="cb151-13"><a href="#cb151-13" aria-hidden="true" tabindex="-1"></a><span class="dv">128</span>,    <span class="st">'laptop'</span>,   <span class="st">'02/09/2022 00:00:00'</span>,</span>
+<span id="cb151-14"><a href="#cb151-14" aria-hidden="true" tabindex="-1"></a><span class="dv">129</span>,    <span class="st">'phone'</span>,    <span class="st">'02/09/2022 00:00:00'</span>,</span>
+<span id="cb151-15"><a href="#cb151-15" aria-hidden="true" tabindex="-1"></a><span class="dv">145</span>,    <span class="st">'tablet'</span>,   <span class="st">'02/24/2022 00:00:00'</span></span>
+<span id="cb151-16"><a href="#cb151-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb151-17"><a href="#cb151-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-18"><a href="#cb151-18" aria-hidden="true" tabindex="-1"></a>viewership <span class="ot">=</span> <span class="fu">copy_to</span>(con_nyt, viewership)</span>
+<span id="cb151-19"><a href="#cb151-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-20"><a href="#cb151-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-21"><a href="#cb151-21" aria-hidden="true" tabindex="-1"></a><span class="fu">tbl</span>(con_nyt, <span class="fu">sql</span>(</span>
+<span id="cb151-22"><a href="#cb151-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"</span></span>
+<span id="cb151-23"><a href="#cb151-23" aria-hidden="true" tabindex="-1"></a><span class="st">    SELECT</span></span>
+<span id="cb151-24"><a href="#cb151-24" aria-hidden="true" tabindex="-1"></a><span class="st">  SUM(laptop_views) AS laptop_views_count,</span></span>
+<span id="cb151-25"><a href="#cb151-25" aria-hidden="true" tabindex="-1"></a><span class="st">  SUM(mobile_views) AS mobile_views_count</span></span>
+<span id="cb151-26"><a href="#cb151-26" aria-hidden="true" tabindex="-1"></a><span class="st">FROM (</span></span>
+<span id="cb151-27"><a href="#cb151-27" aria-hidden="true" tabindex="-1"></a><span class="st">  SELECT *,</span></span>
+<span id="cb151-28"><a href="#cb151-28" aria-hidden="true" tabindex="-1"></a><span class="st">         CASE WHEN device_type = 'laptop' THEN 1 ELSE 0 END AS laptop_views, </span></span>
+<span id="cb151-29"><a href="#cb151-29" aria-hidden="true" tabindex="-1"></a><span class="st">         CASE WHEN device_type IN ('tablet', 'phone') THEN 1 ELSE 0 END AS mobile_views</span></span>
+<span id="cb151-30"><a href="#cb151-30" aria-hidden="true" tabindex="-1"></a><span class="st">  FROM viewership</span></span>
+<span id="cb151-31"><a href="#cb151-31" aria-hidden="true" tabindex="-1"></a><span class="st">) AS viwership</span></span>
+<span id="cb151-32"><a href="#cb151-32" aria-hidden="true" tabindex="-1"></a><span class="st">    "</span></span>
+<span id="cb151-33"><a href="#cb151-33" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">|&gt;</span></span>
+<span id="cb151-34"><a href="#cb151-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">collect</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

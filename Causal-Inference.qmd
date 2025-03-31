@@ -45,7 +45,9 @@ In a DAG framework we can think of it like this.
 ```{r}
 #| echo: false
 library(dagitty)
+library(MetBrewer)
 library(ggdag)
+library(tidyverse)
 
 coords = tibble::tribble(~name, ~y, ~x,
                         'Outcome', 0, 1,
@@ -93,7 +95,7 @@ $$
 Lets first start with the intuition. If we could rerun our trial infinite times and collect the treatment effects and count how we frequently we observe the treatment effect we would get our canonical Gaussian distribution. The center of the distribution will be centered over the treatment effect because of the CLT. How far away a single point is from the treatment effect is just the variance. However, if we run the trial a thousand times than that would be the sample treatment effect. The distance measure in the sample is we just refer to as the standard error. To reject the null hypothesis of Treatment Effect > 0 than we would want our sampling distribution to look something like this 
 
 ```{r}
-library(ggplot2)
+
 
 dat = data.frame(treat = rnorm(1000, mean = 5, sd = 1))
 
@@ -192,3 +194,92 @@ If we are using an existing studies we can grab the standard errors and
 4. If the underlying population has high vartiation in outcomes, the evalution eneds a large sample
 5. For a given sample size power is maximized when the sample s equally split between the treatment and control group
 6. For a given sample size, randomizing at the cluster level as opposed to the individual level reduces the power of the evaluation. The more similar the outcomes of individuals within clusters are, the larger the sample needs to be.
+
+
+## Observational Methods
+
+These are certainly less popular then in academic social sciences there are certainly lots of opportunties for example [Recast uses an augmented synthetic control model](https://docs.getrecast.com/docs/run-a-geolift-experiment) for its lift tests. Netflix uses a lot of observational causal inference methods outside of just A/B tests so its certainly worth going over some of them. 
+
+
+## Difference in Difference
+
+DiD dates back to as early as Snow in 1840's London. The idea is fairly simple something happens that we don't have any control over causing a change in the system. In the original study the Lambeth water company moved their water supply upstream of London while other water suppliers remained downstream of London. During this time Cholera was running rampant in London and most of the sewers either dumped into the Thames, people dumped things in the Thames, and then just commerical activity. The move kind of came out of nowwhere and was not influenced by any other factor other than the fact that an act of parliament forced them to move the production upstream. So if we wanted to estimate the effect of moving the water source we would follow a fairly simple formula
+
+$$
+ATE = (\text{Mean Post-Treatment}_{Treated} - \text{Mean Pre-Treatment}_{Treated}) - (\text{Mean Post-Treatment}_{Control} - \text{Mean Post-Treatment}_{Control})
+$$
+
+Lets take the mock data from that period and then get the treatment effect.
+
+```{r}
+
+
+cholera = tribble(~`Region Supplier`,	~`Death Rates 1849`,	~`Death Rates 1854`,
+'Non-Lambeth Only (Dirty)',	134.9,	146.6,
+'Lambeth + Others (Mix Dirty and Clean)',	130.1,	84.9) |>
+    mutate(treatment = ifelse(`Region Supplier` == 'Non-Lambeth Only (Dirty)', 'Control', 'Treated')) |>
+    pivot_longer(cols = !c(`Region Supplier`, treatment)) |>
+    mutate(name = str_extract(name, '\\d+')) |>
+    rename(year = name)
+
+(pull(cholera |>
+    filter(treatment == 'Treated', year == '1854')) - pull(cholera |>
+    filter(treatment == 'Treated', year == '1849'))) - (pull(cholera |>
+    filter(treatment == 'Control', year == '1854')) - pull(cholera |>
+    filter(treatment == 'Control', year == '1849')))
+
+
+```
+
+Which gives us our treatment effect. The reason we have to incorporate all this information simply boils down to the fact is that we need to ensure that we are making the proper comparisions. If we simply did the simple difference in means between the treated group we are not really getting the correct estimate because we can't discount that the treated group would have improved over time. If we did the means post treatment and pre treatment we can't discount that this is just a time effect. This is pretty neat and we can recover the ATE as long as we meet some identifying assumptions. 
+
+
+## Identifying Assumptions 
+
+
+### The parallel trends assumption 
+
+The parallel trends assumption simply states that if treatment would have never occured we would have seen *similar* trends post treatment. 
+
+
+```{r}
+#| label: fig-pt-examp 
+
+library(geomtextpath)
+
+od = causaldata::organ_donations |>
+    mutate(post_treatment = ifelse(Quarter %in% c('Q32011','Q42011','Q12012'), TRUE, FALSE),
+           treated = ifelse(State == 'California', TRUE, FALSE),
+           year = str_extract(Quarter, '\\d{4}$'),
+           quarter_num = str_extract(Quarter, 'Q\\d{1}'),
+           quarter_num = str_remove(quarter_num, 'Q'),
+           quarter_num = paste0('Q0', quarter_num),
+           quarter = paste0(year,quarter_num),
+           quarter = zoo::as.yearqtr(quarter))
+
+pt_trends = od |>
+    group_by(treated, quarter) |>
+    summarise(rate = mean(Rate)) |>
+    ungroup() |>
+    mutate(treated = ifelse(treated == TRUE, 'Treated', 'Control'))
+
+
+ggplot(pt_trends, aes(x =  as.factor(quarter),
+                      y = rate,
+                    label = treated, 
+                    color = treated,
+                    group = treated)) +
+    geom_textpath(hjust = 0.8) +
+    geom_textvline(xintercept = '2011 Q3', label = 'Treatment Turns On', linetype = 'dashed') +
+labs(y = 'Organ Donation Rate', x = NULL) +
+scale_color_met_d(name = 'Troy') +
+theme_minimal() +
+theme(legend.position = 'none')
+
+
+```
+
+
+In @fig-pt-examp we are simply plotting the difference between the trajectories of the treated group and the control group. This is nice but what should we look for? 
+
+There are visual inspections and there are answers that we must come to that are a little bit outside the data but the data can inform our judgements. The key idea of DiD is that our control group is 
