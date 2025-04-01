@@ -13,3 +13,4 @@ wheels/
 /_site/
 .Rproj.user
 /_book/
+*.DS_Store
