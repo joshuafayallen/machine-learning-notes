@@ -236,20 +236,62 @@ Which gives us our treatment effect. The reason we have to incorporate all this 
 
 ## Identifying Assumptions 
 
+## No Anticipation
+
+One assumption that gets a little less attention in courses and texts is the no anticipation assumption. This one is a bit harder to test explicitly. You have to have a much more convincing story to justify that this assumption is not violated. In the Jon Snow water case this is a bit more straightforward to for me to think about than the organ donation example. Anticipation in this context may look like people strategically switching who they are getting their water from. If we remember the canoncal Braod Street pump from the Jon Snow story 
+
+
+```{r}
+
+HistData::SnowMap()
+```
+
+
+There are a lot of oddities in the Jon Snow data but for now we will just focus on a few cases that are instructive. There are deaths in the dataset that don't map onto the Broad Street water pump well. Some cases we would suspect are due to other water pumps. However, due to the impressive work done by Jon Snow we know that some of these deaths are school children or workers that drank from the pump on their way home. These cases are not significant for the anticipation assumption.
+
+There are several interesting cases where the anticipation assumption could have come into play. One women who used to live near the Broad Street water pump actually really liked the taste of the water and had the water delivered to her house. This resulted in her death and the deaths of some of her nieces. Lets say that with the annoucement of the Parliamentary law people started actively switching who they got their water from because they liked the taste and were worried about the move affecting the taste of the water. If this happens post-treatment no harm no fowl really. If this happens before treatment turns on then we have kind of a big problem. People jumping to get treated or avoid treatment violates our no anticipation assumption. 
+
+
+How do we detect this? Well there are still some graphical measures we can leverage. In this case we can use pre-trends plots
+
+
+```{r}
+library(fixest) 
+library(broom)
+
+od = causaldata::organ_donations |>
+    mutate(for_pretends = State == 'California',
+           treated = ifelse(State == 'California' & Quarter %in% c('Q32011','Q42011','Q12012'), TRUE, FALSE),
+           year = str_extract(Quarter, '\\d{4}$'),
+           quarter_num = str_extract(Quarter, 'Q\\d{1}'),
+           quarter_num = str_remove(quarter_num, 'Q'),
+           quarter_num = paste0('Q0', quarter_num),
+           quarter = paste0(year,quarter_num),
+           quarter = zoo::as.yearqtr(quarter))
+
+pre_trends_plots = feols(Rate ~ i(Quarter_Num, for_pretends, ref = 3) | State + Quarter_Num , data = od) 
+   
+iplot(pre_trends_plots)
+```
+
+
+Where we can see a significant pretrend. Is this the best way to use an event-study plot? Ehh not really for the most part people tend to use these in support of the parallel trends assumption. We may want to start assigning placebos to see if we can detect an effect prior to treatment. But, this is also us trying to find evidence to the contrary. 
+
 
 ### The parallel trends assumption 
 
-The parallel trends assumption simply states that if treatment would have never occured we would have seen *similar* trends post treatment. 
+The parallel trends assumption is the biggest one that has lots of literature dedicated to it. The parallel trends assumption simply states that if treatment would have never occured we would have seen *similar* trends post treatment. An unconditional parallel trends assumption is a bit hard to justify so we tend to make a conditonal parallel trends assumption. 
 
 
 ```{r}
 #| label: fig-pt-examp 
 
 library(geomtextpath)
+library(patchwork)
 
 od = causaldata::organ_donations |>
-    mutate(post_treatment = ifelse(Quarter %in% c('Q32011','Q42011','Q12012'), TRUE, FALSE),
-           treated = ifelse(State == 'California', TRUE, FALSE),
+    mutate(for_pretends = State == 'California',
+           treated = ifelse(State == 'California' & Quarter %in% c('Q32011','Q42011','Q12012'), TRUE, FALSE),
            year = str_extract(Quarter, '\\d{4}$'),
            quarter_num = str_extract(Quarter, 'Q\\d{1}'),
            quarter_num = str_remove(quarter_num, 'Q'),
@@ -282,4 +324,780 @@ theme(legend.position = 'none')
 
 In @fig-pt-examp we are simply plotting the difference between the trajectories of the treated group and the control group. This is nice but what should we look for? 
 
-There are visual inspections and there are answers that we must come to that are a little bit outside the data but the data can inform our judgements. The key idea of DiD is that our control group is 
+There are visual inspections and there are answers that we must come to that are a little bit outside the data but the data can inform our judgements. The key idea of DiD is that our control is a valid counterfactual for our treated group. This requires us to do some shoe leather investigation on whether your counterfactuals are plausible. In our organ donation example lets say that by some unforseen miracle lots of states in the control group somehow build high quality transits in major cities and high quality trains between major cities. Maybe less dramatic and possibly more plausible is there is a 'sin' tax of sorts on motorcycles making them much more expensive to buy and/or more green spaces like the Beltline are opened providing a free and safe bike path. All these have implications on organ donation rate because there are less situations where cars can collide with eachother, motorcycles, or bikes. What this would imply is that there are less traumatic brain injuries leading to brain death causing a decrease in organ donations. This might result in very dramatic shift in the trends. 
+
+
+```{r}
+#| code-fold: true
+
+pt_trends_violations = pt_trends |>
+    mutate(
+           dramatic = ifelse(treated == 'Control' & quarter >= '2011 Q2', (rate/2.25), rate),
+           subtle = ifelse(treated == 'Control' & quarter >= '2011 Q2', rate/1.001, rate))
+
+
+og = ggplot(pt_trends, aes(x =  as.factor(quarter),
+                    y = rate,
+                    label = treated, 
+                    color = treated,
+                    group = treated)) +
+    geom_textpath(hjust = 0.8) +
+    geom_vline(xintercept = '2011 Q3') +
+labs(y = 'Organ Donation Rate', x = NULL, title = 'Original Plot') +
+scale_color_met_d(name = 'Troy') +
+theme_minimal() +
+theme(legend.position = 'none')
+
+
+dramatic = ggplot(pt_trends_violations, aes(x =  as.factor(quarter),
+                      y = dramatic,
+                    label = treated, 
+                    color = treated,
+                    group = treated)) +
+    geom_textpath(hjust = 0.8) +
+    geom_vline(xintercept = '2011 Q3') +
+labs(y = NULL, x = NULL, title = 'Dramatic Violation') +
+scale_color_met_d(name = 'Troy') +
+theme_minimal() +
+theme(legend.position = 'none')
+
+slight = ggplot(pt_trends_violations, aes(x =  as.factor(quarter),
+                    y = subtle,
+                    label = treated, 
+                    color = treated,
+                    group = treated)) +
+    geom_textpath(hjust = 0.8) +
+    geom_vline(xintercept = '2011 Q3')+
+labs(y = NULL, x = NULL, title = 'Subtle Violation') +
+scale_color_met_d(name = 'Troy') +
+theme_minimal() +
+theme(legend.position = 'none')
+
+og/dramatic/slight
+
+```
+
+As we can see when we reduce the donation rate dramatically visually we see that there is likely a problem with our counterfactual. For the subtle violation it is a lot harder to tell that the control group is changing at a much different rate than the treated group. If we are just evaluating the parallel trends visually this is likely to give us a different impression than we may have initially thought. As a first cut visually a simple 2 X 2 is maybe a good idea, but we might also want to dissegregate the plot. Just because in the aggregate these trends aren't violated there may be some underlying policy that reduces our pool of candidate counterfactuals. So lets say NY implements congestion pricing reducing traffic into NYC from CT, NYC, and NJ. We may not pick this up but may not show up in our 2x2 plot. 
+
+
+```{r}
+library(ggrepel)
+
+
+pt_weirdness = od |>
+    mutate(rate_changed = ifelse(State %in% c('New Jersey', 'New York', 'Connecticut') & quarter >= '2011 Q2', Rate/2.25, Rate),
+          nice_labs = ifelse( State %in% c('New Jersey', 'New York', 'Connecticut', 'California'),State ,NA_character_))
+
+
+two_by_two = pt_weirdness |>
+    group_by(treated, quarter) |>
+    summarise(rate = mean(Rate))
+
+
+two_by_two_plot = ggplot(two_by_two, aes(
+                    x = as.factor(quarter),
+                    y = rate,
+                    label = treated, 
+                    color = treated,
+                    group = treated)) +
+    geom_textpath(hjust = 0.8) +
+    geom_vline(xintercept = '2011 Q3') +
+labs(y = 'Organ Donation Rate', x = NULL, title = '2X2 with NYC policy change') +
+scale_color_met_d(name = 'Troy') +
+theme_minimal() +
+theme(legend.position = 'none')
+
+
+disagg = ggplot(pt_weirdness, aes(x = as.factor(quarter),
+                         y = rate_changed,
+                         color = State,
+                         group = State)) +
+    geom_line() +
+    geom_vline(xintercept = '2011 Q3')+
+    geom_text_repel(data = filter(pt_weirdness, !is.na(nice_labs), quarter == '2012 Q1'),
+                     aes(label = nice_labs), nudge_x = 1) +
+    scale_color_manual(values = c('grey70', 'California' = '#f2ad22', 'New York' = 'darkblue', 'New Jersey'='darkorange', 'Connecticut' = 'darkorchid' )) +
+    labs(y = 'Organ Donation Rate', x = NULL) +
+    theme_minimal() +
+    theme(legend.position = 'none')
+
+two_by_two_plot / disagg
+
+```
+
+In this case we see that the pre-trends in the affected states disappear however when we dissagregate the plot we can clarly see that we have some states that are moving a lot quicker. These states trajectories are not a great counterfactual group to use. One other thing to think about is that traffic rates in CT, and NJ are declining not due to any policy that those states enacted put because New York is affecting their traffic flows suggesting that they may not be candidates anyways. This is definently where a well defined estimand is uber important. 
+
+Recently @RambachanRoth:2023 proposes a bounds method for testing parallel trends add a more transparent way to test for violations of the PT assumption and a well powered way to do it. 
+
+```{r}
+#| cache: true
+
+
+# code taken from vignette 
+library(HonestDiD)
+
+data('LWdata_EventStudy', package = "HonestDiD")
+
+# Number of pre-periods
+LW_numPrePeriods = length(LWdata_EventStudy$prePeriodIndices)
+LW_numPostPeriods = length(LWdata_EventStudy$postPeriodIndices)
+
+LW_l_vec = basisVector(15 - (-2), LW_numPostPeriods)
+
+# Construct robust confidence intervals for Delta^{SD}(M) for 15 years of exposure
+LW_DeltaSD_RobustResults = createSensitivityResults(betahat = LWdata_EventStudy$betahat,
+                                                    sigma = LWdata_EventStudy$sigma,
+                                                    numPrePeriods = LW_numPrePeriods,
+                                                    numPostPeriods = LW_numPostPeriods,
+                                                    l_vec = LW_l_vec,
+                                                    Mvec = seq(from = 0, to = 0.04, by = 0.005))
+
+
+# Construct dataframe with OLS confidence interval for theta
+LW_OriginalResults = constructOriginalCS(betahat = LWdata_EventStudy$betahat,
+                                         sigma = LWdata_EventStudy$sigma,
+                                         numPrePeriods = LW_numPrePeriods,
+                                         numPostPeriods = LW_numPostPeriods,
+                                         l_vec = LW_l_vec )
+
+# Construct sensitivity plot
+LW_DeltaSD_SensitivityPlot = createSensitivityPlot( #
+    robustResults = LW_DeltaSD_RobustResults,
+    originalResults = LW_OriginalResults)
+
+
+LW_DeltaSD_SensitivityPlot
+```
+
+In this case we can visualize the effect of different shocks on the outcome of interest. The blue coefficient is really just the OLS estimator and as we increase M we are introducing more and more non-linearity the estimates from the model look a little bit more defenseble if you think that strict linearity is not totally reasonable than woohooo you can defend your estimate a bit more coherently. 
+
+## Staggered Adoption 
+
+
+The problem we often run into is that we often don't have all units turning treatment on at one point. Often times we have some kind of staggered adoption. While not neccessarily a problem we used to solve this with the TWFE estimator, but as @goodman-baconDifferenceindifferencesVariationTreatment2021 finds that is a problem.
+
+```{r}
+#| code-fold: true
+#| label: fig-twfe-probs
+#| cache: true
+
+# code taken from Baker, Larcker, and Wang
+data <- tibble(
+  Y = c(2, 5, 1, 2),
+  Unit = c("Treat", "Treat", "Control", "Control"),
+  T = c(0, 1, 0, 1)
+)
+
+# Make plot 1 - change in trends over time
+plot1a <- data %>% 
+  ggplot(aes(x = T, y = Y, group = Unit, color = Unit)) + 
+  geom_point() + 
+  geom_line() + 
+  geom_label(aes(label = Y), hjust = 0.5, vjust = -0.5, color = "black") + 
+  labs(x = "", y = "Outcome \n Variable") + 
+  scale_color_manual(values = c("#A7473A", "#4B5F6C")) +
+  scale_x_continuous(breaks = c(0, 1), 
+                     labels = c("Pre", "Post")) + 
+  ggtitle('Panel A') + 
+  ylim(c(0, 6)) + 
+  theme(legend.position = "bottom",
+        axis.title.y = element_text(hjust = 0.5, vjust = 0.5, angle = 360),
+        legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust = 0.5)) 
+
+# Make plot 2 - remove baseline differences
+# make a dataset that removes first difference
+data_fd <- data %>% 
+  group_by(Unit) %>% 
+  mutate(Y = Y - Y[which(T == 0)])
+
+# plot
+plot1b <- data %>% 
+  ggplot(aes(x = T, y = Y, group = Unit, color = Unit)) + 
+  geom_point(alpha = 1/2) + 
+  geom_line(alpha = 1/2, linetype = "dashed") + 
+  geom_point(data = data_fd, aes(x = T, y = Y, group = Unit, color = Unit)) +
+  geom_line(data = data_fd, aes(x =  T, y = Y, group = Unit, color = Unit)) +
+  annotate("label", x = 1, y = 1, label = "1") + 
+  annotate("label", x = 1, y = 3, label = "3") + 
+  # these colors correspond to certain birds native to new zealand. This is the 
+  # only asymptotically correct manner to pick color palettes.
+  scale_color_manual(values = c("#A7473A", "#4B5F6C")) +
+  labs(x = "", y = "") + 
+  ylim(c(0, 6)) + 
+  scale_x_continuous(breaks = c(0, 1), 
+                     labels = c("Pre", "Post")) + 
+  ggtitle('Panel B') + 
+  theme(legend.position = "bottom",
+        axis.title.y = element_text(hjust = 0.5, vjust = 0.5, angle = 360),
+        legend.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust = 0.5)) 
+
+# Make plot 3 - difference in differences
+# dataset with the first differences
+data_dd <- tribble(
+  ~Unit, ~Diff,
+  "Treat", 3, 
+  "Control", 1
+)
+
+# plot
+plot1c <- data_dd %>% 
+  ggplot(aes(x = Unit, y = Diff, group = Unit, fill = Unit)) + 
+  geom_col() + 
+  scale_fill_manual(values = c("#A7473A", "#4B5F6C")) +
+  labs(x = "", y = expression(Delta)) + 
+  ylim(0, 3.5) + 
+  geom_label(aes(label = Diff), fill = "white", vjust = -0.2) + 
+  annotate("segment", x = 2, xend = 2, y = 1, yend = 3, color = "white", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 2, xend = 2, y = 3, yend = 1, color = "white", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 1.5, xend = 2.5, y = 1, yend = 1, color = "white") +
+  annotate("label", x = 2, y = 2, label = "Treatment Effect \n = 2") + 
+  ggtitle('Panel C') + 
+  labs(y = expression(Delta), x = "") + 
+  theme(legend.position = "bottom",
+        axis.title.y = element_text(hjust = 0.5, vjust = 0.5, angle = 360, size = 14),
+        legend.title = element_blank(),
+        axis.ticks.y = element_blank(),
+        plot.title = element_text(hjust = 0.5))
+
+# combine subplots
+plot1 <- plot1a + plot1b + plot1c
+
+# save
+
+
+# Plot - GB1 ---------------------------------------------------------
+# Goodman-bacon decomp, overall information
+data <- tibble(
+  time = 0:100,
+  U = seq(5, 12, length.out = 101),
+  l = seq(10, 17, length.out = 101) + c(rep(0, 85), rep(15, 16)),
+  k = seq(18, 25, length.out = 101) + c(rep(0, 34), rep(10, 67))
+) %>% 
+  pivot_longer(-time, names_to = "series", values_to = "value")
+
+# plot
+GB1 <- data %>% 
+  ggplot(aes(x = time, y = value, group = series, color = series, shape = series)) + 
+  geom_line(size = 2) + geom_point(size = 2) +
+  geom_vline(xintercept = c(34, 85)) +
+  labs(x = "Time", y = "Units \n of y") +
+  scale_x_continuous(limits = c(0, 100), breaks = c(34, 85), 
+                     labels = c(expression('t'['k']^'*'), expression('t'['l']^'*')), 
+                     expand = c(0, 0)) + 
+  annotate("text", x = 10, y = 21, label = expression('y'^'k'), size = 9) +
+  annotate("text", x = 50, y = 16, label = expression('y'^'l'), size = 9) +
+  annotate("text", x = 90, y = 14, label = expression('y'^'U'), size = 9) +
+  annotate('label', x = 17, y = 4, label = 'T1') +
+  annotate('label', x = 60, y = 4, label = 'T2') +
+  annotate('label', x = 93, y = 4, label = 'T3') +
+  annotate("segment", x = 1, xend = 33, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 33, xend = 1, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 35, xend = 84, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 84, xend = 35, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) + 
+  annotate("segment", x = 86, xend = 99, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  annotate("segment", x = 99, xend = 86, y = 2, yend = 2, color = "black", 
+           arrow = arrow(length = unit(0.1, "inches"))) +
+  scale_y_continuous(limits = c(0, 40), expand = c(0, 0)) +
+  scale_color_manual(values = c("#A7473A", "#4B5F6C", "#51806a")) + 
+  theme(axis.title = element_text(size = 18),
+        axis.text = element_text(size = 16),
+        legend.position = 'none',
+        plot.background = element_blank(),
+        axis.title.y = element_text(angle = 0, hjust = 0.5, vjust = 0.5),
+        axis.ticks.y = element_blank())
+
+# save  
+
+
+# Plot - GB2 ---------------------------------------------------------
+
+# function to make subplots
+make_subplot <- function(omit, keep_dates, colors, breaks, break_expressions, series, 
+                         series_x, series_y, break_names, break_loc, arrow_start, arrow_stop, title){
+  
+  data %>% 
+    filter(series != omit & time >= keep_dates[1] & time <= keep_dates[2]) %>% 
+    ggplot(aes(x = time, y = value, group = series, color = series, shape = series)) + geom_line() + geom_point() +
+    geom_vline(xintercept = breaks) + 
+    labs(x = "Time", y = "Units \n of y") +
+    scale_x_continuous(limits = c(0, 105), breaks = breaks, 
+                       labels = break_expressions, 
+                       expand = c(0, 0)) + 
+    annotate("text", x = series_x[1], y = series_y[1], label = series[1]) +
+    annotate("text", x = series_x[2], y = series_y[2], label = series[2]) +
+    annotate('label', x = break_loc[1], y = 5, label = break_names[1]) +
+    annotate('label', x = break_loc[2], y = 5, label = break_names[2]) +
+    annotate("segment", x = arrow_start[1], xend = arrow_stop[1], y = 2, yend = 2, color = "black", 
+             arrow = arrow(length = unit(0.1, "inches"))) +
+    annotate("segment", x = arrow_stop[1], xend = arrow_start[1], y = 2, yend = 2, color = "black", 
+             arrow = arrow(length = unit(0.1, "inches"))) +
+    annotate("segment", x = arrow_start[2], xend = arrow_stop[2], y = 2, yend = 2, color = "black", 
+             arrow = arrow(length = unit(0.1, "inches"))) +
+    annotate("segment", x = arrow_stop[2], xend = arrow_start[2], y = 2, yend = 2, color = "black", 
+             arrow = arrow(length = unit(0.1, "inches"))) + 
+    scale_y_continuous(limits = c(0, 40), expand = c(0, 0)) +
+    scale_color_manual(values = c(colors[1], colors[2])) +  
+    ggtitle(title) + 
+    theme(axis.title = element_text(size = 18),
+          axis.text = element_text(size = 16),
+          legend.position = 'none',
+          plot.background = element_blank(),
+          plot.title = element_text(hjust = 0.5),
+          axis.title.y = element_text(angle = 0, hjust = 0.5, vjust = 0.5),
+          axis.ticks.y = element_blank())
+ }
+
+# make the four subplots
+p1 <- make_subplot(omit = "l", keep_dates = c(0, 100), colors = c('#A7473A', '#51806a'), breaks = 34, 
+                   break_expressions = expression('t'['k']^'*'), 
+                   series = c(expression('y'^'k'), expression('y'^'U')),
+                   series_x = c(10, 90), series_y = c(23, 16), 
+                   break_names = c('T1', 'T2 + T3'), break_loc = c(17, 66), 
+                   arrow_start = c(1, 35), arrow_stop = c(33, 99), 
+                   title = bquote(paste('A. Early Group vs. Untreated Group')))
+
+p2 <- make_subplot(omit = "k", keep_dates = c(0, 100), colors = c('#4B5F6C', '#51806a'), breaks = 85, 
+                   break_expressions = expression('t'['l']^'*'), 
+                   series = c(expression('y'^'l'), expression('y'^'U')),
+                   series_x = c(50, 90), series_y = c(18, 16), 
+                   break_names = c('T1 + T2', 'T3'), break_loc = c(50, 95), 
+                   arrow_start = c(1, 86), arrow_stop = c(84, 99), 
+                   title = bquote(paste('B. Late Group vs. Untreated Group')))
+
+p3 <- make_subplot(omit = "U", keep_dates = c(0, 84), colors = c('#A7473A', '#4B5F6C'), breaks = c(34, 85), 
+                   break_expressions = c(expression('t'['k']^'*'), expression('t'['l']^'*')), 
+                   series = c(expression('y'^'k'), expression('y'^'l')),
+                   series_x = c(10, 50), series_y = c(23, 18), 
+                   break_names = c('T1', 'T2'), break_loc = c(17, 60), 
+                   arrow_start = c(1, 35), arrow_stop = c(33, 84), 
+                   title = bquote(paste('C. Early Group vs. Late Group, before ', 't'['l']^'*', sep = " ")))
+
+p4 <- make_subplot(omit = "U", keep_dates = c(34, 100), colors = c('#A7473A', '#4B5F6C'), breaks = c(34, 85), 
+                   break_expressions = c(expression('t'['k']^'*'), expression('t'['l']^'*')), 
+                   series = c(expression('y'^'k'), expression('y'^'l')),
+                   series_x = c(60, 50), series_y = c(36, 18), 
+                   break_names = c('T2', 'T3'), break_loc = c(60, 95), 
+                   arrow_start = c(35, 86), arrow_stop = c(84, 99), 
+                   title = bquote(paste('D. Late Group vs. Early Group, after ', 't'['k']^'*', sep = " ")))
+
+# combine plots
+p1 + p2 + p3 + p4 + plot_layout(nrow = 2)
+
+```
+
+Put simply the TWFE estimator is just where we include intercepts for the time and the spatial unit (typically). There is nothing inherently 'wrong' with this the problem is that the ATT we are identifying is not comparing treated and non-treated groups. If we think about this our heads this makes sense! As @fig-twfe-probs demonstrates there are a variety of comparisions that the matrix algebra can make. We can compare:
+
+- Never Treated vs Early Groups
+- Early Group vs Late Group
+- Late Group vs Early Group
+- Late Group vs Never Treated
+
+
+What this means is that the $\beta$ from our is really just weighted average of all these comparisions. What influences the weights is the sample size meaning what share of units are in the treatment group and the comparision group, the subsample variance of the treatment, and the timing. Functionally what is happening is the model is getting confused by what comparisions to make. Lets take another plot from @bakerHowMuchShould2021 where we really great looking PT with staggered treatment timings. 
+
+
+```{r}
+#| label: fig-baker-et-al
+#| code-fold: true
+#| cache: true
+library(lfe)
+library(fastDummies)
+library(ggthemes)
+library(did)
+
+#----------------------------------------------------------------------------
+iseed  = 20201221
+nrep <- 100  
+true_mu <- 1
+set.seed(iseed)
+
+#----------------------------------------------------------------------------
+## Generate data - treated cohorts consist of 250 obs each, with the treatment effect still = true_mu on average
+make_data <- function(nobs = 1000, 
+                      nstates = 40) {
+  
+  # unit fixed effects (unobservd heterogeneity)
+  unit <- tibble(
+    unit = 1:nobs,
+    # generate state
+    state = sample(1:nstates, nobs, replace = TRUE),
+    unit_fe = rnorm(nobs, state/5, 1),
+    # generate instantaneous treatment effect
+    #mu = rnorm(nobs, true_mu, 0.2)
+    mu = true_mu
+  )
+  
+  # year fixed effects (first part)
+  year <- tibble(
+    year = 1980:2010,
+    year_fe = rnorm(length(year), 0, 1)
+  )
+  
+  # Put the states into treatment groups
+  treat_taus <- tibble(
+    # sample the states randomly
+    state = sample(1:nstates, nstates, replace = FALSE),
+    # place the randomly sampled states into four treatment groups G_g
+    cohort_year = sort(rep(c(1986, 1992, 1998, 2004), 10))
+  )
+  
+  # make main dataset
+  # full interaction of unit X year 
+  expand_grid(unit = 1:nobs, year = 1980:2010) %>% 
+    left_join(., unit) %>% 
+    left_join(., year) %>% 
+    left_join(., treat_taus) %>% 
+    # make error term and get treatment indicators and treatment effects
+    # Also get cohort specific trends (modify time FE)
+    mutate(error = rnorm(nobs*31, 0, 1),
+           treat = ifelse(year >= cohort_year, 1, 0),
+           tau = ifelse(treat == 1, mu, 0),
+           year_fe = year_fe + 0.1*(year - cohort_year)
+    ) %>% 
+    # calculate cumulative treatment effects
+    group_by(unit) %>% 
+    mutate(tau_cum = cumsum(tau)) %>% 
+    ungroup() %>% 
+    # calculate the dep variable
+    mutate(dep_var = (2010 - cohort_year) + unit_fe + year_fe + tau_cum + error)
+  
+}
+#----------------------------------------------------------------------------
+# make data
+data <- make_data()
+
+# plot
+ data %>% 
+  ggplot(aes(x = year, y = dep_var, group = unit)) + 
+  geom_line(alpha = 1/8, color = "grey") + 
+  geom_line(data = data %>% 
+              group_by(cohort_year, year) %>% 
+              summarize(dep_var = mean(dep_var)),
+            aes(x = year, y = dep_var, group = factor(cohort_year),
+                color = factor(cohort_year)),
+            size = 2) + 
+  labs(x = "", y = "Value", color = "Treatment group   ", title  = "One draw of the DGP with homogeneous effects across cohorts \n and with all groups being eventually treated") + 
+  geom_vline(xintercept = 1986, color = '#E41A1C', size = 2) + 
+  geom_vline(xintercept = 1992, color = '#377EB8', size = 2) + 
+  geom_vline(xintercept = 1998, color = '#4DAF4A', size = 2) + 
+  geom_vline(xintercept = 2004, color = '#984EA3', size = 2) + 
+  scale_color_brewer(palette = 'Set1') + 
+  theme_minimal() +
+  theme(legend.position = 'bottom',
+        #legend.title = element_blank(), 
+        axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12))  +
+  theme(plot.title = element_text(hjust = 0.5, size=12))
+```
+
+
+We may think to ourselves well we can either our canonical TWFE estimator or some withcraft with leads and lags or some reviewer or stakeholder is going to want to see both so lets do both. 
+
+
+```{r}
+#| cache: true
+#| code-fold: true
+keepvars <- c("`rel_year_-5`",  "`rel_year_-4`",  "`rel_year_-3`",  "`rel_year_-2`",
+              "rel_year_0", "rel_year_1", "rel_year_2", "rel_year_3", "rel_year_4", "rel_year_5")
+
+run_ES_DiD <- function(...) {
+  
+  # resimulate the data
+  data <- make_data()
+  
+  # make dummy columns
+  data <- data %>% 
+    # make dummies
+    mutate(rel_year = year - cohort_year) %>% 
+    dummy_cols(select_columns = "rel_year") %>% 
+    # generate pre and post dummies
+    mutate(Pre = ifelse(rel_year < -5, 1, 0),
+           Post = ifelse(rel_year > 5, 1, 0))
+  
+  # estimate the model
+  mod <- lfe::felm(dep_var ~ Pre + `rel_year_-5` + `rel_year_-4` + `rel_year_-3` + `rel_year_-2` + 
+                `rel_year_0` + `rel_year_1` + `rel_year_2` + `rel_year_3` + `rel_year_4` + 
+                `rel_year_5` + Post | unit + year | 0 | state, data = data, exactDOF = TRUE)
+  
+  # grab the obs we need
+  mod2 <- tibble(
+    estimate = mod$coefficients,
+    term1 = rownames(mod$coefficients)
+    )
+  
+ es <-
+   mod2 %>% 
+    filter(term1 %in% keepvars) %>% 
+    mutate(t = c(-5:-2, 0:5)) %>% 
+    select(t, estimate)
+ es
+}
+
+data_classical <- map_dfr(1:nrep, run_ES_DiD)
+
+colors <- c("True Effect" = "red", "Estimated Effect" = "blue")
+
+ES_plot_classical <- data_classical %>% 
+  group_by(t) %>% 
+  summarize(avg = mean(estimate),
+            sd = sd(estimate),
+            lower.ci = avg - 1.96*sd,
+            upper.ci = avg + 1.96*sd) %>% 
+  bind_rows(tibble(t = -1, avg = 0, sd = 0, lower.ci = 0, upper.ci = 0)) %>% 
+  mutate(true_tau = ifelse(t >= 0, (t + 1)* true_mu, 0)) %>% 
+  ggplot(aes(x = t, y = avg)) + 
+  #geom_linerange(aes(ymin = lower.ci, ymax = upper.ci), color = 'darkgrey', size = 2) + 
+  geom_ribbon(aes(ymin = lower.ci, ymax = upper.ci), color = "lightgrey", alpha = 0.2) +
+  geom_point(color = 'blue', size = 3) + 
+  geom_line(aes(color = 'Estimated Effect'), size = 1) + 
+  geom_line(aes(x = t, y = true_tau, color = 'True Effect'), linetype = "dashed", size = 2) + 
+  geom_hline(yintercept = 0, linetype = "dashed") + 
+  scale_x_continuous(breaks = -5:5) + 
+  labs(x = "Relative Time", y = "Estimate") + 
+  theme(axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12)) +
+  ggtitle("TWFE event-study regression with binned end-points")+
+  scale_color_manual(values = colors) + 
+  theme(plot.title = element_text(hjust = 0.5, size=12),
+        legend.position = "bottom", 
+        legend.title = element_blank())
+
+run_ES_DiD_sat <- function(...) {
+  
+  # resimulate the data
+  data <- make_data()
+  
+  # make dummy columns
+  data <- data %>% 
+    # make relative year indicator
+    mutate(rel_year = year - cohort_year)
+  
+  # get the minimum relative year - we need this to reindex
+  min_year <- min(data$rel_year)
+  
+  # reindex the relative years
+  data <- data %>% 
+    mutate(rel_year = rel_year - min_year) %>% 
+    dummy_cols(select_columns = "rel_year")
+  
+  # make regression formula 
+  indics <- paste("rel_year", (1:max(data$rel_year))[-(-1 - min_year)], sep = "_", collapse = " + ")
+  keepvars <- paste("rel_year", c(-5:-2, 0:5) - min_year, sep = "_")  
+  formula <- as.formula(paste("dep_var ~", indics, "| unit + year | 0 | state"))
+  
+  # run mod
+  mod <- felm(formula, data = data, exactDOF = TRUE)
+  
+  # grab the obs we need
+  mod2 <- tibble(
+    estimate = mod$coefficients,
+    term1 = rownames(mod$coefficients)
+    )
+  
+ es <-
+   mod2 %>% 
+    filter(term1 %in% keepvars) %>% 
+    mutate(t = c(-5:-2, 0:5)) %>% 
+    select(t, estimate)
+ es
+}
+
+data_sat <- map_dfr(1:nrep, run_ES_DiD_sat)
+
+ES_plot_sat <- data_sat %>% 
+  group_by(t) %>% 
+  summarize(avg = mean(estimate),
+            sd = sd(estimate),
+            lower.ci = avg - 1.96*sd,
+            upper.ci = avg + 1.96*sd) %>% 
+  bind_rows(tibble(t = -1, avg = 0, sd = 0, lower.ci = 0, upper.ci = 0)) %>% 
+  mutate(true_tau = ifelse(t >= 0, (t + 1)* true_mu, 0)) %>% 
+  ggplot(aes(x = t, y = avg)) + 
+  #geom_linerange(aes(ymin = lower.ci, ymax = upper.ci), color = 'darkgrey', size = 2) + 
+  geom_ribbon(aes(ymin = lower.ci, ymax = upper.ci), color = "lightgrey", alpha = 0.2) +
+  geom_point(color = 'blue', size = 3) + 
+   geom_line(aes(color = 'Estimated Effect'), size = 1) + 
+   geom_line(aes(x = t, y = true_tau, color = 'True Effect'), linetype = "dashed", size = 2) + 
+  geom_hline(yintercept = 0, linetype = "dashed") + 
+  scale_x_continuous(breaks = -5:5) + 
+  labs(x = "Relative Time", y = "Estimate") + 
+  theme(axis.title = element_text(size = 14),
+        axis.text = element_text(size = 12)) +
+  ggtitle("TWFE event-study regression with 'all' leads and lags")+
+  scale_color_manual(values = colors) + 
+  theme(plot.title = element_text(hjust = 0.5, size=12),
+        legend.position = "bottom", 
+        legend.title = element_blank())
+        
+
+ES_plot_sat/ES_plot_classical
+```
+
+
+So what do we do? Thankfully there are huge number of estimators that try to tackle this problem. Unfortunately there are a lot of estimators to choose from. I will focus on @callawayDifferenceinDifferencesMultipleTime2020 since it is a bit more straight forward and Pedro gives excellent talks. They focus on how we can create rigorous comparisions using a variety of double robust methods, but they allow for comparisions either with the 'first-treated' and 'not yet treated' or 'never treated'. This will really depend on your application. 
+
+
+## Synthetic Control 
+
+Synthetic Control(SCM) is one of the youngest of the canonical observational causal inference models. In a way we are mixing some of the best of both worlds with IPW and DiD. So let take the canonical example of the California smoking tax. So in this example CA imposes a cigarette tax kind of out of nowhere and we are interested in the effect of this tax on smoking. The problem is that there are not a lot of clean counterfactuals for CA. This happends for a variety of reasons but the problem arises that many of the candidate estimators not going to produce accurate estimates of the effect of a program. 
+
+As @athey2017state argues this is one of the major breakthroughs in the last 15 years. Basically if draw out a DAG of pre-treatment controls and they are within the convex hull we can literally just create a fake CA. Convex hull is a mathy way of saying that the some combination of the unaffected units can approximate the pre-intervention charecteristic of the unaffected units. In a very simple example 
+
+
+
+```{r}
+
+fake_intervention = tibble(
+    treated_unit = seq(5.6, 6.5, length.out = 17),
+    donor_1 = seq(4.5,4.7, length.out = 17),
+    donor_2 = seq(4.0,4.4, length.out = 17),
+    donor_3 = seq(3.5, 4.9, length.out = 17),
+    time_relative_to_treatment = -12:4) |>
+        pivot_longer(-time_relative_to_treatment) |>
+    mutate(name = str_to_title(str_replace(name, '_', ' ')))
+
+ggplot(fake_intervention, aes(x = time_relative_to_treatment, y = value, color = name)) +
+    geom_line() +
+    geom_vline(xintercept = 0, linetype = 'dashed') +
+    geom_hline(yintercept = 5) +
+    geom_hline(yintercept = 3.4) +
+    annotate(geom = 'text',x = -2 , y = 5.1, label = 'Outside Convex Hull') +
+    annotate(geom = 'text',x = -2 , y = 3.3, label = 'Outside Convex Hull') +
+    annotate(geom = 'text',x = -2 , y = 4.5, label = 'Synthetic unit will fall \n somewhere in here') +
+    scale_x_continuous(limits = c(-12,4), breaks = seq(-12,4, by = 1)) +
+    labs(color = NULL) +
+    theme_classic()
+
+
+```
+
+
+When applied with the official algorithm that looks like this 
+
+
+
+
+```{r}
+#| code-fold: true
+#| cache: true
+
+# code taken from the tidysynth vignette
+
+library(tidysynth)
+data('smoking')
+
+smoking_out <-
+  
+  smoking %>%
+  
+  # initial the synthetic control object
+  synthetic_control(outcome = cigsale, # outcome
+                    unit = state, # unit index in the panel data
+                    time = year, # time index in the panel data
+                    i_unit = "California", # unit where the intervention occurred
+                    i_time = 1988, # time period when the intervention occurred
+                    generate_placebos=T # generate placebo synthetic controls (for inference)
+                    ) %>%
+  
+  # Generate the aggregate predictors used to fit the weights
+  
+  # average log income, retail price of cigarettes, and proportion of the
+  # population between 15 and 24 years of age from 1980 - 1988
+  generate_predictor(time_window = 1980:1988,
+                     ln_income = mean(lnincome, na.rm = T),
+                     ret_price = mean(retprice, na.rm = T),
+                     youth = mean(age15to24, na.rm = T)) %>%
+  
+  # average beer consumption in the donor pool from 1984 - 1988
+  generate_predictor(time_window = 1984:1988,
+                     beer_sales = mean(beer, na.rm = T)) %>%
+  
+  # Lagged cigarette sales 
+  generate_predictor(time_window = 1975,
+                     cigsale_1975 = cigsale) %>%
+  generate_predictor(time_window = 1980,
+                     cigsale_1980 = cigsale) %>%
+  generate_predictor(time_window = 1988,
+                     cigsale_1988 = cigsale) %>%
+  
+  
+  # Generate the fitted weights for the synthetic control
+  generate_weights(optimization_window = 1970:1988, # time to use in the optimization task
+                   margin_ipop = .02,sigf_ipop = 7,bound_ipop = 6 # optimizer options
+  ) %>%
+  
+  # Generate the synthetic control
+  generate_control()
+
+
+smoking_out |>
+    plot_trends()
+```
+
+
+There is a bit more to it than my general intuition of 'this is just a fancy weighted average' but realistically we are kind of just creating a fancy weighted average for CA. Really this is just a prediction problem where we are using various estimators to produce 'CA' where are reducing the distance between real CA and fake CA by the MSPE. 
+
+$$
+\begin{aligned}
+\hat{weights} = \arg\min \sum^{t-1}_{t=1}(Y_{nt} - \sum^{n-1}_{i=1}weights_{i}Y_{it})^2 \\
+with \sum^{n-1}_{i=1} \hat{weights}=1 \\
+\end{aligned}
+$$
+$$
+\begin{aligned}
+\hat{weights} \ge0 \\
+\mu = 0
+\end{aligned}
+$$
+
+We also put the additional restrictions that the weights are greater than zero and sum to one. We do this to prevent interpolation. Effectively what mu is saying is that we are not letting averages across the group.
+
+
+This is a really cool idea! However, this comes at a really great cost. To create a realistic synthetic version of CA we need lots of periods prior to treatment or we need lots of periods post treatment for the algorithm to get a handle on the trajectory of the trends. This is because the weighted average is trying to leverage past information to balance the trajectory of the synthetic outcome against the treated unit. 
+
+How do we justify a fancy weighted average? The main motivating justifaction is the factor analytic model where 
+
+$$
+\begin{aligned}
+
+Y_{it} = \mathit{T}_{it}D_{it} + \Theta^\prime_{t}Z_{i} + \xi_{t} + \lambda_i^{\prime}f_t + \varepsilon_{it}
+\end{aligned}
+
+$$
+
+$$
+\begin{aligned}
+Y^{0}_it = \Theta^{\prime}_t Z_{i} + \xi_{t} + \lambda_i^{\prime}f_t + \varepsilon_{it} \\
+Y^{1}_{it} = Y^{0}_it + \mathit{T}_{it}
+\end{aligned}
+$$
+
+This allows the control to be a function of time fixed effects a vector of covariates plus some time-invariant confounders to be flexible across time. Broken down a little bit more suppose there are some number of time-varying signals. Each unit will pick up some fixed linear combination of these time varying signals and the differences . Since theese confounders are picked up in the pre-trdeatment outcomes for both treated and controls we can try to use this information to 'balance on' these confounders. We want to learn $\lambda_i^{\prime}f_t$ from the pre-treatment controls so this term will be balanced out. If we get a good synthetic unit we can effectively not worry about $\lambda_i^{\prime}f_t$ which if left to its own devices will behave/is an unobserved time-varying confounders. 
+
+The restrictions of weights summing to one, thew weights being non-negative, and only dealing with one unit is somewhat of an arbitrary limitation. Innovations on the SCM the Generalized SCM (GSCM) [@Xu:2017], the Augmented SCM (ASCM)[@Ben-MichaelandRothstein:2021], or SynthDiD [@ArkhangelskyAtheyHirshberg:2021] in someways relax these constraints. 
+
+
+Recast uses the Augmented SCM  which deals with non-negativity and the convex hull restrictions. Effectively what happens underneath the hood is we have our SCM model that we estimate our synthetic unit on. If the pre-treatment fit is somewhat poor or is a little bit outside of the convex hull this is an estimation problem rather than a failure of the method. The estimator for the ASCM is 
+
+$$
+Y_{it} = \sum\lambda^{scm}_i Y_{it} + \hat{m}_{it} - \sum \lambda^{scm}_i \hat{m}_{it}
+$$
+
+Where $\hat{m}_{it} - \sum \lambda^{scm}_i \hat{m}_{it}$ is the augmentation to the original SCM model. Effectively we are adding a small correction to account for estimation problems. In a IPW setting there could be remaining imbalances between the treatment and control groups. To deal with this problem we would simply use G-computation to adjust for these residual imbalances. That is we would estimate the propensity score model with the pre-treatment covariates to predict treatment status and if there are remaining imbalances then we can include them in the outcome modeling to handle these imbalances. We can use a similar logic to improve the fit of our synthetic unit. In statistical learning framework we can kind of think of this as a boosting problem. 
+
+If the pre-treatment fit is poor we can use the augmented estimator to upweight units that are more predictive of the post-treatment outcomes. The ASCM can also handle cases where we may need weights to be negative and rely on extrapolation to get a good synthetic unit. We can relax the constraint of non-negative weights by applying a ridge penalty to the end of the ASCM model. This will let us control the amount of extrapolation that we allow. 
+
+The GSCM and SynthDiD view the problem not entirely differently but view SCM as matrix compeltion problem. Basically the idea is that based on the structure of our data we want to impute the missing potential outcomes based on what our matrix looks like. If we have a setting where N > T or a 'tall' then we would want to use cross-sectional information or vice-versa. The advantage of these approaches is that they are a bridge to the DiD stuff we did earlier and we can incorporate intercept shifts for units or time and can generalize to cases where lots of units are treated or there is staggered treatment timing. 

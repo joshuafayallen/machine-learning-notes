@@ -30,7 +30,8 @@ $$
 Posterior = \frac{\text{Probability of Data} \times Prior}{\text{Mean probability of Data}}
 $$
 
-Where we are averaging the probability of the prior. If we derive this out more formally we will see that the posterior is actually proportional to the prodct of the prior and the probability of the data. We can overcome a bad prior given an infinite amount of data, but this process will be inefficient and critically we will never reach infinite data. Priors in Bayesian inference are important computationally as well as substantively. 
+Where we are averaging the probability of the prior. If we derive this out more formally we will see that the posterior is actually proportional to the prodct of the prior and the probability of the data. The posterior distribution contains the relative plausibility of different parameter values, conditional on the data and model.
+We can overcome a bad prior given an infinite amount of data, but this process will be inefficient and critically we will never reach infinite data. Priors in Bayesian inference are important computationally as well as substantively. 
 
 ### What is a prior really? 
 
@@ -320,6 +321,9 @@ In a sense we did something similar but what we are doing is modeling the proble
 ```{r}
 #| results: hide 
 #| cache: true
+
+
+
 titanic <- read.csv("https://vincentarelbundock.github.io/Rdatasets/csv/Stat2Data/Titanic.csv")
 titanic <- subset(titanic, PClass != "*")
 

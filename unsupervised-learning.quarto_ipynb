@@ -21,7 +21,7 @@
         "\n",
         "We can use methods like PCA to reduce the number of dimensions. The general idea is that we are trying to map high dimensional relationships into lower dimesional proxies. \n"
       ],
-      "id": "2c384a43"
+      "id": "93f1d599"
     },
     {
       "cell_type": "code",
@@ -36,7 +36,7 @@
         "\n",
         "pengs.select(pl.exclude('year', 'species', 'sex', 'island')).drop_nans().corr()"
       ],
-      "id": "4594c2fe",
+      "id": "b4ffcadc",
       "execution_count": null,
       "outputs": []
     },
@@ -48,7 +48,7 @@
         "\n",
         "Principal components are a way to summarize the variation in these overlapping variables in a minimal set of variables. \n"
       ],
-      "id": "4f29b5ee"
+      "id": "e75fc473"
     },
     {
       "cell_type": "code",
@@ -100,7 +100,7 @@
         "plt.grid()\n",
         "plt.show()"
       ],
-      "id": "c15d0c49",
+      "id": "dddd028b",
       "execution_count": null,
       "outputs": []
     },
@@ -115,7 +115,7 @@
         "\n",
         "In a sense we are finding subgroups with this PCA example but we can also use clustering algorithms. Basically clustering algorithms will try to ifer subgroups from the data either through minimizing a distance measure if we are using k-means. We could also use mixture clustering where we make some assumptions of the distributions but can let more moment conditions enter into the clustering algorithm."
       ],
-      "id": "ff5984b1"
+      "id": "ba04f7b1"
     }
   ],
   "metadata": {
