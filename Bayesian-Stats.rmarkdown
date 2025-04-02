@@ -28,6 +28,11 @@ Bayesianism, in a way, is a formalization of this process by encoding our belief
 
 
 
+
+
+
+
+
 ```{r}
 
 prior_heads = rbinom(n = 2, size = 1000, prob = 0.5)
@@ -37,12 +42,27 @@ prior_heads[1]/sum(c(prior_heads[1], prior_heads[2]))
 
 ```
 
+
+
+
+
+
 So in this case we are just stating that the probability of heads is about 50 percent over a thousand trials assuming a fair coin. However, lets say that we know the coin is biased in a known way that makes it come up heads 61% of the time. We could then set our prior that it willl come up heads as this 
+
+
+
+
+
 
 
 ```{r}
 prior_heads_biased = rbinom(n = 2, size = 1000, prob = .61)
 ```
+
+
+
+
+
 
 This is not neccessarily all that unique from a standard null hypothesis which we covered in the opening "chapter" of this book. It is the combination of the prior and the posterior which makes the Bayesian machine go brrr. 
 
@@ -60,6 +80,11 @@ We can overcome a bad prior given an infinite amount of data, but this process w
 Setting a prior is one of the hardest things in Bayesian statistics and the subject a large and rich part of the literature. I think one really important thing to adjudicate is what a prior really is. That way we can reinforce the importance of setting a good one, what to check, and how to check it. 
 
 According to @gelman2013bayesian we can conceptualize the prior distribution along two different lines. There is the *population* interpretation. This is a little frequentisty but is definitely helpful. Lets say that we have some pseudo population of parameters that the candidate parameter $\beta$ is drawn from. For simplicity sake lets draw $\beta$ from as standard normal where we overlay the overall distribution 
+
+
+
+
+
 
 ```{r}
 library(tidyverse)
@@ -104,6 +129,11 @@ geom_density(mapping = aes(x = pop_total, y = after_stat(ncount)),
    theme(legend.position = 'none')
   
 ```
+
+
+
+
+
 
 So in the population interpretation of priors we have kind of weird population by design. Depending on what 'draw' we get our prior could be *N(5,1)* or it could be *N(10,1)* where plausible values center around 5 or 10 with a standard deviation of 1. In this setting we are thinking about given the data what is a reasonable set of values that we would expect to see. In this setting we are kind of explicitly using a bit of frequentist logic to bridge the gap. However, instead of assuming that all values between 5-15 are equally plausible we are expliciltly stating that the mass of the distribution will be around some value and the amount of variation that we will have. This could be useful if we have a huge amount of experiments or results banked and we can imagine our plausible beta values as drawn from some distribution of the experiments.
 
@@ -150,6 +180,11 @@ Lets say that out in the real world by some miracle of god we have a true normal
 
 
 
+
+
+
+
+
 ```{r}
 
 
@@ -174,6 +209,11 @@ ggplot(prior_df, aes(x = value, fill = prior)) +
 
 ```
 
+
+
+
+
+
 This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying "the parameter of interest is somewhere between $-\infty$ and $\infty$." My flat prior in the plot is more akin to a weakly informative prior is more akin to having a little more humility. A weakly informative prior is more akin to like we wouldn't expect the treatment effect to be all that big but it is not outside of the realm of possibility. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data. 
 
 
@@ -183,6 +223,11 @@ This could be better but you kind of get the idea. A flat/uninformative prior is
 ## Simulating Worlds 
 
 Simulations are superpowerful because we get to play god in a way that we don't normally get to do as social scientists. We can really simply simulate that you have roughly a 50/50 chance of getting heads or tails. 
+
+
+
+
+
 
 
 ```{r}
@@ -200,7 +245,17 @@ coin_flips |>
 ```
 
 
+
+
+
+
+
 While this is intuitive we can see how this varies by number of flips. 
+
+
+
+
+
 
 
 ```{r}
@@ -225,9 +280,19 @@ ggplot(coin_flips, aes(x = flip_number, y = heads_frequency)) +
 
 ```
 
+
+
+
+
+
 In expectation we start getting closer and closer to 50% heads. Neat, but why should we care? Well we can test how well our prior does on various situations with a known truth. 
 
 Lets take a randomized control trial with unobserved confounding using the really excellent `DeclareDesign` package. 
+
+
+
+
+
 
 
 ```{r}
@@ -251,7 +316,17 @@ fake_data = draw_data(rct)
 ```
 
 
+
+
+
+
+
 So now we have some fake data where we can display the 'truth' or in this case 0.2 
+
+
+
+
+
 
 
 ```{r}
@@ -259,7 +334,17 @@ diagnose_design(rct)
 ```
 
 
+
+
+
+
+
 When we go and estimate it on some fake data we can see how keeping or omitting the unobserved confounding. 
+
+
+
+
+
 
 
 
@@ -276,10 +361,20 @@ modelsummary::modelsummary(list('Controls Added' = control_for_confounding,
 ```
 
 
+
+
+
+
+
 This is pretty cool to see how this can go if we don't account for things that should be accounted for. The same general principle applies in Bayesian analysis. The reason we simulate out a RCT is that they are super expensive! We want to diagnose what could go wrong before we tell our partners what to do. The same idea applies for Bayes because we have two separate problems that can make it hard to tell what is going on. We have computational problems that can arise due to how Bayesian models are fit and we have modeling problems which are really just scientific problems. Conceptually these are somewhat distinct but practically these two run into each other all the time. We can isolate some of the computational mechanics of fitting a bad model on data we know is 'good'. This makes fitting lots of models easier. 
 
 
 How should we simulat the data? Typically we will define a parameter that seems reasonable! So if we are trying measure. So if we were trying to model the impact of a treatment on conversion rate aka how often do we move from a free user to a subscriber setting simulating a uniform distribution across treatment and control.
+
+
+
+
+
 
 ```{r}
 library(patchwork)
@@ -307,7 +402,17 @@ ggplot(conversions_tibble, aes(x = conversion_rate, fill = condition)) +
 ```
 
 
+
+
+
+
+
 We wouldn't expect that by doing nothing that conversion rate is uniformly distributed between 0 and 100 percent. Conversion rate for Netflix or established streaming services is probably closer to something that looks like this. 
+
+
+
+
+
 
 
 
@@ -334,11 +439,21 @@ ggplot(conversions_tibble_reasonable, aes(x = conversion_rate, fill = condition)
 ```
 
 
+
+
+
+
+
 ## Checking our Models
 
 There are lots of ways to check our model! One way that is fairly common because Gelman reccomends it is prior predictive checks. The first is a prior predictive check which is just a way for us to check on what influence the prior is going to have on the posterior distribution. As our data grows the influence of our prior is going to decrease and the likelihood function is going to start to have more influence on the posterior distribution. Or in other words how probable the observed data is given different value of the model. However, they are not totally irrelevant the prior can impose a form of regularization shrinking the posterior predictions back towards the 'true value.' This is to say that even in large-n settings a well calibrated prior is still important in simple models. In much more complex models the prior is going to do a lot more.
 
 In a sense we did something similar but what we are doing is modeling the problem only using the priors. 
+
+
+
+
+
 
 ```{r}
 #| results: hide 
@@ -365,6 +480,11 @@ mod_prior <- brm(PClass ~ SexCode + Age,
 pp_check(mod_prior)   
 ```
 
+
+
+
+
+
 In this case we the prior does okay matching the observed data. It could definitely be better
 
 :::callout
@@ -380,6 +500,11 @@ Lets break down some `brms` syntax first.
 - `dpar = 'class'` - Here we are telling it that we are making an assumption about the probability of being in second or 3rd class relative to 1st class 
 
 
+
+
+
+
+
 ```{r}
 
 mod_prior |>
@@ -388,9 +513,19 @@ mod_prior |>
 
 ```
 
+
+
+
+
+
 One important thing to note is that `brms` is based off of `lme4` which is one of the premier multilevel modeling packages for frequentist. As a political scientist we aren't really multilevel model people we are more throw OLS at everything people so some of the terminology around is different. 
 
 In OLS political science land we would say we include 'class fixed effects' to refer to a model that does something like this. 
+
+
+
+
+
 
 
 
@@ -402,7 +537,17 @@ modelsummary(logit_fe)
 
 ```
 
+
+
+
+
+
 When we say class fixed effects we really just mean including an intercept per classs. In multilevel land what we mean by a fixed effect is really just saying that these effects are constant across groups. So think of the effect of school on classroom performance or the effect of product popularity on ROI on adverstising channels. The way we would replicate the this is something to the effect of 
+
+
+
+
+
 
 
 ```{r}
@@ -416,11 +561,17 @@ brm(Survived ~ Age + (1|PClass), data = titanic) |>
 
 ```
 
+
+
+
+
+
 Admittedly also a really bad model but you get the idea. 
 
 :::
 
 We can then check our priors. We can also set priors on the intercept in our Titanic example if we stripped away age, class, and sex what would our baseline expectation of survival be? In an RCT this is really just what is a reasonable expectation for our control group. For other more complex models we could put priors on the effect of time, space, interactions between groupings and so much more. 
+
 
 
 
