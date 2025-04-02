@@ -172,7 +172,7 @@ ggplot(prior_df, aes(x = value, fill = prior)) +
 
 ```
 
-This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying "the parameter of interest is somewhere between $-\infty$ and $\infty$." My flat prior in the plot is more akin to a weakly informative prior where we are ruling out impossible values, but not really ruling out extreme vlalues. A weakly informative prior is more akin to like we wouldn't expect the treatment effect to be all that big but it is not outside of the realm of possibility that due to a weird draw of the experimental population people really take to the treatment. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data. 
+This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying "the parameter of interest is somewhere between $-\infty$ and $\infty$." My flat prior in the plot is more akin to a weakly informative prior where we are ruling out impossible values, but not really ruling out extreme values. A weakly informative prior is more akin to like we wouldn't expect the treatment effect to be all that big but it is not outside of the realm of possibility that due to a weird draw of the experimental population people really take to the treatment. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data. 
 
 
 
