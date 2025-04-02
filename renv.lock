@@ -9,37 +9,7 @@
     ]
   },
   "Packages": {
-    "AllenMisc": {
-      "Package": "AllenMisc",
-      "Version": "0.1.0",
-      "Source": "GitHub",
-      "Type": "Package",
-      "Title": "Allen Misc",
-      "Depends": [
-        "R (>= 3.5.0)"
-      ],
-      "Authors@R": "person(\"Josh\", \"Allen\", email = \"joshua.f.allen@gmail.com\",  role = c(\"aut\", \"cre\"))",
-      "Maintainer": "Josh Allen <joshua.f.allen@gmail.com>",
-      "Description": "R functions for my personal use. Mostly plotting plus some stuff I use for grading.",
-      "License": "GPL-3",
-      "Encoding": "UTF-8",
-      "RoxygenNote": "7.3.2",
-      "Roxygen": "list(markdown = TRUE)",
-      "Imports": [
-        "ggplot2",
-        "showtext",
-        "sysfonts"
-      ],
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "AllenMisc",
-      "RemoteUsername": "joshuafayallen",
-      "RemotePkgRef": "joshuafayallen/AllenMisc",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "d93dc626ef0c8bd400cf7ff816652132e7a5a141",
-      "NeedsCompilation": "no",
-      "Author": "Josh Allen [aut, cre]"
-    },
+    
     "Amelia": {
       "Package": "Amelia",
       "Version": "1.8.3",
