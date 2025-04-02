@@ -10,7 +10,7 @@
         "\n",
         "We have our general sense of probabilities where we are just the number of times things occur. This is kind of helpful.\n"
       ],
-      "id": "f06c7252"
+      "id": "f81b324b"
     },
     {
       "cell_type": "code",
@@ -26,7 +26,7 @@
         "\n",
         "1 / numbs.sum()\n"
       ],
-      "id": "d4e4c9bc",
+      "id": "367c90b6",
       "execution_count": null,
       "outputs": []
     },
@@ -53,7 +53,7 @@
         "\n",
         "This is a bit hard to visualize so lets take an example \n"
       ],
-      "id": "e50ccd43"
+      "id": "86ac58b4"
     },
     {
       "cell_type": "code",
@@ -67,7 +67,7 @@
         "    'party': ['Democrats', 'Republican', 'Independents']\n",
         "}).unpivot(index = 'party',variable_name='gender', value_name='total')\n"
       ],
-      "id": "ae5145af",
+      "id": "d5e981cc",
       "execution_count": null,
       "outputs": []
     },
@@ -77,7 +77,7 @@
       "source": [
         "senators.glimpse()\n"
       ],
-      "id": "789b51f4",
+      "id": "404174a2",
       "execution_count": null,
       "outputs": []
     },
@@ -87,7 +87,7 @@
       "source": [
         "So if we wanted to calculate the conditional probability of drawing a female democratic senator we would really just do this. \n"
       ],
-      "id": "1912c3eb"
+      "id": "996f89db"
     },
     {
       "cell_type": "code",
@@ -101,7 +101,7 @@
         "\n",
         "(womand_democrat/100)/(democrat/100)\n"
       ],
-      "id": "49ebbfd0",
+      "id": "d8791420",
       "execution_count": null,
       "outputs": []
     },
@@ -129,7 +129,7 @@
         "\n",
         "However as Rich points out there is nothing uniquely Bayesian about this example. We could theoretically rewrite this to just plug in the numbers into the classic frequentist conditional probability statement. The canoncial example is some sort of testing framework. In statistical rethinking they use \"Vampirism\" \n"
       ],
-      "id": "40bc2013"
+      "id": "ed64ed59"
     },
     {
       "cell_type": "code",
@@ -145,7 +145,7 @@
         "\n",
         "prob_vampire_positive * pr_vamp /  pr_positive\n"
       ],
-      "id": "eb63e040",
+      "id": "02c15fa3",
       "execution_count": null,
       "outputs": []
     },
@@ -178,7 +178,7 @@
         "\n",
         "What makes Bayesianism interesting is when we start updating the posterior distribution. Under the hood we need integral calculus to do this but hand deriving that either on paper or from scratch. Really what we are kind of doing when we run this through a MCMC is that we are sampling from our posterior distribution and counting the frequencies that something occurs. I am going to use the counting water example  \n"
       ],
-      "id": "334683cb"
+      "id": "df556ced"
     },
     {
       "cell_type": "code",
@@ -245,7 +245,7 @@
         "    \"\"\"\n",
         "    return np.random.choice(list(\"WL\"),  size=N, p=np.array([p, 1-p]), replace=True)"
       ],
-      "id": "d9e089f1",
+      "id": "bbae1d06",
       "execution_count": null,
       "outputs": []
     },
@@ -257,7 +257,7 @@
         "observations = \"WLW\"\n",
         "n_possible_ways, p_water = run_globe_tossing_simulation(observations, resolution=RESOLUTION)"
       ],
-      "id": "db847666",
+      "id": "08ce21ac",
       "execution_count": null,
       "outputs": []
     },
@@ -267,7 +267,7 @@
       "source": [
         "This will spit out the number of ways we can produce various draws. Now lets simulate the number of globe tosses wher we are just adding tosses. \n"
       ],
-      "id": "318cac24"
+      "id": "f96b6f50"
     },
     {
       "cell_type": "code",
@@ -314,7 +314,7 @@
         "    if not ii % 3:\n",
         "        plt.ylabel(\"posterior probability\")\n"
       ],
-      "id": "d81397c9",
+      "id": "e2c1ab10",
       "execution_count": null,
       "outputs": []
     },
@@ -340,7 +340,7 @@
         "\n",
         "factorials are just a simplfying way of writing out something like this. Where we are progresively multiplying 1 by 1 to 2 * 1 then so on and so forth. \n"
       ],
-      "id": "86bfaf5c"
+      "id": "e559cfe2"
     },
     {
       "cell_type": "code",
@@ -355,7 +355,7 @@
         "\n",
         "print(factorial(n = 5))"
       ],
-      "id": "eed52572",
+      "id": "ef1d8fd2",
       "execution_count": null,
       "outputs": []
     },
@@ -365,7 +365,7 @@
       "source": [
         "Lets say we wanted to figure out the number of possible table combinations. Lets say we have 20 people and 5 tables. So we would do something like this. \n"
       ],
-      "id": "2a913417"
+      "id": "0bb2dcdc"
     },
     {
       "cell_type": "code",
@@ -375,7 +375,7 @@
         "\n",
         "math.factorial(20)//(math.factorial(5) * math.factorial(20 - 5))\n"
       ],
-      "id": "aee2c6ce",
+      "id": "d15aaace",
       "execution_count": null,
       "outputs": []
     },
@@ -385,7 +385,7 @@
       "source": [
         "However this is not really how wedding seating works. Order matters and who sits next to who matters. So we need to take that into account. In instead of multiplying by the factorial of k we do something like this with permutations \n"
       ],
-      "id": "9102e8d1"
+      "id": "7e76eec3"
     },
     {
       "cell_type": "code",
@@ -393,7 +393,7 @@
       "source": [
         "math.factorial(20)//(factorial(20-5))\n"
       ],
-      "id": "417c92c5",
+      "id": "cefc1faf",
       "execution_count": null,
       "outputs": []
     },
@@ -407,7 +407,7 @@
         "\n",
         "Effectively we can take any distribution that we want and take an infinite number of samples from it and it will be a normal distribution. Lets take our trusty dusty old uniform distribution\n"
       ],
-      "id": "8b93e263"
+      "id": "8992f773"
     },
     {
       "cell_type": "code",
@@ -423,7 +423,7 @@
         "\n",
         "plt.show()"
       ],
-      "id": "e9342883",
+      "id": "d091f845",
       "execution_count": null,
       "outputs": []
     },
@@ -433,7 +433,7 @@
       "source": [
         "Then lets compare what happens when we take increasingly larger sample sizes.\n"
       ],
-      "id": "8537a439"
+      "id": "9f5580ff"
     },
     {
       "cell_type": "code",
@@ -460,7 +460,7 @@
         "  + geom_histogram(bins = 30) \n",
         "  + facet_wrap(\"sample_size\"))"
       ],
-      "id": "dc36b2ab",
+      "id": "701aeaec",
       "execution_count": null,
       "outputs": []
     },
@@ -475,7 +475,7 @@
         "\n",
         "The likelihood, on the other hand, is the measure of how well a statistical model or hypothesis fits a set of observed data. It is not a probability, but rather a measure of how plausible the data is given the model or hypothesis. For example, if we have a hypothesis that the average height of people in a certain population is 6 feet, the likelihood of observing a random sample of people with an average height of 5 feet would be low.\n"
       ],
-      "id": "cd238082"
+      "id": "38ebdba3"
     }
   ],
   "metadata": {

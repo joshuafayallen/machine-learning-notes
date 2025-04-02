@@ -119,7 +119,7 @@ What this means is that effectively the posterior is a bit of a compromise betwe
 
 ### How to set priors
 
-Most of the time people say just use your substantive knowledge. But that's generally not helpful if you haven't done that in a statistical setting. Lets take it step by step. First we generally outline what we link the distribution of our dependen variable would be. For our outcome variable we may think that its a normal distribution so we would write it like this
+Most of the time people say just use your substantive knowledge. But that's generally not helpful if you haven't done that in a statistical setting. Lets take it step by step. First we generally outline what we link the distribution of our dependent variable would be. For our outcome variable we may think that its a normal distribution so we would write it like this
 
 $$
 Outcome \sim Normal(\mu, \sigma)
@@ -133,7 +133,7 @@ $$
 Outcome \sim Bernouli(\text{Number of Trials},\text{Probability true})
 $$
 
-The next step is is we have to think about our generative model. So to ground our analysis it helps to start from a DAG. We generally have beliefs about an intervention in the world. It helps to start from a causal model because we generally have beliefs about what parts of the model we care about. That way we can start thinking about the potential relationships in our data. We then have to think of the plausible ranges for these values and what the uncertainty around them. 
+The next step is is we have to think about our generative model. So to ground our analysis it helps to start from a DAG. We generally have beliefs about an intervention in the world. That way we can start thinking about the potential relationships in our data. We then have to think of the plausible ranges for these values and what the uncertainty around them. 
 
 
 $$
@@ -146,8 +146,6 @@ $$
 Where we are shifting the mean a bit and putting a somewhat conservative prior. This is generally fine but there are lots of priors we can set. 
 
 Lets say that out in the real world by some miracle of god we have a true normal distribution where the mean is zero and the standard deviation is 1. We can set informative, weakly informative, flat/non-informative prior, and a conjugate prior. Conjugate priors are a little bit harder to visualize with the below schema because a conjugate prior is something that also relies on the posterior. Meaning that if it turns out the posterior of our mean comes from the same family then it turns out that our prior is conjugate.
-
-
 
 
 ```{r}
@@ -174,7 +172,7 @@ ggplot(prior_df, aes(x = value, fill = prior)) +
 
 ```
 
-This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying "the parameter of interest is somewhere between $-\infty$ and $\infty$." My flat prior in the plot is more akin to a weakly informative prior is more akin to having a little more humility. A weakly informative prior is more akin to like we wouldn't expect the treatment effect to be all that big but it is not outside of the realm of possibility. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data. 
+This could be better but you kind of get the idea. A flat/uninformative prior is at best a bit like saying "the parameter of interest is somewhere between $-\infty$ and $\infty$." My flat prior in the plot is more akin to a weakly informative prior where we are ruling out impossible values, but not really ruling out extreme vlalues. A weakly informative prior is more akin to like we wouldn't expect the treatment effect to be all that big but it is not outside of the realm of possibility that due to a weird draw of the experimental population people really take to the treatment. Priors can get pretty crazy because well the real world is messy and making simplyfying assumptions is hard. This is why (most) Bayesians will simulate the world first before even touching the data. 
 
 
 
