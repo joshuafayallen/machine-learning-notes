@@ -15,9 +15,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y \
-          libpng-dev libfreetype6-dev libcurl4-openssl-dev libssl-dev \
-          libxml2-dev
+        run: sudo apt-get update && sudo apt-get install -y libpng-dev libfreetype6-dev libcurl4-openssl-dev libxml2-dev
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
