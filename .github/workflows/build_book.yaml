@@ -41,30 +41,9 @@ jobs:
           python-version-file: "pyproject.toml"
       
 
-      - name: Render book to all format
-        # Add any command line argument needed
-        run: |
-          quarto render
-
-      - name: Upload website artifact
-        if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
-        uses: actions/upload-pages-artifact@v3
+      - name: Render and Publish book
+        uses: quarto-dev/quarto-actions/publish@v2
         with:
-          path: "_book"
-
-  deploy:
-    needs: build
-
-    permissions:
-      pages: write # to deploy to Pages
-      id-token: write # to verify the deployment originates from an appropriate source
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          target: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
