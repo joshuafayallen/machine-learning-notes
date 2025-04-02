@@ -24,7 +24,8 @@ book:
 bibliography: ref.bib
 format:
  html: default 
- theme: cosmo
+ theme:
+   - cosmo
 execute: 
   message: false
   warning: false
