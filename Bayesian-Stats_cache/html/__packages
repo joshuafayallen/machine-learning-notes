@@ -18,3 +18,15 @@ brms
 modelsummary
 tidybayes
 broom.mixed
+ggdag
+dagitty
+marginaleffects
+palmerpenguins
+scales
+ggtext
+cmdstanr
+posterior
+rethinking
+animation
+shape
+MetBrewer
