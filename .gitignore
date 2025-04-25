@@ -14,3 +14,4 @@ wheels/
 .Rproj.user
 /_book/
 *.DS_Store
+*_cache

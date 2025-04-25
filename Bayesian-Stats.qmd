@@ -334,6 +334,9 @@ ggplot(conversions_tibble_reasonable, aes(x = conversion_rate, fill = condition)
 
 ```
 
+## Important priors 
+
+
 
 ## Checking our Models
 
@@ -443,8 +446,6 @@ data('Howell1', package = 'rethinking')
 just_adults = Howell1 |>
     filter(age >= 18) |>
     mutate(height_z = scale(height))
-
-all.equal(just_adults$height_z, (just_adults$height - mean(just_adults$height))/sd(just_adults$height))
 
 
 
@@ -623,7 +624,7 @@ dagify(Weight ~ Height + Sex,
 
 ```
 
-Rich advises using index variables for things we would normally make a factor or an indicator variable. His argument is that this makes it easier to set a prior on each the different levels of the category. What this does is split apply our prior to both levels of sex. If we wanted to get crazy I think if we wanted to get crazy we could actually estimate a multilevel model. Will it outperform a linear model? ¯\_(ツ)_/¯. In this case we could create a fairly neutral prior 
+Rich advises using index variables for things we would normally make a factor or an indicator variable. His argument is that this makes it easier to set a prior on each the different levels of the category. What this does is split apply our prior to both levels of sex. If we wanted to get crazy  we could actually estimate a multilevel model. Will it outperform a linear model? ¯\_(ツ)_/¯. In this case we could create a fairly neutral prior 
 
 
 ```{r}
@@ -2157,6 +2158,7 @@ get_psis = map(check_models, \(x){
 
 
 This is kind of an expensive task computationally and not all that fun to wrangle. We can actually learn the optimal posterior distribution of sigma from modeling. If we look at the summary of the model we can see that the model learns the optimal value of sigma or the global variation of tanks. 
+
 ```{r}
 
 tank_priors = c(prior(cauchy(0, 1.5), class = Intercept),  
@@ -2458,8 +2460,8 @@ withr::with_seed(123, {
            subtitle = c("Strong negative correlation\nbetween slope and intercept",
                         "No correlation\nbetween slope and intercept",
                         "Strong positive correlation\nbetween slope and intercept")) |> 
-    mutate(Sigma = map(rho, ~matrix(c(1, .x, .x, 1), 2, 2))) |> 
-    mutate(data = map(Sigma, ~{
+    mutate(Sigma = purrr::map(rho, ~matrix(c(1, .x, .x, 1), 2, 2))) |> 
+    mutate(data = purrr::map(Sigma, ~{
       MASS::mvrnorm(n = 100, mu = c(2, 3), Sigma = .x) |> 
         as_tibble() |> 
         rename(b0 = V1, b1 = V2)
@@ -2689,8 +2691,8 @@ loo_stats = tribble(~model_name, ~model,
                     'Random Intercepts Cauchy prior', runner_model_cauchy,
                     'Random Intercepts & Slopes \n ETA = 1', var_mod1,
                     'Random Intercepts & Slopes \n ETA = 1.5', var_mo2) |>
-            mutate(loo = map(model, \(x) loo(x))) |>
-            mutate(loo_stuff = map(loo, ~as_tibble(.$estimates, rownames = "statistic"))) |>
+            mutate(loo = purrr::map(model, loo)) |>
+            mutate(loo_stuff = purrr::map(loo, ~as_tibble(.$estimates, rownames = "statistic"))) |>
             select(model_name, loo_stuff) |> 
   unnest(loo_stuff) |> 
   filter(statistic == "elpd_loo") |> 
@@ -2808,17 +2810,20 @@ climbing_prior_mod = brm(
 )
 
 check_prds = climbers |>
-    add_predicted_draws(climbing_prior_mod) |>
-    mutate(age = age_c - unscaled$scaled_center) |>
-    unnest(age)
-
-glimpse(check_prds)
+    add_predicted_draws(climbing_prior_mod, ndraws = 1000)
 
 ggplot(check_prds, aes(x = age, y = .prediction, color = oxygen_used)) +
-    geom_dots(aes(side = ifelse(.prediction == 1, 'bottom', 'top'))) +
-    geom_line(aes(group = .draw))
+    geom_dots(aes(side = ifelse(.prediction == '1', 'bottom', 'top')), pch = 19, scale = 0.2)
+
+
+pp_check(climbing_prior_mod)
 
 ```
+
+
+Hmmm it seems that we could probably do a bit better. If we check the coefficients the implication is that if we use oxygen then it will decrease our likelihood of survival which intuitively we know is crazy! Once again working with 
+
+
 
 
 ## Ordered Monotonic predictors 
@@ -2847,4 +2852,4 @@ And so on and so forth. Effectively we are adding the effect current level of ed
 
 These seem to be uber popular with Bayesians who do anything related to time and space. The idea kind of boils down to Tobler's first law of geography "things that are close to each other are more similar than things that are far away from each other."  
 
-A Gaussian process is "an inifinte dimensional generalization of multivariate distributions." In English this says that we use a kernel function that generalizes to infinite dimensions/observations/predictions instead of a conventional covariance matrix. The kernel gives the covariance between any paris of points as a function of their distance whether this be physical distance or time etc.  
+A Gaussian process is "an inifinte dimensional generalization of multivariate distributions." In English this says that we use a kernel function that generalizes to infinite dimensions/observations/predictions instead of a conventional variance-covariance matrix. If you think of the varying slopes and intercepts models that we have worked with before there isn't any ordering to the categories. I have a hierarcical ranking of seasons but that is not a constraint that I would ever impose on a model. If we wanted to include something like distance or time the variance-covariance matrix would be huge because well it is a continous variable. Instead of the standard matrix we just sub in a kernel to take the place of this big unruly matrix. A kernel function willl generalize to infinite dimensions. The kernel gives the covariance between any pair of points as function of their distance. As always we set a prior which is effectively the rate of decay between the tips. Like 0 distance all the way to the max of the distance and the maximum covariance. These are kind of just regularization priors in some respect. 

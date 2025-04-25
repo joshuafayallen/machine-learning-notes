@@ -1,0 +1,678 @@
+---
+title: "From R to Stan"
+format: html
+execute: 
+  cache: true
+  freeze: true
+  results: 'hide'
+  message: false
+  warning: false
+---
+
+We flew a little close to the sun and now you may need a crash course in Stan. Stan is somehow the friendly wrapper around a likely more unwieldy C library. Lets work with everybody's favorite dataset the palmerpenguins.
+
+```{r}
+library(brms)
+library(tidybayes)
+library(broom.mixed)
+library(patchwork)
+library(ggtext)
+library(tidyverse)
+
+penguins = palmerpenguins::penguins |>
+    drop_na() |>
+    mutate(across(ends_with('mm'), \(x) x/10, .names = '{col}_cm'),
+           across(ends_with('cm'), ~scale(., scale = FALSE), .names = '{col}_z'),
+           across(ends_with('cm'), ~scale(., scale = FALSE), .names = '{col}_centered'),
+           body_mass_lbs = body_mass_g/453.59237) |>
+    pivot_longer(contains('cm'),
+    names_to = 'name',
+    values_to = 'value') |>
+    mutate(name = str_remove(name, 'mm_')) |>
+    pivot_wider(names_from = name, values_from = value) |>
+    select(-ends_with('mm'), -body_mass_g) |>
+    mutate(across(ends_with('z'), \(x) as.numeric(x)))
+
+
+extract_attributes <- function(x) {
+  attributes(x) %>%
+    set_names(janitor::make_clean_names(names(.))) %>%
+    as_tibble() %>%
+    slice(1)
+}
+
+unscaled <- penguins %>%
+  select(ends_with("_centered")) |> 
+  summarize(across(everything(), ~extract_attributes(.))) |> 
+  pivot_longer(everything()) |> 
+  unnest(value) |> 
+  split(~name)
+
+
+theme_set(theme_minimal())
+```
+
+Throughout trying to tune the priors I found that it was kind of hard to think of the proper priors since I am an American who doesn't work in the life sciences so millimeters and grams are a bit hard for me to work with mentally. So I beligerantly converted them to lbs and cm. Now lets explore the data a bit. 
+
+```{r}
+
+penguins |>
+    summarise(flip_pop_mean = mean(flipper_length_cm),
+              flip_pop_sd = sd(flipper_length_cm),
+              bill_l_pop_mean = mean(bill_length_cm),
+              bill_l_sd = sd(bill_length_cm),
+              mean_body_masslb = mean(body_mass_lbs),
+              sd_body_mass_lb = sd(body_mass_lbs))
+
+
+
+```
+
+This kind of makes sense we would expect flipper lengths to vary a lot since we haven't accounted for species flippers are like a fair amount of the body when we think about the anatomy of a penguin. If we think about a bill on a bird they probably they are not all that long to begin with. If we break it down by species. The average penguin is around 9 lbs give or take a pound. 
+
+```{r}
+penguins |>
+    group_by(species) |>
+    summarise(flip_pop_mean = mean(flipper_length_cm),
+              flip_pop_sd = sd(flipper_length_cm),
+              bill_l_pop_mean = mean(bill_length_cm),
+              bill_l_sd = sd(bill_length_cm),
+              mean_body_masslb = mean(body_mass_lbs),
+              sd_body_mass_lb = sd(body_mass_lbs))
+```
+
+This kind of makes sense because if we plot body mass by penguins 
+
+```{r}
+
+ggplot(penguins, aes(x = body_mass_lbs, fill = species)) +
+    geom_density(color = 'white', alpha = 0.5)
+
+
+```
+
+They tend to be a little chonkier than the other two species. Comparing distributions are fraught but visually it looks like the heaviest Adelie and Chinstrap penguins are more or less about the same weight as the average Gentoo penguin. 
+
+
+```{r}
+
+ggplot(penguins, aes(x = flipper_length_cm, y = body_mass_lbs)) +
+    geom_smooth(method = 'lm') +
+    geom_point(aes(color = species))
+
+```
+
+
+If we plot the model than we see that there is a positive relationship between the two and that as we suspected the Gentoo penguins tend to have longer flippers and are chonkier. We wouldn't be all that surprised if a penguing was like 5 lbs heavier than the average or 5 lbs less than the average.  
+
+
+
+```{r}
+ggplot(penguins, aes(x = bill_length_cm, y = body_mass_lbs)) +
+    geom_smooth(method = 'lm') +
+    geom_smooth(aes(color = species), method = 'lm') +
+    geom_point(aes(color = species))
+```
+
+Interestingly we see that bill length is not neccessarily all that predictive of body mass when we break it out of by species. This probably makes biological sense because bill length is probably just an indicator of prey type. A hummingbird has a long narrow beak for getting pollen while a bird with a similar size may have a beak that is better suited for scooping up seeds or bugs. 
+
+## Tuning the Priors
+
+Lets build the machine bit by bit. We wouldn't be surprised if the average would be anywere from 7 to 11 lbs. We expect that for every cm of flipper length that we would expect body mass to increase by like a pound to half a pound. Then for sigma for any given penguin we would think that the variation would be any betweeen 1-5 pounds. Lets go and look at the priors. 
+
+
+```{r}
+options(scipen = 999)
+
+intercept_prior =  ggplot() +
+  geom_function(fun = ~dnorm(., 9, 2), linewidth = 1) +
+  xlim(c(0, 20)) +
+  labs(x = 'Average Penguin Weight')
+
+
+flipper_length_prior = ggplot() +
+    geom_function(fun = ~dnorm(., mean = 0, sd = 0.1)) +
+    xlim(c(-2, 2)) +
+    labs(x = 'Flipper Length Prior, centered')
+
+
+sigma_prior = ggplot() +
+    geom_function(fun = ~dexp(.,1/3)) +
+    xlim(c(0, 20)) +
+    labs(x = 'Variation in Penguin Weight')
+
+
+intercept_prior | flipper_length_prior | sigma_prior
+
+```
+
+These don't seem all that wild so lets look at the predcitions from the prior. 
+
+
+```{r}
+
+flipper_prior = c(
+    prior(normal(10, 2), class = Intercept),
+    # approx a pound in either direction which is a fairly uninformative prior 
+    # we expect about a half a lb increase
+    prior(normal(0, 0.15), class = b),
+    # give or take 5 lbs in the remaining model
+    prior(exponential( 0.3333333), class = sigma)
+)
+
+flipper_prior_mod = brm(
+    body_mass_lbs ~ flipper_length_cm_z,
+    data = penguins, 
+    prior = flipper_prior,
+    sample_prior = 'only'
+)
+
+plot(flipper_prior_mod)
+
+draws_flipper_prior = tibble(flipper_length_cm_z = seq(17 - unscaled$flipper_length_cm_centered$dim, 
+                                                       24 - unscaled$flipper_length_cm_centered$dim, 1)) |>
+                     add_epred_draws(flipper_prior_mod, ndraws = 100) |>
+                     mutate(unscaled = flipper_length_cm_z + unscaled$flipper_length_cm_centered$dim)
+
+pred_dens = ggplot(draws_flipper_prior, aes(x = .epred, group = .draw)) +
+    geom_density() +
+    xlim(c(0, 20))
+
+prds = ggplot(draws_flipper_prior, aes(x = unscaled, y = .epred, group = .draw)) +
+    geom_line() 
+
+prds + pred_dens
+```
+
+As we can see there is no real relationship in between flipper length and body mass. We are seeing that we are getting more than a few draws. a
+
+```{r}
+pp_check(flipper_prior_mod, ndraws = 25) +
+    xlim(c(0, 20))
+```
+
+I would say these priors aren't the best. It does tend to favor smaller penguins which I guess makes sense when we think about the data. I would say that maybe it could work? I don't neccessarily think we are getting the worst representation of the world. 
+
+
+```{r}
+flipper_mod = brm(
+    body_mass_lbs ~ flipper_length_cm_z,
+    data = penguins, 
+    prior = flipper_prior
+)
+
+draws_flipper_mod = tibble(flipper_length_cm_z = seq(17 - unscaled$flipper_length_cm_centered$dim, 
+                                                       24 - unscaled$flipper_length_cm_centered$dim, 1)) |>
+                     add_epred_draws(flipper_mod , ndraws = 100) |>
+                     mutate(unscaled = flipper_length_cm_z + unscaled$flipper_length_cm_centered$dim)
+
+
+pred_dens = ggplot(draws_flipper_mod, aes(x = .epred, group = .draw)) +
+    geom_density() 
+
+prds = ggplot(draws_flipper_mod, aes(x = unscaled, y = .epred, group = .draw)) +
+    geom_line() 
+
+pred_dens | prds
+
+
+
+
+```
+
+Oh yikes. These priors produce some pretty yucky results. We are consitently seeing negative results which can't be the case for body mass. 
+
+```{r}
+pp_check(flipper_mod , ndraw = 25)
+
+```
+
+Well I guess the brightside is that the posterior predictions look good. 
+
+
+
+```{r}
+flip_prior2 = c(
+    prior(normal(10, 2), class = Intercept),
+    prior(lognormal(0.5,1), class = b, lb = 0),
+    prior(exponential(0.3333333), class = sigma))
+
+flipper_prior_mod2 = brm(
+    body_mass_lbs ~ flipper_length_cm,
+    data = penguins, 
+    prior = flip_prior2,
+    sample_prior = 'only',
+    iter = 4000
+)
+
+
+pp_check(flipper_prior_mod2)
+
+```
+
+Okay the posterior predictive checks look a lot better. Still a little bit favoring smaller penguins. 
+
+```{r}
+draws_flipper_prior2 = tibble(flipper_length_cm = seq(17, 25, length.out = 100)) |>
+    add_epred_draws(flipper_prior_mod2, ndraws = 100)
+
+pred_dens = ggplot(draws_flipper_prior2, aes(x = .epred, group = .draw)) +
+    geom_density() +
+    xlim(c(0,30))
+
+prds = ggplot(draws_flipper_prior2, aes(x = flipper_length_cm, y = .epred, group = .draw)) +
+    geom_line() + 
+    ylim(c(0, 30))
+
+pred_dens | prds
+
+```
+
+These are some extreme predictions but I would feel mostly comfortable with these priors. Now lets let the prior meet the likelihood. 
+
+
+```{r}
+flip_prior2 = c(
+    prior(normal(10, 2), class = Intercept),
+    prior(lognormal(0.5,1), class = b, lb = 0),
+    prior(exponential(0.3333333), class = sigma))
+
+flipper_mod2 = brm(
+    body_mass_lbs ~ flipper_length_cm,
+    data = penguins, 
+    prior = flip_prior2,
+    iter = 4000
+)
+
+draws_flipper = tibble(flipper_length_cm = seq(17, 25, length.out = 100)) |>
+    add_epred_draws(flipper_mod2, ndraws = 100)
+
+
+ggplot(draws_flipper, aes(x = flipper_length_cm, y = .epred, group = .draw)) +
+    geom_line() +
+    ylim(c(0, 30))
+
+```
+
+wow this prior is a little restrictive 
+
+
+```{r}
+pp_check(flipper_mod2, ndraws = 25)
+```
+
+
+Lets loosener her up a little. 
+
+```{r}
+flip_prior2 = c(
+    prior(normal(10, 2), class = Intercept),
+    prior(lognormal(0.5,1), class = b, lb =0),
+    prior(exponential(0.3333333), class = sigma))
+
+flipper_mod2 = brm(
+    body_mass_lbs ~ flipper_length_cm,
+    data = penguins, 
+    prior = flip_prior2,
+    iter = 4000
+)
+
+draws_flipper = tibble(flipper_length_cm = seq(17, 25, length.out = 100)) |>
+    add_epred_draws(flipper_mod2, ndraws = 1000)
+
+
+ggplot(draws_flipper, aes(x = flipper_length_cm, y = .epred, group = .draw)) +
+    geom_line() +
+    ylim(c(0, 30))
+
+```
+
+
+Cool lets move onto the bill length variable. This variable is a little weird because it is not all that variable even when we break it out by species. Two cm is a pretty generous spread for this variable. 
+
+
+```{r}
+ggplot() +
+    geom_function(fun = ~dlnorm(., 0, 1)) +
+    scale_x_continuous(limits = c(0,20), breaks = seq(0, 5, by = 1))
+```
+
+```{r}
+add_bills = c(
+    prior(normal(10, 2), class = Intercept),
+    prior('lognormal(0,1)', lb = 0),
+    prior(normal(0, 0.5), coef = 'bill_length_cm_z' ),
+    prior(exponential(0.3333333), class = sigma))
+
+
+bill_prior_1 = brm(
+    body_mass_lbs ~ flipper_length_cm + bill_length_cm_z,
+    data = penguins, 
+    prior = add_bills,
+    iter = 4000
+)
+
+bill_draws = tibble(
+    bill_length_cm_z = seq(-2, 2, length.out = 100),
+    flipper_length_cm = 0
+) |>
+    add_epred_draws(bill_prior_1)
+
+
+ggplot(bill_draws, aes(x = bill_length_cm_z, y = .epred, group = .draw)) +
+    geom_line()
+
+```
+
+This has been a long day. The real problem is that species is doing a ton of heavy lifting for explaining the different body masses of penguins. Likely there is an interactive effect between species and all of these measurements. I more principled way would probably to do some PCA since these are all closely related to each other. 
+
+
+```{r}
+
+penguins = penguins |>
+    mutate(species = factor(species))
+
+int_priors = c(
+    # species prior
+    prior(normal(9, 2), class = b, coef = 'speciesAdelie'),
+    prior(normal(9,2), class = b, coef = 'speciesChinstrap'),
+    prior(normal(10,2), class = b, coef = 'speciesGentoo'),
+    # flipper and bill length cm 
+    prior(lognormal(0,1.5), class = b , lb = 0),
+    prior(exponential(0.3333333), class = sigma))
+
+
+
+int_mod = brm(
+    bf(body_mass_lbs ~ 0 + species + species:flipper_length_cm + bill_length_cm),
+       data = penguins,
+       prior = int_priors,
+       iter = 6000)
+
+
+
+```
+
+Cool the priors are more or less in pretty good place. Lets now turn to Stan.
+
+## Stan 
+
+```{r}
+stan_int_mod = stancode(int_mod)
+```
+
+
+Stan is closer to working in C++ than in R. So we have to adjust the mental model a little bit. 
+
+- `//` is a comment so we will be throwing a lot of those in at first 
+
+Stan requires a really strict ordering so we will go through the order accordingly. All data that is going to be used in the model has to be declared in the datablock and along with the corresponding types. Here we are going to set some pretty loose priors around the average flipper and bill length letting it vary by more or less by 20 mm so that seems fine? In the real data that is a little bit more generous than observed in the real data. I don't have a good intuition of what we would expect for the body mass of a penguin with no flippers and no bill length. The likely scenario where that happens is definitely grim. 
+
+### Data 
+
+In the data block we declare our data, duh, the interesting thing about the data block is just how specific she is compared to just chucking in data from a data frame.
+
+```
+data {
+  int<lower=1> N;  // total number of observations
+  vector[N] Y;  // response variable
+  int<lower=1> K;  // number of population-level effects
+  matrix[N, K] X;  // population-level design matrix
+  int prior_only;  // should the likelihood be ignored?
+}
+
+```
+
+Technically the first block that Stan will consider is the functions block. However, in this case we don't need it for this analysis. However the data block is instructive. In the first row we have the entire length of the dataset that is not all that interesting since the annotated stan code is self explanatory. In it we see that the we are setting a lower bound for the total number of observations. This makes sense because we can't have negative observations. Next we define our DV or whatever we want to call it as a vector that goes from 0 through max N. Critically the vector is unconstrained. If we wanted to we could change the data block to constrain Y to be positive which could be useful especially if like body weight our outcome variable cannot be negative. This is less a hard constraint but rather a useful test. 
+
+```
+data{
+    int<lower=1> N;
+    vector<lower=0>[N]Y
+}
+
+
+```
+
+In the next block we have our population effect. This is more of a hang up around the fact that `brms` imports a lot of its syntax and language conventions from multilevel models. It is constrained to be positive since we set a `lognormal` prior. 
+
+```
+data {
+  int<lower=1> N;  // total number of observations
+  vector[N] Y;  // response variable
+  int<lower=1> K;  // number of population-level effects
+  matrix[N, K] X;  // population-level design matrix
+}
+```
+
+So a population level effect is not like the frequentist sense of population but something like this. 
+
+
+
+```{r}
+#| eval: false
+
+lm(outcome ~ population_effect1 + population_effect2)
+```
+
+
+What is fun is that we are defining the X variable as an N by K matrix or simply the number of observations by the number of columns of the population effect. So in our case it would be species, flipper length in cm, bill length in cm. 
+
+
+### Parameters 
+
+The parameters in this case are our betas and the variance which we are once again constraining to be positive 
+
+
+```
+parameters {
+  vector<lower=0>[K] b;  // regression coefficients
+  real<lower=0> sigma;  // dispersion parameter
+}
+```
+
+Here we are just breaking out the K part of the matrix and setting a lower bound of zero which we set with our `prior(lognormal(0, 1.5), lb = 0)` then the same goes for sigma which is really just the decay hyperparameter we set in the our prior model. If we had more variables we would see those show up here. 
+
+
+
+### Transformed Parameters 
+
+This is where the priors start to show up from our model. The first part breaking up our intercept priors for our interactions model.
+
+```
+transformed parameters {
+  real lprior = 0;  // prior contributions to the log posterior
+  lprior += normal_lpdf(b[1] | 9, 2)
+    - 1 * normal_lccdf(0 | 9, 2);
+  lprior += normal_lpdf(b[2] | 9, 2)
+    - 1 * normal_lccdf(0 | 9, 2);
+  lprior += normal_lpdf(b[3] | 10, 2)
+    - 1 * normal_lccdf(0 | 10, 2);
+  lprior += lognormal_lpdf(b[4] | 0, 1.5);
+  lprior += lognormal_lpdf(b[5] | 0, 1.5);
+  lprior += lognormal_lpdf(b[6] | 0, 1.5);
+  lprior += lognormal_lpdf(b[7] | 0, 1.5);
+  lprior += exponential_lpdf(sigma | 0.3333333);
+}
+```
+
+In this case we are using a truncated normal distribution so everything is going to be above 0. There are still some possibilities of a 1 lb penguin with 1cm flipper or bill but we wouldn't expect them to be super duper likely. Then we have our log normal priors split across all 8 of our parameters 
+
+
+```{r}
+#| echo: false
+
+tidy(int_mod) |>
+    select(term)
+
+```
+
+One thing that doesn't show up in R and is slightly different than Python's `+=` operator which increments something by some other number like this
+
+
+```{python}
+
+num = 0 
+
+for i in range(0,3):
+    num += 2
+    print(num)
+
+```
+
+The Stan `+=` operator is telling Stan that we are targeting the log posterior. Hence why this shows up in the transformed parameters block. 
+
+
+### Model 
+
+Now the model is being specified target `target operator` OLS(Y| x, no intercept, beta, unmodeled variance)
+
+```
+model {
+  // likelihood including constants
+  if (!prior_only) {
+    target += normal_id_glm_lpdf(Y | X, 0, b, sigma);
+  }
+  // priors including constants
+  target += lprior;
+}
+```
+
+This looks a little bit weird but we are passing off some transformations to Stan telling it to constrain our variables so the model block looks a bit bare compared to some other one we can also specify the full model like this 
+
+
+```
+model {                     // Model block
+  vector[N] mu;
+  mu = X * beta;            // Creation of linear predictor
+  
+  // priors
+  beta  ~ normal(0, 10);
+  sigma ~ cauchy(0, 5);     // With sigma bounded, this is half-cauchy
+  
+  // likelihood
+  y ~ normal(mu, sigma);
+}
+
+
+```
+
+This makes the process a bit more explicit. If we had followed along with raw rethinking code the translation from `quap` or `ulam` is a bit more straight forward. To rexpress the penguins model we would do something to this effect 
+
+
+```{r}
+
+flipper_prior_mod2 = brm(
+     body_mass_lbs ~ flipper_length_cm,
+     data = penguins, 
+     prior = flip_prior3,
+     iter = 4000
+ )
+
+```
+
+```
+data {
+  int<lower=1> N;
+  vector[N] Y;
+  int<lower=1> K;
+  matrix[N, K] X;
+}
+parameters {
+  real a;              // intercept
+  vector[K] b;         // beta coefficients
+  real<lower=0> sigma; // standard deviation (must be positive)
+}
+model {
+  vector[N] mu;
+
+  // Linear predictor
+  mu = a + X * b;
+
+  // Priors
+  a ~ normal(10, 2);
+  b ~ normal(9, 3);  
+  sigma ~ exponential(0.333);
+
+  // Likelihood
+  Y ~ normal(mu, sigma);
+}
+
+```
+
+## Modeling with Stan 
+
+Lets step back and use a toy example from a blog post so it is easy to follow along 
+
+
+```{r}
+library(cmdstanr)
+cars_data = mtcars  |>
+    rename(cylinders = cyl,
+         displacement = disp,
+         rear_axle_ratio = drat,
+         weight = wt,
+         engine_type = vs,
+         trans_type = am,
+         gears = gear) |>
+             mutate(engine_type = factor(engine_type, levels = c(0, 1), 
+                              labels = c("V-shaped", "Straight")),
+         trans_type = factor(trans_type, levels = c(0, 1),
+                             labels = c("Automatic", "Manual")))
+
+```
+
+
+Single predictor model 
+
+
+```{r}
+
+
+model_data = cars_data |>
+    select(mpg, weight) |>
+    compose_data()
+
+
+mpg_model = cmdstan_model(stan_file = 'stan-mods/mpg.stan')
+
+```
+
+
+Now we need to fit the model
+
+
+
+```{r}
+
+fitted_mpg = mpg_model$sample(
+    data = model_data
+)
+
+get_draws = fitted_mpg$draws()
+
+```
+
+Then lets look at the 
+
+```{r}
+
+bayesplot::mcmc_trace(get_draws)
+
+
+```
+
+Whats nice is that we can use some of our tidybayes functions 
+
+```{r}
+
+draws_df = fitted_mpg$draws(format = 'df') |>
+    add_predicted_draws()
+
+
+
+```
+
+
+
+
