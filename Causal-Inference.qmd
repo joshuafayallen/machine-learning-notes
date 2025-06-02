@@ -1,5 +1,12 @@
 # Causal Inference
 
+```{r}
+#| echo: false
+
+library(reticulate)
+
+```
+
 ```{python}
 #| echo: false 
 

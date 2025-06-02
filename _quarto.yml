@@ -1,24 +1,34 @@
 project:
-  type: book
-  output-dir: _book
+  type: website
+  output-dir: docs
+  render: 
+   - "*.qmd"
 
 
-book:
-  title: "Technical Interview Notes"
-  author: "Josh Allen"
-  date: last-modified
-  chapters:
-    - index.qmd
-    - data-viz.qmd
-    - SQL.qmd
-    - probability.qmd
-    - linear-regression.qmd 
-    - Bayesian-Stats.qmd
-    - classification.qmd
-    - tree-based-methods.qmd
-    - unsupervised-learning.qmd
-    - Causal-Inference.qmd
-    - Neural-Networks.qmd
+website:
+  title: "Machine Learning Notes"
+  repo-url: "https://github.com/joshuafayallen/machine-learning-notes"
+  repo-actions: [edit, issue]
+  page-navigation: true 
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - text: Notes
+
+  sidebar: 
+   - title: "Notes"
+     style: 'floating'
+     contents: 
+        - SQL.qmd
+        - data-viz.qmd
+        - linear-regression.qmd
+        - classification.qmd
+        - Bayesian-Stats.qmd
+        - Causal-Inference.qmd
+        - tree-based-methods.qmd
+        - unsupervised-learning.qmd
+        - Neural-Networks.qmd
     
 
 bibliography: ref.bib

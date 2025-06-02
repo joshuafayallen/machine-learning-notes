@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.22">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>tree-based-methods – Machine Learning Notes</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./unsupervised-learning.html" rel="next">
+<link href="./Causal-Inference.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b4406b7675125bc2ba204020e191172.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-2d3a5f678c659c6d9658e8627949fb9f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning Notes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <span class="nav-link">
+<span class="menu-text">Notes</span>
+    </span>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./tree-based-methods.html">Tree Based Methods and an Aside on Validation</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./SQL.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SQL</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data-viz.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Viz with Matplot</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./linear-regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Linear Regression and Shrinkage Estimators</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./classification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Classification</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Bayesian-Stats.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bayesian Statistics</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Causal-Inference.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Causal Inference</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tree-based-methods.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Tree Based Methods and an Aside on Validation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./unsupervised-learning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unsupervised Learning</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./Neural-Networks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Deep Learning (Mostly Neural Networks)</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
+
+
+
+
+<section id="tree-based-methods-and-an-aside-on-validation" class="level1">
+<h1>Tree Based Methods and an Aside on Validation</h1>
+<p>For a variety of regression and classification tasks we can use what was once the state of the art and that is random forrests</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars.selectors <span class="im">as</span> cs</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> make_regression</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> GradientBoostingRegressor</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn <span class="im">import</span> tree</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> (DecisionTreeClassifier <span class="im">as</span> DTC,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>                          DecisionTreeRegressor <span class="im">as</span> DTR,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                          plot_tree,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>                          export_text)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> (accuracy_score,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                             log_loss)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> cross_val_score</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, confusion_matrix, classification_report, ConfusionMatrixDisplay                            </span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> <span class="op">\</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>     (RandomForestRegressor <span class="im">as</span> RF,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>      GradientBoostingRegressor <span class="im">as</span> GBR)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> arviz <span class="im">as</span> az</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> great_tables <span class="im">import</span> GT</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>carseats <span class="op">=</span> pl.read_csv(<span class="st">'data/Carseats.csv'</span>).with_columns(</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    pl.when(pl.col(<span class="st">'Sales'</span>) <span class="op">&gt;</span> <span class="dv">0</span>).then(pl.lit(<span class="st">'Yes'</span>)).otherwise(pl.lit(<span class="st">'No'</span>)).alias(<span class="st">'high'</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="a-tree" class="level2">
+<h2 class="anchored" data-anchor-id="a-tree">A Tree</h2>
+<p>Underriding the entire idea of Bagging and Boosting are regression trees.. Regression trees have a lot of math behind an inherently kind of simple and beautifully dumb idea.</p>
+<p>When we fit a single tree there are a set of rules that we give it to make decisions about the data if a variable hits that rule then depending on what side of the line it is then it will split the data off into the left or right side. In the example above when income is not greater than or equal to 24.5 we split it into the false category an then it stops. We have satisfied the criteria. In the true column we then repeat the proces however when we hit the false column again we have a new criterion and that is how much there is on advertising spending.</p>
+<p>Formally we are splitting the predictor space into a number of regions or leave or the little boxes. The branches, lines are the branches. Somewhat unituitevely at first the leaves appear at the bottom and the stem appears at the top. Intuitively each side gets labelled region one on the graph with the associated points and so on and so forth. In practice this creates a lot of weird boundaries that map onto interactions or different functional forms. Making them good at finding thse relationships without directly specifying them.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rpart)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(parttree)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>out <span class="ot">=</span> <span class="fu">rpart</span>(Kyphosis <span class="sc">~</span> Start <span class="sc">+</span> Age, <span class="at">data =</span> kyphosis)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Grab the partitions and plot</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fit_pt <span class="ot">=</span> <span class="fu">parttree</span>(out)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(fit_pt)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="fig-reg-trees" class="quarto-float quarto-figure quarto-figure-center anchored" width="672">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reg-trees-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="tree-based-methods_files/figure-html/fig-reg-trees-1.png" id="fig-reg-trees" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-reg-trees-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="why-do-this" class="level2">
+<h2 class="anchored" data-anchor-id="why-do-this">Why do this?</h2>
+<p>OLS is really nice in the social sciences where we have a better understanding of the DGP and not alot of variables and we don’t neccessarily have that or have the luxury of a lot of data. One thing that OLS does a poor job of is that we have to enter in the relationships ourselves and every possible combination of interactions or functional form of a small set of variables is going to overfit the model/we are going to have a lot of multicollinearity. OLS has a closed form solution where we are making these predictions over the entire data. Which is going to get messy in a way we may not quite understand.</p>
+<p>Regression trees divide the this mess into smaller regions. We are effectively dividing up the space into small mutually exclusive regions. We do this by starting off greedy we find some value that does well with our splitting rule. Then it will make a split into a mutually exclusive regions then redo this process. Instead of looking ahead to see if there is some partiontion that will make its predictions better in the future it will choose what is convenient.</p>
+</section>
+<section id="gardening" class="level2">
+<h2 class="anchored" data-anchor-id="gardening">Gardening</h2>
+<p>As you may imagine growing a tree can maximize in sample fit but thats not really what we are after. However a tree with two branches maybe really interpretable and less sensitive to new data but is going to be somewhat biased. In the regression part we did a little cross validation but didn’t really go over it so it is worth talking about.</p>
+<p>Cross-validation is critical to our workflow. We use training and test sets to evaluate our models. This is good but effectively we are only evaluating our model once with the validation set. Instead of a spray and pray approach we can hold out “more” data to evaluate our model and tweak it. Generally we want a model that minimizes our test set error. But if tweak the model based on the test set we are going to end up overfitting. Effectively as I understand it is that we are getting leakage into the training phase without cross-validation.</p>
+<p>Cross-validation helps with this because we are using parts of our training set that the model hasn’t seen before to tune our models. We shuffle the data a bit and then evaluate our model on the folds. There are lots of methods most people use is K-fold cross validation. We effectively create lots of datasets from our training set where some of the data is used in the evaluation phase and some of it is used in the training phase. This is really beneficial because you can’t just wait around for more data.</p>
+</section>
+<section id="creating-a-forest-or-boosting-a-tree" class="level2">
+<h2 class="anchored" data-anchor-id="creating-a-forest-or-boosting-a-tree">Creating a Forest or Boosting a Tree?</h2>
+<p>As you may imagine striking a delicate balance in growing a single tree is tricky. Basiscally trees are a little bit like adaptive nearest neighbors. This gets a little more complicated but we will not get into that to much. Once we start partition to things into finer and finer neighborhoods we may be able to tune it pretty well but it is going to be extremely sensitive. Enter bagging and boosting. These rely on a similar idea but go about it in a different way. Basically what if we just made a bunch of dumb models and found a way to make them not dumb?</p>
+</section>
+<section id="bagging" class="level2">
+<h2 class="anchored" data-anchor-id="bagging">Bagging</h2>
+<p>Bagging is just a fancy way of saying voting or averaging. Instead of one smart tree we make a bunch of them! We fit the trees on random parts of our training data and penalize them for getting them to smart. Once each tree makes its predictions we ask them to vote or average their predictions. Whatever gets spit out is the answer to our problem. Conditional on us doing it correctly. So in classification problem if we are predicting whether or not a transaction is fraudulent we would fit the model asking it to classify a bunch of transactions as fraud or not. Whatever number of trees we ask it to make we are just going to take a simple vote on whether that transaction is fraud or not. It is a little beautifully democratic. This works because we are using the predictions from sevearl weak learners where we have high variance but low bias. Meaning that we may not always get our darts in the same area but the difference between predicted and real values is low. Then once we average over these weak learners we reduce our variance.</p>
+<p>Random forests are based off of this idea but we add a small tweak. We still fit a large number of bad learners but we decorrelate the trees to improve performance. We sample the data with replacement where some trees see the same information a few times while others never see the same inforamtion. We also never let any one tree see a majority of the predictors. This will bias downward really good predictors and give other predictors a chance. Than we take a vote/average of what the trees spit out.</p>
+</section>
+<section id="the-intuition-behind-why-random-forests-work-well" class="level2">
+<h2 class="anchored" data-anchor-id="the-intuition-behind-why-random-forests-work-well">The Intuition Behind Why Random Forests Work Well</h2>
+<p>One thing that is important is what goes into the linear algebra machine. For things like XGBoost and Random Forests these are kind of the epitome of the “Two Culture” mentioned by <span class="citation" data-cites="breimanStatisticalModelingTwo2001">Breiman (<a href="#ref-breimanStatisticalModelingTwo2001" role="doc-biblioref">2001</a>)</span> where the result of a bunch bad learners end up doing really well predicting the relationships between independent and dependent variables. This happens because well we don’t impose many restriction on what the functional form of the relationship between the independent variables between the dependent variable. So if the actual regression equation is something to the effect of</p>
+<p><span class="math display">\[
+\text{Wreckless Driving} = \alpha + \beta_{1} \log{\text{risk taking}} + \beta_{2} age^{2} + \beta_{3} \log(\text{risk taking}) \times age^{2} + \varepsilon
+\]</span></p>
+<p>These models are going to have a fairly good chance of picking this weird relationship up because it is dividing up the space into smaller pieces to either classify or generate predicitions. For a visual demstration see <a href="#fig-reg-trees" class="quarto-xref">Figure&nbsp;1</a></p>
+<p>Substantively what this means is that these methods are uber flexible but if we were are going to use this as a feature selection machine for models with more parametric assumptions than that could be problem. Random forest are a form of self-regularizing adaptive smoothers. As <span class="citation" data-cites="CurthJeffaresvanderSchaar:2024">Curth, Jeffares, and van der Schaar (<a href="#ref-CurthJeffaresvanderSchaar:2024" role="doc-biblioref">2024</a>)</span> argue</p>
+<blockquote class="blockquote">
+<p>We showed that forests improve upon trees through multiple distinct mechanisms that are usually implicitly entangled: they reduce the effect of noise in outcomes, reduce the variability in realized predictors and reduce potential bias by enriching the class of functions that can be represented.</p>
+</blockquote>
+<p>As you may have guessed a logit doesn’t have these self regularizing properties. So if we cram a bunch of predictors on the right hand side of the equation the likelihood that there is some multicollinearity is pretty high. While this doesn’t effect our coefficient estimates it does effect our standard errors in many cases this can cause them to be inflated resulting in us failing to reject the null. However, it is also possible that this effect is reversed which is highly problematic. Lets say we are interested in describing the effect of some new strategy on some KPI. We can come up with a plausible causal mechanism for why that is. We then go and do our feature selection and our main variable of interest is statistically significant. WOOHOOO great! Not so fast in many political science papers by adding correlated variables we can actually deflate the standard errors causing over rejection of the null <span class="citation" data-cites="lenzAchievingStatisticalSignificance2021">(<a href="#ref-lenzAchievingStatisticalSignificance2021" role="doc-biblioref">Lenz and Sahn 2021</a>)</span>.</p>
+<p>The other key property that we should focus on is that random forests search over a more diverse array of functions making their predictions less sensitive to us inputting the features in there wrong. Lets say we have a really good idea that age is an important predictor of reckless driving. We would expect that not only is the effect non-linear but has an interaction with gender or risk taking behavior. We may not be able to directly observe risk taking behavior but we may have some proxies that we could get ahold of like traffic tickets. If this interaction is a significant predictor of wreckless driving then our random forest models are going to pick them up. Unless we explicitly enter these into our model we are not going to pick this relationship up. So if we enter age in without transforming the variable we are likely not going to find its effect or the effect of a one unit increase in age is likely to be incredibly small.</p>
+</section>
+<section id="boosting" class="level2">
+<h2 class="anchored" data-anchor-id="boosting">Boosting</h2>
+<p>Our other option is boosting. Boosting has different mechanics but the same idea. Instead of making a really good tree we start with a tree that slightly better than random guessing but not that much better on some sample of our training data. However, instead of modeling a lot of trees at once we sequentially fit a series of tree and then sum over them to grab our predictions or classifications</p>
+<section id="adaboost" class="level3">
+<h3 class="anchored" data-anchor-id="adaboost">Adaboost</h3>
+<p>ADAboost focuses on the misclassification part. Where we take the residuals of the weak learners then re-weight the samples to give more weight to mistakes. Then at the end we take the contribution of each learner as the weighted average of the predictions/majority vote. This was popular for awhille but tends not to perform that well compared to gradient boosting.</p>
+</section>
+<section id="gradient-boosting" class="level3">
+<h3 class="anchored" data-anchor-id="gradient-boosting">Gradient Boosting</h3>
+<p>More recent innovations of boosting use gradient boosting. What is annoying about machine learning is that they are always coming up with catchier terms for old concepts. By gradient we are really just talking about a derivative of our loss function. It depends on what framework you are working in but this could be first order derivatives or second order derivatives. All gradient descent is doing is using the derivative (slope) to move in the direction of the steepest descent (negative gradient).</p>
+<p>In OLS we can think of this as finding the slope and finding the value that gets us closer to minimizing the sum of the squared. So we would get predicted values from one tree and see how much this reduces this distance then we take the residuals from the model to try and reduce the distance between the residuals and real values in the next tree. We repeat this process by taking the slope and seeing what direction the values would take. Then we would repeat this process until until we no longer get any improvement minimizing the loss function. In this model the size of the step that we take right or left is determined by our learning rate. So if we the set a high learning rate we may take 2 or three steps in the positive direction rather than a half step in the positive direction. This isn’t a perfect analogy since OLS has a closed form solution but this is the general idea.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X, y <span class="op">=</span> make_regression(n_samples<span class="op">=</span><span class="dv">100</span>, n_features<span class="op">=</span><span class="dv">1</span>, noise<span class="op">=</span><span class="dv">10</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>gbr <span class="op">=</span> GradientBoostingRegressor(n_estimators<span class="op">=</span><span class="dv">5</span>, learning_rate<span class="op">=</span><span class="fl">0.1</span>, max_depth<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>gbr.fit(X, y)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<style>#sk-container-id-1 {
+  /* Definition of color scheme common for light and dark mode */
+  --sklearn-color-text: #000;
+  --sklearn-color-text-muted: #666;
+  --sklearn-color-line: gray;
+  /* Definition of color scheme for unfitted estimators */
+  --sklearn-color-unfitted-level-0: #fff5e6;
+  --sklearn-color-unfitted-level-1: #f6e4d2;
+  --sklearn-color-unfitted-level-2: #ffe0b3;
+  --sklearn-color-unfitted-level-3: chocolate;
+  /* Definition of color scheme for fitted estimators */
+  --sklearn-color-fitted-level-0: #f0f8ff;
+  --sklearn-color-fitted-level-1: #d4ebff;
+  --sklearn-color-fitted-level-2: #b3dbfd;
+  --sklearn-color-fitted-level-3: cornflowerblue;
+
+  /* Specific color for light theme */
+  --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, white)));
+  --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, black)));
+  --sklearn-color-icon: #696969;
+
+  @media (prefers-color-scheme: dark) {
+    /* Redefinition of color scheme for dark theme */
+    --sklearn-color-text-on-default-background: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-background: var(--sg-background-color, var(--theme-background, var(--jp-layout-color0, #111)));
+    --sklearn-color-border-box: var(--sg-text-color, var(--theme-code-foreground, var(--jp-content-font-color1, white)));
+    --sklearn-color-icon: #878787;
+  }
+}
+
+#sk-container-id-1 {
+  color: var(--sklearn-color-text);
+}
+
+#sk-container-id-1 pre {
+  padding: 0;
+}
+
+#sk-container-id-1 input.sk-hidden--visually {
+  border: 0;
+  clip: rect(1px 1px 1px 1px);
+  clip: rect(1px, 1px, 1px, 1px);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+}
+
+#sk-container-id-1 div.sk-dashed-wrapped {
+  border: 1px dashed var(--sklearn-color-line);
+  margin: 0 0.4em 0.5em 0.4em;
+  box-sizing: border-box;
+  padding-bottom: 0.4em;
+  background-color: var(--sklearn-color-background);
+}
+
+#sk-container-id-1 div.sk-container {
+  /* jupyter's `normalize.less` sets `[hidden] { display: none; }`
+     but bootstrap.min.css set `[hidden] { display: none !important; }`
+     so we also need the `!important` here to be able to override the
+     default hidden behavior on the sphinx rendered scikit-learn.org.
+     See: https://github.com/scikit-learn/scikit-learn/issues/21755 */
+  display: inline-block !important;
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-text-repr-fallback {
+  display: none;
+}
+
+div.sk-parallel-item,
+div.sk-serial,
+div.sk-item {
+  /* draw centered vertical line to link estimators */
+  background-image: linear-gradient(var(--sklearn-color-text-on-default-background), var(--sklearn-color-text-on-default-background));
+  background-size: 2px 100%;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/* Parallel-specific style estimator block */
+
+#sk-container-id-1 div.sk-parallel-item::after {
+  content: "";
+  width: 100%;
+  border-bottom: 2px solid var(--sklearn-color-text-on-default-background);
+  flex-grow: 1;
+}
+
+#sk-container-id-1 div.sk-parallel {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background-color: var(--sklearn-color-background);
+  position: relative;
+}
+
+#sk-container-id-1 div.sk-parallel-item {
+  display: flex;
+  flex-direction: column;
+}
+
+#sk-container-id-1 div.sk-parallel-item:first-child::after {
+  align-self: flex-end;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:last-child::after {
+  align-self: flex-start;
+  width: 50%;
+}
+
+#sk-container-id-1 div.sk-parallel-item:only-child::after {
+  width: 0;
+}
+
+/* Serial-specific style estimator block */
+
+#sk-container-id-1 div.sk-serial {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--sklearn-color-background);
+  padding-right: 1em;
+  padding-left: 1em;
+}
+
+
+/* Toggleable style: style used for estimator/Pipeline/ColumnTransformer box that is
+clickable and can be expanded/collapsed.
+- Pipeline and ColumnTransformer use this feature and define the default style
+- Estimators will overwrite some part of the style using the `sk-estimator` class
+*/
+
+/* Pipeline and ColumnTransformer style (default) */
+
+#sk-container-id-1 div.sk-toggleable {
+  /* Default theme specific background. It is overwritten whether we have a
+  specific estimator or a Pipeline/ColumnTransformer */
+  background-color: var(--sklearn-color-background);
+}
+
+/* Toggleable label */
+#sk-container-id-1 label.sk-toggleable__label {
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  margin-bottom: 0;
+  padding: 0.5em;
+  box-sizing: border-box;
+  text-align: center;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+#sk-container-id-1 label.sk-toggleable__label .caption {
+  font-size: 0.6rem;
+  font-weight: lighter;
+  color: var(--sklearn-color-text-muted);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:before {
+  /* Arrow on the left of the label */
+  content: "▸";
+  float: left;
+  margin-right: 0.25em;
+  color: var(--sklearn-color-icon);
+}
+
+#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {
+  color: var(--sklearn-color-text);
+}
+
+/* Toggleable content - dropdown */
+
+#sk-container-id-1 div.sk-toggleable__content {
+  max-height: 0;
+  max-width: 0;
+  overflow: hidden;
+  text-align: left;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content pre {
+  margin: 0.2em;
+  border-radius: 0.25em;
+  color: var(--sklearn-color-text);
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-toggleable__content.fitted pre {
+  /* unfitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {
+  /* Expand drop-down */
+  max-height: 200px;
+  max-width: 100%;
+  overflow: auto;
+}
+
+#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {
+  content: "▾";
+}
+
+/* Pipeline/ColumnTransformer-specific style */
+
+#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator-specific style */
+
+/* Colorize estimator box */
+#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted input.sk-toggleable__control:checked~label.sk-toggleable__label {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+#sk-container-id-1 div.sk-label label.sk-toggleable__label,
+#sk-container-id-1 div.sk-label label {
+  /* The background is the default theme color */
+  color: var(--sklearn-color-text-on-default-background);
+}
+
+/* On hover, darken the color of the background */
+#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+/* Label box, darken color on hover, fitted */
+#sk-container-id-1 div.sk-label.fitted:hover label.sk-toggleable__label.fitted {
+  color: var(--sklearn-color-text);
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Estimator label */
+
+#sk-container-id-1 div.sk-label label {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-block;
+  line-height: 1.2em;
+}
+
+#sk-container-id-1 div.sk-label-container {
+  text-align: center;
+}
+
+/* Estimator-specific */
+#sk-container-id-1 div.sk-estimator {
+  font-family: monospace;
+  border: 1px dotted var(--sklearn-color-border-box);
+  border-radius: 0.25em;
+  box-sizing: border-box;
+  margin-bottom: 0.5em;
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-0);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-0);
+}
+
+/* on hover */
+#sk-container-id-1 div.sk-estimator:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-2);
+}
+
+#sk-container-id-1 div.sk-estimator.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-2);
+}
+
+/* Specification for estimator info (e.g. "i" and "?") */
+
+/* Common style for "i" and "?" */
+
+.sk-estimator-doc-link,
+a:link.sk-estimator-doc-link,
+a:visited.sk-estimator-doc-link {
+  float: right;
+  font-size: smaller;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1em;
+  height: 1em;
+  width: 1em;
+  text-decoration: none !important;
+  margin-left: 0.5em;
+  text-align: center;
+  /* unfitted */
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+  color: var(--sklearn-color-unfitted-level-1);
+}
+
+.sk-estimator-doc-link.fitted,
+a:link.sk-estimator-doc-link.fitted,
+a:visited.sk-estimator-doc-link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+div.sk-estimator:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover,
+div.sk-label-container:hover .sk-estimator-doc-link:hover,
+.sk-estimator-doc-link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+div.sk-estimator.fitted:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover,
+div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
+.sk-estimator-doc-link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+/* Span, style for the box shown on hovering the info icon */
+.sk-estimator-doc-link span {
+  display: none;
+  z-index: 9999;
+  position: relative;
+  font-weight: normal;
+  right: .2ex;
+  padding: .5ex;
+  margin: .5ex;
+  width: min-content;
+  min-width: 20ex;
+  max-width: 50ex;
+  color: var(--sklearn-color-text);
+  box-shadow: 2pt 2pt 4pt #999;
+  /* unfitted */
+  background: var(--sklearn-color-unfitted-level-0);
+  border: .5pt solid var(--sklearn-color-unfitted-level-3);
+}
+
+.sk-estimator-doc-link.fitted span {
+  /* fitted */
+  background: var(--sklearn-color-fitted-level-0);
+  border: var(--sklearn-color-fitted-level-3);
+}
+
+.sk-estimator-doc-link:hover span {
+  display: block;
+}
+
+/* "?"-specific style due to the `<a>` HTML tag */
+
+#sk-container-id-1 a.estimator_doc_link {
+  float: right;
+  font-size: 1rem;
+  line-height: 1em;
+  font-family: monospace;
+  background-color: var(--sklearn-color-background);
+  border-radius: 1rem;
+  height: 1rem;
+  width: 1rem;
+  text-decoration: none;
+  /* unfitted */
+  color: var(--sklearn-color-unfitted-level-1);
+  border: var(--sklearn-color-unfitted-level-1) 1pt solid;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted {
+  /* fitted */
+  border: var(--sklearn-color-fitted-level-1) 1pt solid;
+  color: var(--sklearn-color-fitted-level-1);
+}
+
+/* On hover */
+#sk-container-id-1 a.estimator_doc_link:hover {
+  /* unfitted */
+  background-color: var(--sklearn-color-unfitted-level-3);
+  color: var(--sklearn-color-background);
+  text-decoration: none;
+}
+
+#sk-container-id-1 a.estimator_doc_link.fitted:hover {
+  /* fitted */
+  background-color: var(--sklearn-color-fitted-level-3);
+}
+</style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GradientBoostingRegressor(max_depth=2, n_estimators=5, random_state=42)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked=""><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>GradientBoostingRegressor</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html">?<span>Documentation for GradientBoostingRegressor</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>GradientBoostingRegressor(max_depth=2, n_estimators=5, random_state=42)</pre></div> </div></div></div></div>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>stage_predictions <span class="op">=</span> np.array(<span class="bu">list</span>(gbr.staged_predict(X)))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>colors <span class="op">=</span> [<span class="st">'red'</span>, <span class="st">'green'</span>, <span class="st">'blue'</span>, <span class="st">'orange'</span>, <span class="st">'purple'</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot predictions from each tree</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">6</span>))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, preds <span class="kw">in</span> <span class="bu">enumerate</span>(stage_predictions):</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    plt.scatter(X, y, label<span class="op">=</span><span class="st">'True Data'</span>, color<span class="op">=</span><span class="st">'blue'</span>, alpha<span class="op">=</span><span class="fl">0.3</span>)  <span class="co"># True data is blue</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    plt.scatter(X, preds, label<span class="op">=</span><span class="ss">f'Tree </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss"> Predictions'</span>, color<span class="op">=</span>colors[i], alpha<span class="op">=</span><span class="fl">0.6</span>)  <span class="co"># Different colors for each tree</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    plt.title(<span class="ss">f"After Tree </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    plt.xlabel(<span class="st">"Feature"</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    plt.ylabel(<span class="st">"Target"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Calculate residuals after this tree's prediction</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    residuals <span class="op">=</span> y <span class="op">-</span> preds</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"Residuals after Tree </span><span class="sc">{</span>i<span class="op">+</span><span class="dv">1</span><span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>residuals[:<span class="dv">5</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Move legend outside the plot</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>plt.legend(loc<span class="op">=</span><span class="st">'upper left'</span>, bbox_to_anchor<span class="op">=</span>(<span class="dv">1</span>, <span class="dv">1</span>), title<span class="op">=</span><span class="st">"Legend"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()  <span class="co"># Adjust layout to fit the legend outside</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="tree-based-methods_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="960"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Within the gradient boosting framework we have two popular approaches: XGboost and LightGBM. Each of these approaches focus on impurity meaning how well a tree can distinguish between two classes using something like a GINI coeficient or Entropy that tries to measure class separtion or using mean squared error.</p>
+<p>They both work to reduce these impurities however they differ in how they grow the tree. LightGbm focuses on the leaf wise growth whereas XGBoost will do branch or level wise growth. Functionally all this means is that for a level wise strategy we are growing both sides of the flow chart which kind of imposes some regularization. Whereas leafwise growth adds more and more leaves making better predictions but is prone to overfitting.</p>
+</section>
+<section id="tuning-parameters-of-xgboost" class="level3">
+<h3 class="anchored" data-anchor-id="tuning-parameters-of-xgboost">Tuning Parameters of XGBoost</h3>
+<p>It is worth going over since there are a ton of them. Some we may not actually end up touching but still. For referecnce I am going to just use the XGBoost function from sci-kit learn.</p>
+<p>loss: Just the loss function to be optimized - So if we were to use a OLS loss function than we would just be using the sum of the squared residuals. Meaning XGBoost is going to minimize the distance between the set of the points using the sum of the squared residuals.</p>
+<p>learning rate: The learning rate effectively regularizes the contribution of each tree. So if we have 3 trees the learning rate is going to add a penalty to minimize the contribution of the tree to slow down how much information an individual tree contributes. Typically we have to balance this penalty with the number of trees. In effect the learning rate is a weighting factor for each new model that minimizes how quickly a new tree responds to errors from an old tree.</p>
+<p>trees/N_estimators: really just the number of trees our model is going to have.</p>
+<p>tree depth: So this is really just a way of saying how tall the tree is. so a tree depth of 5 is going to have 5 levels</p>
+<p>criterion: So this governs the ambigous cases. We set a metric to measure the quality of the split</p>
+<p>number of iterations no change: How many times does it get to keep trying to improve on the validation score before we stop trainging it.</p>
+<p>subsamples: controls the fraction of training data that the trees use for the boosting round. I.e if we set it to .5 it will use half the training data.</p>
+<p>min samples split: Effectively how many data points does a node have to have to make a split. Higher values effectively penalize the tree for splitting off points below this threshold. This helps the tree from learning to much about points that could just be weird for any number of recisions</p>
+<p>Stop iterations/number of iterations no change: This is effectively the number of times we let the model try to improve its validation score. We only set this if we plan on implementing early stopping. Early stopping is one way to try to prevent overfitting. However, it is a bit of a double edged sword. We could stop it to early and it may not get to learn some of the quirks of the data generating process. We could let it retry 100 times but on the 101st try it actually improves on the validation score. We are also making the assumption that the validation set is representative of the test data. This may be true but we are making a bit of an assumption that random sampling isn’t biting.</p>
+<p>mtry/ max features: specifies the number of features that each tree can randomly select from when considering a split at each node. This prevents the tree from overfitting the data since one tree does not see all the features. Since it is still an ensemble method we want the tree to have more shots are a variety of functional forms and interactions.</p>
+</section>
+</section>
+<section id="gradient-boosting-or-random-trees" class="level2">
+<h2 class="anchored" data-anchor-id="gradient-boosting-or-random-trees">Gradient Boosting or Random Trees</h2>
+<p>The answer is that it kind of depends. Gradient boosting of what ever flavor you choose is going to be more prone to overfitting that random forests. Gradient boosting is also a little bit better in the face of class imbalances. Since the prior tree is used to inform the previous tree if you don’t select good features in the beginning you could end of fitting the noise. The other problem is compute time. Since gradient boosting relies on the previous tree it has to wait till that tree is done being fit.</p>
+</section>
+<section id="imputation-methods" class="level2">
+<h2 class="anchored" data-anchor-id="imputation-methods">Imputation Methods</h2>
+<p>One thing about random forests and Gradient boosting machines is that they can handle missing values or in the case of random forests can be used as missing values imputers. For the most part missing data is a little bit of a fact of life. Data goes missing for a variety of reasons. Respondents could forget or refuse to identify their race and ethnicity on a survey some people may be embarassed to report their educational attainment. The issue is not that the data is missing the issue is that we don’t actually know the how these data are missing. Classifically we don’t really about missingness in the DV. We will kind of see why when we cover the difference in mechanisms.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>missingess_mechanisms <span class="op">=</span> pl.DataFrame(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'Missingess Mechanism'</span>:[</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Missing Completly at Random (MCAR)'</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Missing at Random (MAR)'</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Missing Not at Random (MNAR)'</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    ],</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Assumption'</span>: [</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Data is missing completly at random. We update a database and the power goes out. In the full database this data is kind of missing completly at random. Nothing about the DGP dicatates that these missing values'</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="st">'A weaker form of missngness. Missingness in our DV is not determined by our DV. What this means is that we can learn about the missingness by knowing our independent variables'</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">'Means that a missing DV is not determined by any of the IVs instead it is determined by the DV iteself'</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>GT(missingess_mechanisms)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div id="xjksbidsio" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#xjksbidsio table {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#xjksbidsio thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#xjksbidsio p { margin: 0; padding: 0; }
+ #xjksbidsio .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 16px; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: auto; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #xjksbidsio .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #xjksbidsio .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #xjksbidsio .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #xjksbidsio .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #xjksbidsio .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #xjksbidsio .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #xjksbidsio .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; overflow-x: hidden; }
+ #xjksbidsio .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: normal; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #xjksbidsio .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #xjksbidsio .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #xjksbidsio .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #xjksbidsio .gt_spanner_row { border-bottom-style: hidden; }
+ #xjksbidsio .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #xjksbidsio .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #xjksbidsio .gt_from_md> :first-child { margin-top: 0; }
+ #xjksbidsio .gt_from_md> :last-child { margin-bottom: 0; }
+ #xjksbidsio .gt_row { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #xjksbidsio .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; }
+ #xjksbidsio .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #xjksbidsio .gt_row_group_first td { border-top-width: 2px; }
+ #xjksbidsio .gt_row_group_first th { border-top-width: 2px; }
+ #xjksbidsio .gt_striped { background-color: rgba(128,128,128,0.05); }
+ #xjksbidsio .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #xjksbidsio .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #xjksbidsio .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #xjksbidsio .gt_left { text-align: left; }
+ #xjksbidsio .gt_center { text-align: center; }
+ #xjksbidsio .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #xjksbidsio .gt_font_normal { font-weight: normal; }
+ #xjksbidsio .gt_font_bold { font-weight: bold; }
+ #xjksbidsio .gt_font_italic { font-style: italic; }
+ #xjksbidsio .gt_super { font-size: 65%; }
+ #xjksbidsio .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #xjksbidsio .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<thead>
+<tr class="gt_col_headings header">
+<th id="Missingess Mechanism" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Missingess Mechanism</th>
+<th id="Assumption" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Assumption</th>
+</tr>
+</thead>
+<tbody class="gt_table_body">
+<tr class="odd">
+<td class="gt_row gt_left">Missing Completly at Random (MCAR)</td>
+<td class="gt_row gt_left">Data is missing completly at random. We update a database and the power goes out. In the full database this data is kind of missing completly at random. Nothing about the DGP dicatates that these missing values</td>
+</tr>
+<tr class="even">
+<td class="gt_row gt_left">Missing at Random (MAR)</td>
+<td class="gt_row gt_left">A weaker form of missngness. Missingness in our DV is not determined by our DV. What this means is that we can learn about the missingness by knowing our independent variables</td>
+</tr>
+<tr class="odd">
+<td class="gt_row gt_left">Missing Not at Random (MNAR)</td>
+<td class="gt_row gt_left">Means that a missing DV is not determined by any of the IVs instead it is determined by the DV iteself</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+<p>In practice we can never really tell the difference between MNAR or MAR. We can start to investigate the missingness by seeing if we can build a model to classify missing values. If our models start to do a good job of classfiying missing values than we at least have a lead on the possible mechanism. This doesn’t fully get us there because we can only really tell the difference between them with data we never observe. Missing at random is only applicable in very rare instances.</p>
+<section id="solutions" class="level3">
+<h3 class="anchored" data-anchor-id="solutions">Solutions</h3>
+<p>For missing completly at random we can simply delete the missingness observations. Whether this is through listwise deletion or just modifying our query to ignore missing values. If we want to save time than we can let the model handle it for us. Certainly for simple models like linear regression the default is to drop it so it can actual solve the optimization problem.</p>
+<p>However, if we assume that we can’t simply ignore the values than we have a lot of options. One of the most common forms of handling missingess is that we can perform interpolation. Effectively we are using information in that variable to predict the missing value. Typically this is done with the next value and the previous value to generate a predicition. We then have to use some kind of distance metric to get that value. We can use the mean and make the guess, if we are worried about extreme values we can use the median, or if we want to get fancy then we can use nearest neighbors where it will try and find a typically value in a cluster. So if a 4 is generally surrounded by 3’s and 5’s and we have a missing value sandwhiched between a 3 and a 5 the nearest neighbor interpolation will probably guess 4 because those are the values that are typically within that neighborhood. We can either to this column wise or rowwise. Column wise is going to be a lot cheaper but doesn’t integrate another information that could be helpful in estimating the missing values.</p>
+</section>
+<section id="multiple-imputation" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-imputation">Multiple imputation</h3>
+<p>Interpolation is fine but we are only guessing once and not integrating all the information that we could into the estimating the missingess or treat the missingness as something as observable. Multiple imputation or imputation methods generally allow us to estimate those missing values but preseve the uncertianty associated with the estimation proceduce. Effectively what we are going to do is treat the missing values as a statistical problem where create some number of copies of our dataset. We make the assumption that the missingness is multivariate normal and the data is MAR or MCAR. We can then start to think of the probability of missingness as a function of the parameter estimates. In the copies of our dataset we then estimate a plausible value. We then bootstrap the data and use a model to get an estimate on the value of the mising data then we draw a single point from the posterior distribution. Once all m datasets are imputed, we fit our model to each dataset separately. The final estimates are obtained by averaging the parameter estimates across all datasets, while the standard errors incorporate both within-dataset variance and between-dataset variance (following Rubin’s rules)</p>
+</section>
+<section id="where-do-random-forests-come-into-this" class="level3">
+<h3 class="anchored" data-anchor-id="where-do-random-forests-come-into-this">Where do Random Forests Come into this?</h3>
+<p>Well it turns out that random forest are really great at learning hidden relationships between variables. Unless we place priors on certain variables we are imposing a flat prior or making other assumptions about the data. Random Forests for missing data imputation proposes a more flexible model for missing value imputation then interpolation. For things like KNN imputation or Lasso imputation tuning hyperparameters can be difficult and often effect the imputations in ways that are hard to asssess. One alternative to MICE or AMELIA is missForest which is doesn’t require some of the same overhead for large datasets. In multiple imputation we are making m copies of our dataset then running a model to predict the missing values in the dataset and then running m models on the various datasets and then combining them at the end. These multiple imputation methods have been kept up to date to incorporate machine learning models. As you may imagine this is a lot of heavy lifting computationally for a moderatly sized dataset much less a large dataset.</p>
+<p>A compromise, in some respects, is using a specially tailored random forest model to predict the missing values. These random forest approaches do really well with large datasets and incorporate the benefits of bagging into the missing value replacement. By that we mean we can start to model more complex relationships that could explain the missingness in our data</p>
+
+
+
+</section>
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-breimanStatisticalModelingTwo2001" class="csl-entry" role="listitem">
+Breiman, Leo. 2001. <span>“Statistical <span>Modeling</span>: <span>The Two Cultures</span> (with Comments and Arejoinder by the Author).”</span> <em>Statistical Science</em> 16 (3): 199–231. <a href="https://doi.org/10.1214/ss/1009213726">https://doi.org/10.1214/ss/1009213726</a>.
+</div>
+<div id="ref-CurthJeffaresvanderSchaar:2024" class="csl-entry" role="listitem">
+Curth, Alicia, Alan Jeffares, and Mihaela van der Schaar. 2024. <span>“Why Do Random Forests Work? <span>Understanding</span> Tree Ensembles as Self-Regularizing Adaptive Smoothers.”</span> <a href="https://arxiv.org/abs/2402.01502">https://arxiv.org/abs/2402.01502</a>.
+</div>
+<div id="ref-lenzAchievingStatisticalSignificance2021" class="csl-entry" role="listitem">
+Lenz, Gabriel S., and Alexander Sahn. 2021. <span>“Achieving <span>Statistical Significance</span> with <span>Control Variables</span> and <span>Without Transparency</span>.”</span> <em>Political Analysis</em> 29 (3): 356–69. <a href="https://doi.org/10.1017/pan.2020.31">https://doi.org/10.1017/pan.2020.31</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./Causal-Inference.html" class="pagination-link" aria-label="Causal Inference">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Causal Inference</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./unsupervised-learning.html" class="pagination-link" aria-label="Unsupervised Learning">
+        <span class="nav-page-text">Unsupervised Learning</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/joshuafayallen/machine-learning-notes/edit/main/tree-based-methods.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/joshuafayallen/machine-learning-notes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

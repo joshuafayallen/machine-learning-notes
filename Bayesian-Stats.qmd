@@ -2607,8 +2607,8 @@ loo_stats = tribble(~model_name, ~model,
                     'Random Intercepts', runner_model_final,
                     'Random Intercepts & Slopes \n ETA = 1', var_mod1,
                     'Random Intercepts & Slopes \n ETA = 1.5', var_mo2) |>
-            mutate(loo = map(model, \(x) loo(x))) |>
-            mutate(loo_stuff = map(loo, ~as_tibble(.$estimates, rownames = "statistic"))) |>
+            mutate(loo = purrr::map(model, \(x) loo(x))) |>
+            mutate(loo_stuff = purrr::map(loo, ~as_tibble(.$estimates, rownames = "statistic"))) |>
             select(model_name, loo_stuff) |> 
   unnest(loo_stuff) |> 
   filter(statistic == "elpd_loo") |> 
@@ -2700,6 +2700,7 @@ loo_stats = tribble(~model_name, ~model,
 
 loo_stats |>
     tinytable::tt()
+
 
 ```
 

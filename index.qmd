@@ -2,25 +2,3 @@
 
 This is a structured notebook for technical interviews. Grokking the math is can be somewhat time consuming for me and is somewhat akin to writing things down in a third language I have a rough reading proficiency so its not as helpful for me (for now). Instead I decided to collect various notes from classes, empirical work, and studying for comps into one place. In addition to this I kind of also needed to get better with using scikit-learn and tidymodels. If anybody actually ends up finding this whether they be a hiring manager or somebody else figuring studying for technical interview then I say to you welcome! There are more than likely a ton of typos. Right now I am just prepping for job stuff and would not normally expose the world to my brain like this. I just had to publish this online because it was easier to search as a quarto book rather than as a long rambly pdf.
 
-## A Note to Keep Yourself Focused
-
-These notes spend a lot of time going through the some of the technical components of the job eg models and techniques to do your job. All of these are important to actually implement what you are doing it is important to define clear estimands. 
-What do we mean by this? @lundbergWhatYourEstimand2021 argue that before you touch the data we should first go ahead and define an estimand or what your model is actually estimating. By doing this at the beggining we are freeing ourselves from the constraints of various models.
-
-
-There are two components to the estimand:
-
-- Unit specific quantity: What is the counterfactual?
-- What is the effect of introducing new cards into circulation? Would would person *i* be less likely to have experienced credit card fraud if they had received the new card? 
-- The target population of interest: Who does this number apply too? 
-- Does this quantity of interest apply to every person with a debit card or a city where we roll out a new measure? 
-
-Underriding this estimand is a very clear research question. If we think about the team or division that is major research agenda. For this job interview that you are preparing for the teams goal is to identify and reduce fraud. That is a huge question people have been doing fraud since 300 BC when two merchants sank their ship to collect insurance money. The first documented bank fraud happened in 193 AD when the Praetorian guard sold the emperorship something they didn't actually own. 
-
-However, there are lot of little bites of the puzzle that we can take. Lets take identity theft for example. We can't just stop identity theft because well people have been trying it forever and well for the most it has worked. However, there are lots of little interventions we can make. Lets say somebody steals the social security number of somebody tries to open a credit card. In an olden time this may have worked. However, if we are doing analysis of cases where we detected fraud we may be interested in whether changes in location rapidly is a good predictor of this. 
-
-A well constructed research question is how does location change velocity effect credit card fraud? Where the theoretical estimand would credit fraud if velocity took on a specific value. The population would be the US population that opens credit cards. We may find that location velocity has no effect because fraudsters turn off the location on their services or use a VPN. We may want to actually force people to not be able to do this or force more verification. 
-
-Careful consideration of the who the intervention applies to is informative because we can more clearly define what a targeted roll out in one place tells us about other places or why we spent resources studying a weird case. 
-
-Your job is not to be the best python programmer or best statistician. Your job is to ultimately define these estimands and apply the best tools to faithfully represent these estimands. This implies a ton of work on the front and back end. 
