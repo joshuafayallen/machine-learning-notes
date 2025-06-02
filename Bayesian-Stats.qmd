@@ -1,5 +1,7 @@
 # Bayesian Statistics 
 
+
+
 Bayesianism has been on the to do list for awhile since well they make the prettiest plots. More importantly we get more coherent measures of uncertainty and are closer to how we actually think of the world. There are lots of broad applications for Bayesianism in the private industry. The betting market for sports and how we think about teams is effectively Bayesian. We incorporate a lot of information about the observable parts of a team like schedule, roster talent, coaching, and guesses about the probablity that the roster will stay healthy. These are all priors we have about things that relate to the success of the team going into the season. As the season progresses and we get data our prior will update. In the case of the Saints this year our prior updated to make them a good team after one game moving our guess about the number of games they would win this year to probably more than their projected win total. With the second win this may have not moved our prior much at all. However, as attrition set in then our prior shifted a little bit back toward the pre-season total so on and so forth.
 
 ## What is Baye's Rule? 
