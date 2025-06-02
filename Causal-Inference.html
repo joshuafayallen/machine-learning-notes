@@ -2,12 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.6.40">
+<meta name="generator" content="quarto-1.7.22">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>9&nbsp; Causal Inference – Technical Interview Notes</title>
+<title>causal-inference – Machine Learning Notes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -21,8 +21,9 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 /* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -33,7 +34,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
   { counter-reset: source-line 0; }
@@ -84,23 +85,24 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./Neural-Networks.html" rel="next">
-<link href="./unsupervised-learning.html" rel="prev">
-<script src="site_libs/quarto-html/quarto.js"></script>
+<link href="./tree-based-methods.html" rel="next">
+<link href="./Bayesian-Stats.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b4406b7675125bc2ba204020e191172.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-626149efe8f5d16e1d391ba177679bf0.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-2d3a5f678c659c6d9658e8627949fb9f.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
-  "location": "sidebar",
+  "location": "navbar",
   "copy-button": false,
   "collapse-after": 3,
-  "panel-placement": "start",
-  "type": "textbox",
+  "panel-placement": "end",
+  "type": "overlay",
   "limit": 50,
   "keyboard-shortcut": [
     "f",
@@ -155,104 +157,107 @@ window.Quarto = {
 
 </head>
 
-<body class="nav-sidebar floating">
+<body class="nav-sidebar floating nav-fixed fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">Machine Learning Notes</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <span class="nav-link">
+<span class="menu-text">Notes</span>
+    </span>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
   <nav class="quarto-secondary-nav">
     <div class="container-fluid d-flex">
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Causal-Inference.html"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Inference</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./Causal-Inference.html">Causal Inference</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
-      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
-        <i class="bi bi-search"></i>
-      </button>
     </div>
   </nav>
 </header>
 <!-- content -->
-<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
-    <div class="pt-lg-2 mt-2 text-left sidebar-header">
-    <div class="sidebar-title mb-0 py-0">
-      <a href="./">Technical Interview Notes</a> 
-    </div>
-      </div>
-        <div class="mt-2 flex-shrink-0 align-items-center">
-        <div class="sidebar-search">
-        <div id="quarto-search" class="" title="Search"></div>
-        </div>
-        </div>
     <div class="sidebar-menu-container"> 
     <ul class="list-unstyled mt-1">
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Preface</span></a>
+  <a href="./SQL.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">SQL</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./data-viz.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Data Viz with Matplot</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./SQL.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">SQL</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./probability.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Baby Stats</span></span></a>
+ <span class="menu-text">Data Viz with Matplot</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./linear-regression.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Linear Regression and Shrinkage Estimators</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./Bayesian-Stats.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Bayesian Statistics</span></span></a>
+ <span class="menu-text">Linear Regression and Shrinkage Estimators</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./classification.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Classification</span></span></a>
+ <span class="menu-text">Classification</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./tree-based-methods.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Tree Based Methods and an Aside on Validation</span></span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./unsupervised-learning.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Unsupervised Learning</span></span></a>
+  <a href="./Bayesian-Stats.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Bayesian Statistics</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Causal-Inference.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Inference</span></span></a>
+ <span class="menu-text">Causal Inference</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./tree-based-methods.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Tree Based Methods and an Aside on Validation</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./unsupervised-learning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Unsupervised Learning</span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./Neural-Networks.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Deep Learning (Mostly Neural Networks)</span></span></a>
+ <span class="menu-text">Deep Learning (Mostly Neural Networks)</span></a>
   </div>
 </li>
     </ul>
@@ -260,58 +265,18 @@ window.Quarto = {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">Table of contents</h2>
-   
-  <ul>
-  <li><a href="#the-fundamental-problem" id="toc-the-fundamental-problem" class="nav-link active" data-scroll-target="#the-fundamental-problem"><span class="header-section-number">9.1</span> The Fundamental Problem</a></li>
-  <li><a href="#rcts" id="toc-rcts" class="nav-link" data-scroll-target="#rcts"><span class="header-section-number">9.2</span> RCTs</a>
-  <ul class="collapse">
-  <li><a href="#rules-1-2-of-statistical-power" id="toc-rules-1-2-of-statistical-power" class="nav-link" data-scroll-target="#rules-1-2-of-statistical-power"><span class="header-section-number">9.2.1</span> Rules 1 &amp; 2 of Statistical power</a></li>
-  <li><a href="#what-treatment-effect-should-i-asume" id="toc-what-treatment-effect-should-i-asume" class="nav-link" data-scroll-target="#what-treatment-effect-should-i-asume"><span class="header-section-number">9.2.2</span> What treatment effect should I asume?</a></li>
-  <li><a href="#from-the-sd-to-the-se" id="toc-from-the-sd-to-the-se" class="nav-link" data-scroll-target="#from-the-sd-to-the-se"><span class="header-section-number">9.2.3</span> From the SD to the SE</a></li>
-  <li><a href="#from-the-se-to-the-minimum-detectable-effect-size" id="toc-from-the-se-to-the-minimum-detectable-effect-size" class="nav-link" data-scroll-target="#from-the-se-to-the-minimum-detectable-effect-size"><span class="header-section-number">9.2.4</span> From the SE to the Minimum Detectable Effect Size</a></li>
-  </ul></li>
-  <li><a href="#getting-to-the-sample-size" id="toc-getting-to-the-sample-size" class="nav-link" data-scroll-target="#getting-to-the-sample-size"><span class="header-section-number">9.3</span> Getting to the Sample Size</a></li>
-  <li><a href="#rules-of-thumb-according-to-jpal" id="toc-rules-of-thumb-according-to-jpal" class="nav-link" data-scroll-target="#rules-of-thumb-according-to-jpal"><span class="header-section-number">9.4</span> Rules of Thumb According to Jpal</a></li>
-  <li><a href="#observational-methods" id="toc-observational-methods" class="nav-link" data-scroll-target="#observational-methods"><span class="header-section-number">9.5</span> Observational Methods</a></li>
-  <li><a href="#difference-in-difference" id="toc-difference-in-difference" class="nav-link" data-scroll-target="#difference-in-difference"><span class="header-section-number">9.6</span> Difference in Difference</a></li>
-  <li><a href="#identifying-assumptions" id="toc-identifying-assumptions" class="nav-link" data-scroll-target="#identifying-assumptions"><span class="header-section-number">9.7</span> Identifying Assumptions</a></li>
-  <li><a href="#no-anticipation" id="toc-no-anticipation" class="nav-link" data-scroll-target="#no-anticipation"><span class="header-section-number">9.8</span> No Anticipation</a>
-  <ul class="collapse">
-  <li><a href="#the-parallel-trends-assumption" id="toc-the-parallel-trends-assumption" class="nav-link" data-scroll-target="#the-parallel-trends-assumption"><span class="header-section-number">9.8.1</span> The parallel trends assumption</a></li>
-  </ul></li>
-  <li><a href="#staggered-adoption" id="toc-staggered-adoption" class="nav-link" data-scroll-target="#staggered-adoption"><span class="header-section-number">9.9</span> Staggered Adoption</a></li>
-  <li><a href="#synthetic-control" id="toc-synthetic-control" class="nav-link" data-scroll-target="#synthetic-control"><span class="header-section-number">9.10</span> Synthetic Control</a></li>
-  </ul>
-</nav>
-    </div>
+    
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default">
-<div class="quarto-title">
-<h1 class="title"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Causal Inference</span></h1>
-</div>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"></header>
 
 
 
-<div class="quarto-title-meta">
 
-    
-  
-    
-  </div>
-  
-
-
-</header>
-
-
+<section id="causal-inference" class="level1">
+<h1>Causal Inference</h1>
 <p>In industry there are lots of opportunity for causal inference! Actually in a lot of cases we don’t really realize! Platforms are constantly changing and companies want to evaluate the rollout of new features and whether or not they actually move the needle is important since they are sinking a lot of time and resources into these features. So today we are going to tackle A/B experiments broadly while touching up our understanding of a host of other causal inference methods. One thing that I think is kind of cool is that there is a lot more communication between Academic Social Sciences and the Causal Inference world. We are all dealing with the same problem but some us have more money than the others. However, we can’t run away from of the fundamental problems we face.</p>
-<section id="the-fundamental-problem" class="level2" data-number="9.1">
-<h2 data-number="9.1" class="anchored" data-anchor-id="the-fundamental-problem"><span class="header-section-number">9.1</span> The Fundamental Problem</h2>
+<section id="the-fundamental-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-fundamental-problem">The Fundamental Problem</h2>
 <p>The fundamental problem of causal inference is that we don’t have a time machine. By that I mean we would love to have a data frame like this where we can get the individual level causal effect. Meaning we can observe what would happen if we assigned people the treatment and what would happen if people never received the treatment.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>time_machine_world <span class="op">=</span> {</span>
@@ -375,20 +340,20 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Notice that the randomizer is not effected by anything and the only effect of randomization is through the treatment status. Importantly any things that make us special don’t actually determine our potential outcomes. It eliminates a lot of potential avenues for selection or and treatment status is not determined by anything else in our model. This is a pretty powerful and magical idea, but it comes at a cost. In this case we mean money. Just because we can randomize doesn’t mean we will magically find the causal effect of something on something else. In the preceding sections we will spend some time on how to do this and potential areas for trouble.</p>
 </section>
-<section id="rcts" class="level2" data-number="9.2">
-<h2 data-number="9.2" class="anchored" data-anchor-id="rcts"><span class="header-section-number">9.2</span> RCTs</h2>
+<section id="rcts" class="level2">
+<h2 class="anchored" data-anchor-id="rcts">RCTs</h2>
 <p>Technically in industry they are called A/B tests because well reasons. The general idea is that this follows the canonical RCT. We have an intervention we want to test so we will run an experiment. This is straightforward idea but we have to make a lot of design considerations. Since experiments have an air of magic to them there is lots of room for them to go wrong. There are lots of statistical avenues to explore including Multi-Armed Bandit, problems staggered rollout, conjoint experiments, and whole host of other things. However, before we start with those its going to be pretty important to talk about power.</p>
 <p>Statistical power is one thing that a variety of designs have in common since they kind of broadly fall under the null hypothesis significance testing framework. Very basically the idea of power comes down to the idea that we want our experiment to have a good shot of rejecting the null hypothesis if the alternative is true. Basically we want to reduce the probability of Type II error or the false negative rate. Importantly when power is low we tend to estimate a treatement effect that is larger than the ‘true’ treatment effect and/or the sign of the effect may be wrong <span class="citation" data-cites="gelmanNaturalSolutionsPvalue2017">(<a href="#ref-gelmanNaturalSolutionsPvalue2017" role="doc-biblioref">Gelman and Carlin 2017</a>)</span>.</p>
 <p>So what are the components of statistical power. Political scientists tend to think of power and what we are interested a bit differently then psychologists do. We tend to think of treatment effects on the scale of our oiutcome and through a regression lens. This is important because Psychologist tend to deal with standardized effect sizes and ANOVA/ANCOVA analysis which is just regression in a trench coat, but thats a conversation for another time. Much of the following section is just written notes to <a href="https://osf.io/preprints/osf/5am9q_v1">Carlise Rainey’s excellent power primer</a>. I should mention that there are bespoke tools to simulate a variety of designs and identifying some potential sticking points. The setup of the paper is that we have a some experiment where we assume a null hypothesis of no treatment effect and an alternative of H1 &gt; 0 implying a positive treatment effect. Although we can extend this to a two-tailed and/or a negative treatment effect.</p>
-<section id="rules-1-2-of-statistical-power" class="level3" data-number="9.2.1">
-<h3 data-number="9.2.1" class="anchored" data-anchor-id="rules-1-2-of-statistical-power"><span class="header-section-number">9.2.1</span> Rules 1 &amp; 2 of Statistical power</h3>
+<section id="rules-1-2-of-statistical-power" class="level3">
+<h3 class="anchored" data-anchor-id="rules-1-2-of-statistical-power">Rules 1 &amp; 2 of Statistical power</h3>
 <p>The main takeaway from this section is that we can think of power as</p>
 <p><span class="math display">\[
 \text{Statistical Power} = \frac{\text{Treatment}}{\text{Standard Error}}
@@ -405,7 +370,7 @@ window.Quarto = {
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -416,12 +381,12 @@ window.Quarto = {
 \]</span></p>
 <p>Effectively when we are doing a priori analysis we are making an assumption a plausible treatment effect and the variability of that estimate. However, this is pretty challenging because if we knew the treatment effect ahead of time we either simulated the data or we wouldn’t need to spend time and money on an experiment!</p>
 </section>
-<section id="what-treatment-effect-should-i-asume" class="level3" data-number="9.2.2">
-<h3 data-number="9.2.2" class="anchored" data-anchor-id="what-treatment-effect-should-i-asume"><span class="header-section-number">9.2.2</span> What treatment effect should I asume?</h3>
+<section id="what-treatment-effect-should-i-asume" class="level3">
+<h3 class="anchored" data-anchor-id="what-treatment-effect-should-i-asume">What treatment effect should I asume?</h3>
 <p>From a statistical power perspective there are a few things we can think about. What our best guess is of the effect, the smallest plausible effect, and the smallest substantively meaninful effect. We may have run a gajillion mailer experiments so we may have a pretty good sense of what the effect could be. That would be great but thats not neccessarily generalizeable to the rest of us. Instead we should use our substantive expertise to think about what would be a smallest plausible effect of our treatment or the smallest meaningful effect of our treatment. This will be important later because we are going to use it in our power equation.</p>
 </section>
-<section id="from-the-sd-to-the-se" class="level3" data-number="9.2.3">
-<h3 data-number="9.2.3" class="anchored" data-anchor-id="from-the-sd-to-the-se"><span class="header-section-number">9.2.3</span> From the SD to the SE</h3>
+<section id="from-the-sd-to-the-se" class="level3">
+<h3 class="anchored" data-anchor-id="from-the-sd-to-the-se">From the SD to the SE</h3>
 <p>When we go to actually estimate our treatment effect we are going to do something like this</p>
 <p><span class="math display">\[
 Outcome = \alpha + \beta \times Treatment + \varepsilon
@@ -436,8 +401,8 @@ SE^{Classic}_t = \sqrt{\frac{\sigma^2}{N \times \bar{D} (1-\bar{D})}}
 \]</span></p>
 <p>Where N is the sample size per each condition. What this intuition gets us is that we can think of ways to reduce <span class="math inline">\(\varepsilon\)</span> by including covariates. This is taking things out of the error term reducing the SE.</p>
 </section>
-<section id="from-the-se-to-the-minimum-detectable-effect-size" class="level3" data-number="9.2.4">
-<h3 data-number="9.2.4" class="anchored" data-anchor-id="from-the-se-to-the-minimum-detectable-effect-size"><span class="header-section-number">9.2.4</span> From the SE to the Minimum Detectable Effect Size</h3>
+<section id="from-the-se-to-the-minimum-detectable-effect-size" class="level3">
+<h3 class="anchored" data-anchor-id="from-the-se-to-the-minimum-detectable-effect-size">From the SE to the Minimum Detectable Effect Size</h3>
 <p>So this is a long way to get to this idea. If we set an alpha level of 1.90 and a target of 80% power than we know a two things. We know that the arms of either side of a 90% confidence interval are 1.64 standard errors wide thus power is the percent of the sampling distribution that is largert than 1.64 standard errors. To find the MDE we need to solve for the treatment effect that positions 80% of the sampling distribution above 1.64. So after passing it through the inverse of the standard normal CDF and centering it we get the result that for 80% power we can multiply the SE by 2.5 to get the MDE. First, the arms of the 90% confidence interval are 1.64 standard errors wide, so the power of the study is the percent of the sampling distribution that is larger than 1.64 standard errors.</p>
 <p>Carlise uses the example of a ANES experiment where the outcome is a feelings thermometer for respondents PID. If we were to want to run a similar experiment we could take the SD of 20.8 and plug it into our numerator. The reference experiment has two conditions with more or less 500 experiments. So we can back out the minimal detectable effect size like this</p>
 <div class="cell">
@@ -458,16 +423,16 @@ SE^{Classic}_t = \sqrt{\frac{\sigma^2}{N \times \bar{D} (1-\bar{D})}}
 </div>
 </section>
 </section>
-<section id="getting-to-the-sample-size" class="level2" data-number="9.3">
-<h2 data-number="9.3" class="anchored" data-anchor-id="getting-to-the-sample-size"><span class="header-section-number">9.3</span> Getting to the Sample Size</h2>
+<section id="getting-to-the-sample-size" class="level2">
+<h2 class="anchored" data-anchor-id="getting-to-the-sample-size">Getting to the Sample Size</h2>
 <p>Cool we could do some more stuff to bring down the standard error. However, how do we move from mde and SE to a good sample size? When we combine our rules we get something like this</p>
 <p><span class="math display">\[
 \text{Sample Size} = 2 \times (\frac{2.5 \times \hat{SD}(y)}{\hat{Treatment}})^2
 \]</span></p>
 <p>If we are using an existing studies we can grab the standard errors and</p>
 </section>
-<section id="rules-of-thumb-according-to-jpal" class="level2" data-number="9.4">
-<h2 data-number="9.4" class="anchored" data-anchor-id="rules-of-thumb-according-to-jpal"><span class="header-section-number">9.4</span> Rules of Thumb According to Jpal</h2>
+<section id="rules-of-thumb-according-to-jpal" class="level2">
+<h2 class="anchored" data-anchor-id="rules-of-thumb-according-to-jpal">Rules of Thumb According to Jpal</h2>
 <ol type="1">
 <li>A larger sample increases the statistical power of the evaluation</li>
 <li>If the effect size of the program is small, the evaluation needs a large sample to achieve a given level of power</li>
@@ -477,12 +442,12 @@ SE^{Classic}_t = \sqrt{\frac{\sigma^2}{N \times \bar{D} (1-\bar{D})}}
 <li>For a given sample size, randomizing at the cluster level as opposed to the individual level reduces the power of the evaluation. The more similar the outcomes of individuals within clusters are, the larger the sample needs to be.</li>
 </ol>
 </section>
-<section id="observational-methods" class="level2" data-number="9.5">
-<h2 data-number="9.5" class="anchored" data-anchor-id="observational-methods"><span class="header-section-number">9.5</span> Observational Methods</h2>
+<section id="observational-methods" class="level2">
+<h2 class="anchored" data-anchor-id="observational-methods">Observational Methods</h2>
 <p>These are certainly less popular then in academic social sciences there are certainly lots of opportunties for example <a href="https://docs.getrecast.com/docs/run-a-geolift-experiment">Recast uses an augmented synthetic control model</a> for its lift tests. Netflix uses a lot of observational causal inference methods outside of just A/B tests so its certainly worth going over some of them.</p>
 </section>
-<section id="difference-in-difference" class="level2" data-number="9.6">
-<h2 data-number="9.6" class="anchored" data-anchor-id="difference-in-difference"><span class="header-section-number">9.6</span> Difference in Difference</h2>
+<section id="difference-in-difference" class="level2">
+<h2 class="anchored" data-anchor-id="difference-in-difference">Difference in Difference</h2>
 <p>DiD dates back to as early as Snow in 1840’s London. The idea is fairly simple something happens that we don’t have any control over causing a change in the system. In the original study the Lambeth water company moved their water supply upstream of London while other water suppliers remained downstream of London. During this time Cholera was running rampant in London and most of the sewers either dumped into the Thames, people dumped things in the Thames, and then just commerical activity. The move kind of came out of nowwhere and was not influenced by any other factor other than the fact that an act of parliament forced them to move the production upstream. So if we wanted to estimate the effect of moving the water source we would follow a fairly simple formula</p>
 <p><span class="math display">\[
 ATE = (\text{Mean Post-Treatment}_{Treated} - \text{Mean Pre-Treatment}_{Treated}) - (\text{Mean Post-Treatment}_{Control} - \text{Mean Post-Treatment}_{Control})
@@ -508,18 +473,18 @@ ATE = (\text{Mean Post-Treatment}_{Treated} - \text{Mean Pre-Treatment}_{Treated
 </div>
 <p>Which gives us our treatment effect. The reason we have to incorporate all this information simply boils down to the fact is that we need to ensure that we are making the proper comparisions. If we simply did the simple difference in means between the treated group we are not really getting the correct estimate because we can’t discount that the treated group would have improved over time. If we did the means post treatment and pre treatment we can’t discount that this is just a time effect. This is pretty neat and we can recover the ATE as long as we meet some identifying assumptions.</p>
 </section>
-<section id="identifying-assumptions" class="level2" data-number="9.7">
-<h2 data-number="9.7" class="anchored" data-anchor-id="identifying-assumptions"><span class="header-section-number">9.7</span> Identifying Assumptions</h2>
+<section id="identifying-assumptions" class="level2">
+<h2 class="anchored" data-anchor-id="identifying-assumptions">Identifying Assumptions</h2>
 </section>
-<section id="no-anticipation" class="level2" data-number="9.8">
-<h2 data-number="9.8" class="anchored" data-anchor-id="no-anticipation"><span class="header-section-number">9.8</span> No Anticipation</h2>
+<section id="no-anticipation" class="level2">
+<h2 class="anchored" data-anchor-id="no-anticipation">No Anticipation</h2>
 <p>One assumption that gets a little less attention in courses and texts is the no anticipation assumption. This one is a bit harder to test explicitly. You have to have a much more convincing story to justify that this assumption is not violated. In the Jon Snow water case this is a bit more straightforward to for me to think about than the organ donation example. Anticipation in this context may look like people strategically switching who they are getting their water from. If we remember the canoncal Braod Street pump from the Jon Snow story</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>HistData<span class="sc">::</span><span class="fu">SnowMap</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -547,14 +512,14 @@ ATE = (\text{Mean Post-Treatment}_{Treated} - \text{Mean Pre-Treatment}_{Treated
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>Where we can see a significant pretrend. Is this the best way to use an event-study plot? Ehh not really for the most part people tend to use these in support of the parallel trends assumption. We may want to start assigning placebos to see if we can detect an effect prior to treatment. But, this is also us trying to find evidence to the contrary.</p>
-<section id="the-parallel-trends-assumption" class="level3" data-number="9.8.1">
-<h3 data-number="9.8.1" class="anchored" data-anchor-id="the-parallel-trends-assumption"><span class="header-section-number">9.8.1</span> The parallel trends assumption</h3>
+<section id="the-parallel-trends-assumption" class="level3">
+<h3 class="anchored" data-anchor-id="the-parallel-trends-assumption">The parallel trends assumption</h3>
 <p>The parallel trends assumption is the biggest one that has lots of literature dedicated to it. The parallel trends assumption simply states that if treatment would have never occured we would have seen <em>similar</em> trends post treatment. An unconditional parallel trends assumption is a bit hard to justify so we tend to make a conditonal parallel trends assumption.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(geomtextpath)</span>
@@ -595,13 +560,13 @@ ATE = (\text{Mean Post-Treatment}_{Treated} - \text{Mean Pre-Treatment}_{Treated
 <img src="Causal-Inference_files/figure-html/fig-pt-examp-1.png" id="fig-pt-examp" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-pt-examp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.1
+Figure&nbsp;1
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>In <a href="#fig-pt-examp" class="quarto-xref">Figure&nbsp;<span>9.1</span></a> we are simply plotting the difference between the trajectories of the treated group and the control group. This is nice but what should we look for?</p>
+<p>In <a href="#fig-pt-examp" class="quarto-xref">Figure&nbsp;1</a> we are simply plotting the difference between the trajectories of the treated group and the control group. This is nice but what should we look for?</p>
 <p>There are visual inspections and there are answers that we must come to that are a little bit outside the data but the data can inform our judgements. The key idea of DiD is that our control is a valid counterfactual for our treated group. This requires us to do some shoe leather investigation on whether your counterfactuals are plausible. In our organ donation example lets say that by some unforseen miracle lots of states in the control group somehow build high quality transits in major cities and high quality trains between major cities. Maybe less dramatic and possibly more plausible is there is a ‘sin’ tax of sorts on motorcycles making them much more expensive to buy and/or more green spaces like the Beltline are opened providing a free and safe bike path. All these have implications on organ donation rate because there are less situations where cars can collide with eachother, motorcycles, or bikes. What this would imply is that there are less traumatic brain injuries leading to brain death causing a decrease in organ donations. This might result in very dramatic shift in the trends.</p>
 <div class="cell">
 <details class="code-fold">
@@ -654,7 +619,7 @@ Figure&nbsp;9.1
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -705,7 +670,7 @@ Figure&nbsp;9.1
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -750,7 +715,7 @@ Figure&nbsp;9.1
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -758,8 +723,8 @@ Figure&nbsp;9.1
 <p>In this case we can visualize the effect of different shocks on the outcome of interest. The blue coefficient is really just the OLS estimator and as we increase M we are introducing more and more non-linearity the estimates from the model look a little bit more defenseble if you think that strict linearity is not totally reasonable than woohooo you can defend your estimate a bit more coherently.</p>
 </section>
 </section>
-<section id="staggered-adoption" class="level2" data-number="9.9">
-<h2 data-number="9.9" class="anchored" data-anchor-id="staggered-adoption"><span class="header-section-number">9.9</span> Staggered Adoption</h2>
+<section id="staggered-adoption" class="level2">
+<h2 class="anchored" data-anchor-id="staggered-adoption">Staggered Adoption</h2>
 <p>The problem we often run into is that we often don’t have all units turning treatment on at one point. Often times we have some kind of staggered adoption. While not neccessarily a problem we used to solve this with the TWFE estimator, but as <span class="citation" data-cites="goodman-baconDifferenceindifferencesVariationTreatment2021">Goodman-Bacon (<a href="#ref-goodman-baconDifferenceindifferencesVariationTreatment2021" role="doc-biblioref">2021</a>)</span> finds that is a problem.</p>
 <div class="cell">
 <details class="code-fold">
@@ -986,13 +951,13 @@ Figure&nbsp;9.1
 <img src="Causal-Inference_files/figure-html/fig-twfe-probs-1.png" id="fig-twfe-probs" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-twfe-probs-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.2
+Figure&nbsp;2
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>Put simply the TWFE estimator is just where we include intercepts for the time and the spatial unit (typically). There is nothing inherently ‘wrong’ with this the problem is that the ATT we are identifying is not comparing treated and non-treated groups. If we think about this our heads this makes sense! As <a href="#fig-twfe-probs" class="quarto-xref">Figure&nbsp;<span>9.2</span></a> demonstrates there are a variety of comparisions that the matrix algebra can make. We can compare:</p>
+<p>Put simply the TWFE estimator is just where we include intercepts for the time and the spatial unit (typically). There is nothing inherently ‘wrong’ with this the problem is that the ATT we are identifying is not comparing treated and non-treated groups. If we think about this our heads this makes sense! As <a href="#fig-twfe-probs" class="quarto-xref">Figure&nbsp;2</a> demonstrates there are a variety of comparisions that the matrix algebra can make. We can compare:</p>
 <ul>
 <li>Never Treated vs Early Groups</li>
 <li>Early Group vs Late Group</li>
@@ -1099,7 +1064,7 @@ Figure&nbsp;9.2
 <img src="Causal-Inference_files/figure-html/fig-baker-et-al-1.png" id="fig-baker-et-al" class="img-fluid figure-img" width="672">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig quarto-uncaptioned" id="fig-baker-et-al-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.3
+Figure&nbsp;3
 </figcaption>
 </figure>
 </div>
@@ -1247,15 +1212,15 @@ Figure&nbsp;9.3
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>So what do we do? Thankfully there are huge number of estimators that try to tackle this problem. Unfortunately there are a lot of estimators to choose from. I will focus on <span class="citation" data-cites="callawayDifferenceinDifferencesMultipleTime2020">Callaway and Sant’Anna (<a href="#ref-callawayDifferenceinDifferencesMultipleTime2020" role="doc-biblioref">2020</a>)</span> since it is a bit more straight forward and Pedro gives excellent talks. They focus on how we can create rigorous comparisions using a variety of double robust methods, but they allow for comparisions either with the ‘first-treated’ and ‘not yet treated’ or ‘never treated’. This will really depend on your application.</p>
 </section>
-<section id="synthetic-control" class="level2" data-number="9.10">
-<h2 data-number="9.10" class="anchored" data-anchor-id="synthetic-control"><span class="header-section-number">9.10</span> Synthetic Control</h2>
+<section id="synthetic-control" class="level2">
+<h2 class="anchored" data-anchor-id="synthetic-control">Synthetic Control</h2>
 <p>Synthetic Control(SCM) is one of the youngest of the canonical observational causal inference models. In a way we are mixing some of the best of both worlds with IPW and DiD. So let take the canonical example of the California smoking tax. So in this example CA imposes a cigarette tax kind of out of nowhere and we are interested in the effect of this tax on smoking. The problem is that there are not a lot of clean counterfactuals for CA. This happends for a variety of reasons but the problem arises that many of the candidate estimators not going to produce accurate estimates of the effect of a program.</p>
 <p>As <span class="citation" data-cites="athey2017state">Athey and Imbens (<a href="#ref-athey2017state" role="doc-biblioref">2017</a>)</span> argues this is one of the major breakthroughs in the last 15 years. Basically if draw out a DAG of pre-treatment controls and they are within the convex hull we can literally just create a fake CA. Convex hull is a mathy way of saying that the some combination of the unaffected units can approximate the pre-intervention charecteristic of the unaffected units. In a very simple example</p>
 <div class="cell">
@@ -1278,11 +1243,11 @@ Figure&nbsp;9.3
 <span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">annotate</span>(<span class="at">geom =</span> <span class="st">'text'</span>,<span class="at">x =</span> <span class="sc">-</span><span class="dv">2</span> , <span class="at">y =</span> <span class="fl">4.5</span>, <span class="at">label =</span> <span class="st">'Synthetic unit will fall </span><span class="sc">\n</span><span class="st"> somewhere in here'</span>) <span class="sc">+</span></span>
 <span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">limits =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="dv">12</span>,<span class="dv">4</span>), <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">12</span>,<span class="dv">4</span>, <span class="at">by =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
 <span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">color =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
-<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_minimal</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_classic</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1346,7 +1311,7 @@ Figure&nbsp;9.3
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Causal-Inference_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1369,24 +1334,43 @@ with \sum^{n-1}_{i=1} \hat{weights}=1 \\
 $$
 <span class="math display">\[\begin{aligned}
 
-Y_{it} = \mathit{T}_{it}D_{it} + \Theta^\prime_{t}Z_{i} + \xi_{t} + \lambda^{\prime}f_t + \varepsilon_{it}
+Y_{it} = \mathit{T}_{it}D_{it} + \Theta^\prime_{t}Z_{i} + \xi_{t} + \lambda_i^{\prime}f_t + \varepsilon_{it}
 \end{aligned}\]</span>
 <p>$$</p>
 <p><span class="math display">\[
 \begin{aligned}
-Y^{0}_it = \Theta^{\prime}_t Z_{i} + \xi_{t} + \lambda^{\prime}f_t + \varepsilon_{it} \\
+Y^{0}_it = \Theta^{\prime}_t Z_{i} + \xi_{t} + \lambda_i^{\prime}f_t + \varepsilon_{it} \\
 Y^{1}_{it} = Y^{0}_it + \mathit{T}_{it}
 \end{aligned}
 \]</span></p>
-<p>This allows the control to be a function of time fixed effects a vector of covariates plus some time-invariant confounders to be flexible across time. Broken down a little bit more suppose there are some number of time-varying signals</p>
+<p>This allows the control to be a function of time fixed effects a vector of covariates plus some time-invariant confounders to be flexible across time. Broken down a little bit more suppose there are some number of time-varying signals. Each unit will pick up some fixed linear combination of these time varying signals and the differences. Since theese confounders are picked up in the pre-treatment outcomes for both treated and controls we can try to use this information to ‘balance on’ these confounders. We want to learn <span class="math inline">\(\lambda_i^{\prime}f_t\)</span> from the pre-treatment controls so this term will be balanced out. If we get a good synthetic unit we can effectively not worry about <span class="math inline">\(\lambda_i^{\prime}f_t\)</span> which if left to its own devices will behave/is an unobserved time-varying confounders.</p>
+<p>The restrictions of weights summing to one, the weights being non-negative, and only dealing with one unit is somewhat of an arbitrary limitation. Innovations on the SCM the Generalized SCM (GSCM) <span class="citation" data-cites="Xu:2017">(<a href="#ref-Xu:2017" role="doc-biblioref">Xu 2017</a>)</span>, the Augmented SCM (ASCM)<span class="citation" data-cites="Ben-MichaelandRothstein:2021">(<a href="#ref-Ben-MichaelandRothstein:2021" role="doc-biblioref">Ben-Michael, and and Rothstein 2021</a>)</span>, or SynthDiD <span class="citation" data-cites="ArkhangelskyAtheyHirshberg:2021">(<a href="#ref-ArkhangelskyAtheyHirshberg:2021" role="doc-biblioref">Arkhangelsky et al. 2021</a>)</span> in someways relax these constraints.</p>
+<p>Recast uses the Augmented SCM which deals with non-negativity and the convex hull restrictions. We may have a lot of donor units but a limited number of covariates that may result in no unique solution. We could also have fewe control units wiht non-zero weights. These all pose problems for the traditional SCM where we do not have a unique solution. Effectively what happens underneath the hood is we have our SCM model that we estimate our synthetic unit on. If the pre-treatment fit is somewhat poor or is a little bit outside of the convex hull this is an estimation problem rather than a failure of the method. The estimator for the ASCM is</p>
+<p><span class="math display">\[
+Y_{it} = \sum\lambda^{scm}_i Y_{it} + \hat{m}_{it} - \sum \lambda^{scm}_i \hat{m}_{it}
+\]</span></p>
+<p>Where <span class="math inline">\(\hat{m}_{it} - \sum \lambda^{scm}_i \hat{m}_{it}\)</span> is the augmentation to the original SCM model. Effectively we are adding a small correction to account for estimation problems. In a IPW setting there could be remaining imbalances between the treatment and control groups. To deal with this problem we would simply use G-computation to adjust for these residual imbalances. That is we would estimate the propensity score model with the pre-treatment covariates to predict treatment status and if there are remaining imbalances then we can include them in the outcome modeling to handle these imbalances. We can use a similar logic to improve the fit of our synthetic unit. In statistical learning framework we can kind of think of this as a boosting problem.</p>
+<p>If the pre-treatment fit is poor we can use the augmented estimator to upweight units that are more predictive of the post-treatment outcomes. The ASCM can also handle cases where we may need weights to be negative and rely on extrapolation to get a good synthetic unit. We can relax the constraint of non-negative weights by applying a ridge penalty to the end of the ASCM model. This will let us control the amount of extrapolation that we allow.</p>
+<p>The GSCM and SynthDiD view the problem not entirely differently but view SCM and DiD as matrix completion methods. Basically the idea is that based on the structure of our data we want to impute the missing potential outcomes based on what our matrix looks like. If we have a setting where N &gt; T or a ‘tall’ then we would want to use cross-sectional information or vice-versa. The advantage of these approaches is that they are a bridge to the DiD stuff we did earlier and we can incorporate intercept shifts for units or time and can generalize to cases where lots of units are treated, there is staggered treatment timing, or poor pre-treatment fit.</p>
+<p>These work based on the idea of the interactive fixed effect models where we are really stratifying our model by treated and control. We are losing some information we don’t let the model see the both the treated and control groups during training that way we aren’t worried about negative weighting. The reason this is happening is that the model can’t actually use early adopters as comparisions. So we have a model that tries makes predictions about Y so we get <span class="math inline">\(\hat{Y}\)</span> and then we take the difference between predicted and actual values.</p>
 
 
-<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-ArkhangelskyAtheyHirshberg:2021" class="csl-entry" role="listitem">
+Arkhangelsky, Dmitry, Susan Athey, David A. Hirshberg, Guido W. Imbens, and Stefan Wager. 2021. <span>“Synthetic <span class="nocase">Difference-in-Differences</span>.”</span> <em>American Economic Review</em> 111 (12): 4088–118. <a href="https://doi.org/10.1257/aer.20190159">https://doi.org/10.1257/aer.20190159</a>.
+</div>
 <div id="ref-athey2017state" class="csl-entry" role="listitem">
 Athey, Susan, and Guido W Imbens. 2017. <span>“The State of Applied Econometrics: <span>Causality</span> and Policy Evaluation.”</span> <em>Journal of Economic Perspectives</em> 31 (2): 3–32.
 </div>
 <div id="ref-bakerHowMuchShould2021" class="csl-entry" role="listitem">
 Baker, Andrew, David Larcker, and Charles Wang. 2021. <span>“How <span>Much Should We Trust Staggered Difference-In-Differences Estimates</span>?”</span> Working Paper. Stanford University: European Corporate Governance Institute. <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3794018">https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3794018</a>.
+</div>
+<div id="ref-Ben-MichaelandRothstein:2021" class="csl-entry" role="listitem">
+Ben-Michael, Eli, Feller, and Jesse and Rothstein. 2021. <span>“The <span>Augmented Synthetic Control Method</span>.”</span> <em>Journal of the American Statistical Association</em> 116 (536): 1789–1803. <a href="https://doi.org/10.1080/01621459.2021.1929245">https://doi.org/10.1080/01621459.2021.1929245</a>.
 </div>
 <div id="ref-callawayDifferenceinDifferencesMultipleTime2020" class="csl-entry" role="listitem">
 Callaway, Brantly, and Pedro H. C. Sant’Anna. 2020. <span>“Difference-in-<span>Differences</span> with Multiple Time Periods.”</span> <em>Journal of Econometrics</em>, December. <a href="https://doi.org/10.1016/j.jeconom.2020.12.001">https://doi.org/10.1016/j.jeconom.2020.12.001</a>.
@@ -1400,241 +1384,247 @@ Goodman-Bacon, Andrew. 2021. <span>“Difference-in-Differences with Variation i
 <div id="ref-RambachanRoth:2023" class="csl-entry" role="listitem">
 Rambachan, Ashesh, and Jonathan Roth. 2023. <span>“A <span>More Credible Approach</span> to <span>Parallel Trends</span>.”</span> <em>The Review of Economic Studies</em> 90 (5): 2555–91. <a href="https://doi.org/10.1093/restud/rdad018">https://doi.org/10.1093/restud/rdad018</a>.
 </div>
+<div id="ref-Xu:2017" class="csl-entry" role="listitem">
+Xu, Yiqing. 2017. <span>“Generalized <span>Synthetic Control Method</span>: <span>Causal Inference</span> with <span>Interactive Fixed Effects Models</span>.”</span> <em>Political Analysis</em> 25 (1): 57–76. <a href="https://doi.org/10.1017/pan.2016.2">https://doi.org/10.1017/pan.2016.2</a>.
 </div>
-</section>
-
-</main> <!-- /main -->
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
-window.document.addEventListener("DOMContentLoaded", function (event) {
-  const toggleBodyColorMode = (bsSheetEl) => {
-    const mode = bsSheetEl.getAttribute("data-mode");
-    const bodyEl = window.document.querySelector("body");
-    if (mode === "dark") {
-      bodyEl.classList.add("quarto-dark");
-      bodyEl.classList.remove("quarto-light");
-    } else {
-      bodyEl.classList.add("quarto-light");
-      bodyEl.classList.remove("quarto-dark");
-    }
-  }
-  const toggleBodyColorPrimary = () => {
-    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
-    if (bsSheetEl) {
-      toggleBodyColorMode(bsSheetEl);
-    }
-  }
-  toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
-  const isCodeAnnotation = (el) => {
-    for (const clz of el.classList) {
-      if (clz.startsWith('code-annotation-')) {                     
-        return true;
-      }
-    }
-    return false;
-  }
-  const onCopySuccess = function(e) {
-    // button target
-    const button = e.trigger;
-    // don't keep focus
-    button.blur();
-    // flash "checked"
-    button.classList.add('code-copy-button-checked');
-    var currentTitle = button.getAttribute("title");
-    button.setAttribute("title", "Copied!");
-    let tooltip;
-    if (window.bootstrap) {
-      button.setAttribute("data-bs-toggle", "tooltip");
-      button.setAttribute("data-bs-placement", "left");
-      button.setAttribute("data-bs-title", "Copied!");
-      tooltip = new bootstrap.Tooltip(button, 
-        { trigger: "manual", 
-          customClass: "code-copy-button-tooltip",
-          offset: [0, -8]});
-      tooltip.show();    
-    }
-    setTimeout(function() {
-      if (tooltip) {
-        tooltip.hide();
-        button.removeAttribute("data-bs-title");
-        button.removeAttribute("data-bs-toggle");
-        button.removeAttribute("data-bs-placement");
-      }
-      button.setAttribute("title", currentTitle);
-      button.classList.remove('code-copy-button-checked');
-    }, 1000);
-    // clear code selection
-    e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
-  });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
-    });
-    clipboardModal.on('success', onCopySuccess);
-  }
-    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
-    var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp('/' + window.location.host + '/');
-    var isInternal = (href) => {
-        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
-    }
-    // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
-    for (var i=0; i<links.length; i++) {
-      const link = links[i];
-      if (!isInternal(link.href)) {
-        // undo the damage that might have been done by quarto-nav.js in the case of
-        // links that we want to consider external
-        if (link.dataset.originalHref !== undefined) {
-          link.href = link.dataset.originalHref;
-        }
-      }
-    }
-  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
-    const config = {
-      allowHTML: true,
-      maxWidth: 500,
-      delay: 100,
-      arrow: false,
-      appendTo: function(el) {
-          return el.parentElement;
-      },
-      interactive: true,
-      interactiveBorder: 10,
-      theme: 'quarto',
-      placement: 'bottom-start',
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
     };
-    if (contentFn) {
-      config.content = contentFn;
-    }
-    if (onTriggerFn) {
-      config.onTrigger = onTriggerFn;
-    }
-    if (onUntriggerFn) {
-      config.onUntrigger = onUntriggerFn;
-    }
-    window.tippy(el, config); 
-  }
-  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
-  for (var i=0; i<noterefs.length; i++) {
-    const ref = noterefs[i];
-    tippyHover(ref, function() {
-      // use id or data attribute instead here
-      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
-      try { href = new URL(href).hash; } catch {}
-      const id = href.replace(/^#\/?/, "");
-      const note = window.document.getElementById(id);
-      if (note) {
-        return note.innerHTML;
-      } else {
-        return "";
-      }
-    });
-  }
-  const xrefs = window.document.querySelectorAll('a.quarto-xref');
-  const processXRef = (id, note) => {
-    // Strip column container classes
-    const stripColumnClz = (el) => {
-      el.classList.remove("page-full", "page-columns");
-      if (el.children) {
-        for (const child of el.children) {
-          stripColumnClz(child);
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
         }
       }
+      return false;
     }
-    stripColumnClz(note)
-    if (id === null || id.startsWith('sec-')) {
-      // Special case sections, only their first couple elements
-      const container = document.createElement("div");
-      if (note.children && note.children.length > 2) {
-        container.appendChild(note.children[0].cloneNode(true));
-        for (let i = 1; i < note.children.length; i++) {
-          const child = note.children[i];
-          if (child.tagName === "P" && child.innerText === "") {
-            continue;
-          } else {
-            container.appendChild(child.cloneNode(true));
-            break;
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
           }
         }
-        if (window.Quarto?.typesetMath) {
-          window.Quarto.typesetMath(container);
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/joshuafayallen\.github\.io\/machine-learning-notes\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
         }
-        return container.innerHTML
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
       } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
         if (window.Quarto?.typesetMath) {
           window.Quarto.typesetMath(note);
         }
-        return note.innerHTML;
-      }
-    } else {
-      // Remove any anchor links if they are present
-      const anchorLink = note.querySelector('a.anchorjs-link');
-      if (anchorLink) {
-        anchorLink.remove();
-      }
-      if (window.Quarto?.typesetMath) {
-        window.Quarto.typesetMath(note);
-      }
-      if (note.classList.contains("callout")) {
-        return note.outerHTML;
-      } else {
-        return note.innerHTML;
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
       }
     }
-  }
-  for (var i=0; i<xrefs.length; i++) {
-    const xref = xrefs[i];
-    tippyHover(xref, undefined, function(instance) {
-      instance.disable();
-      let url = xref.getAttribute('href');
-      let hash = undefined; 
-      if (url.startsWith('#')) {
-        hash = url;
-      } else {
-        try { hash = new URL(url).hash; } catch {}
-      }
-      if (hash) {
-        const id = hash.replace(/^#\/?/, "");
-        const note = window.document.getElementById(id);
-        if (note !== null) {
-          try {
-            const html = processXRef(id, note.cloneNode(true));
-            instance.setContent(html);
-          } finally {
-            instance.enable();
-            instance.show();
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
           }
         } else {
-          // See if we can fetch this
-          fetch(url.split('#')[0])
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
           .then(res => res.text())
           .then(html => {
             const parser = new DOMParser();
             const htmlDoc = parser.parseFromString(html, "text/html");
-            const note = htmlDoc.getElementById(id);
+            const note = htmlDoc.querySelector('main.content');
             if (note !== null) {
-              const html = processXRef(id, note);
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
               instance.setContent(html);
             } 
           }).finally(() => {
@@ -1642,194 +1632,170 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
             instance.show();
           });
         }
-      } else {
-        // See if we can fetch a full url (with no hash to target)
-        // This is a special case and we should probably do some content thinning / targeting
-        fetch(url)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const htmlDoc = parser.parseFromString(html, "text/html");
-          const note = htmlDoc.querySelector('main.content');
-          if (note !== null) {
-            // This should only happen for chapter cross references
-            // (since there is no id in the URL)
-            // remove the first header
-            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
-              note.children[0].remove();
-            }
-            const html = processXRef(null, note);
-            instance.setContent(html);
-          } 
-        }).finally(() => {
-          instance.enable();
-          instance.show();
-        });
-      }
-    }, function(instance) {
-    });
-  }
-      let selectedAnnoteEl;
-      const selectorForAnnotation = ( cell, annotation) => {
-        let cellAttr = 'data-code-cell="' + cell + '"';
-        let lineAttr = 'data-code-annotation="' +  annotation + '"';
-        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
-        return selector;
-      }
-      const selectCodeLines = (annoteEl) => {
-        const doc = window.document;
-        const targetCell = annoteEl.getAttribute("data-target-cell");
-        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
-        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
-        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
-        const lineIds = lines.map((line) => {
-          return targetCell + "-" + line;
-        })
-        let top = null;
-        let height = null;
-        let parent = null;
-        if (lineIds.length > 0) {
-            //compute the position of the single el (top and bottom and make a div)
-            const el = window.document.getElementById(lineIds[0]);
-            top = el.offsetTop;
-            height = el.offsetHeight;
-            parent = el.parentElement.parentElement;
-          if (lineIds.length > 1) {
-            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
-            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
-            height = bottom - top;
-          }
-          if (top !== null && height !== null && parent !== null) {
-            // cook up a div (if necessary) and position it 
-            let div = window.document.getElementById("code-annotation-line-highlight");
-            if (div === null) {
-              div = window.document.createElement("div");
-              div.setAttribute("id", "code-annotation-line-highlight");
-              div.style.position = 'absolute';
-              parent.appendChild(div);
-            }
-            div.style.top = top - 2 + "px";
-            div.style.height = height + 4 + "px";
-            div.style.left = 0;
-            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
-            if (gutterDiv === null) {
-              gutterDiv = window.document.createElement("div");
-              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
-              gutterDiv.style.position = 'absolute';
-              const codeCell = window.document.getElementById(targetCell);
-              const gutter = codeCell.querySelector('.code-annotation-gutter');
-              gutter.appendChild(gutterDiv);
-            }
-            gutterDiv.style.top = top - 2 + "px";
-            gutterDiv.style.height = height + 4 + "px";
-          }
-          selectedAnnoteEl = annoteEl;
-        }
-      };
-      const unselectCodeLines = () => {
-        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
-        elementsIds.forEach((elId) => {
-          const div = window.document.getElementById(elId);
-          if (div) {
-            div.remove();
-          }
-        });
-        selectedAnnoteEl = undefined;
-      };
-        // Handle positioning of the toggle
-    window.addEventListener(
-      "resize",
-      throttle(() => {
-        elRect = undefined;
-        if (selectedAnnoteEl) {
-          selectCodeLines(selectedAnnoteEl);
-        }
-      }, 10)
-    );
-    function throttle(fn, ms) {
-    let throttle = false;
-    let timer;
-      return (...args) => {
-        if(!throttle) { // first call gets through
-            fn.apply(this, args);
-            throttle = true;
-        } else { // all the others get throttled
-            if(timer) clearTimeout(timer); // cancel #2
-            timer = setTimeout(() => {
-              fn.apply(this, args);
-              timer = throttle = false;
-            }, ms);
-        }
-      };
-    }
-      // Attach click handler to the DT
-      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
-      for (const annoteDlNode of annoteDls) {
-        annoteDlNode.addEventListener('click', (event) => {
-          const clickedEl = event.target;
-          if (clickedEl !== selectedAnnoteEl) {
-            unselectCodeLines();
-            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
-            if (activeEl) {
-              activeEl.classList.remove('code-annotation-active');
-            }
-            selectCodeLines(clickedEl);
-            clickedEl.classList.add('code-annotation-active');
-          } else {
-            // Unselect the line
-            unselectCodeLines();
-            clickedEl.classList.remove('code-annotation-active');
-          }
-        });
-      }
-  const findCites = (el) => {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const cites = parentEl.dataset.cites;
-      if (cites) {
-        return {
-          el,
-          cites: cites.split(' ')
-        };
-      } else {
-        return findCites(el.parentElement)
-      }
-    } else {
-      return undefined;
-    }
-  };
-  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
-  for (var i=0; i<bibliorefs.length; i++) {
-    const ref = bibliorefs[i];
-    const citeInfo = findCites(ref);
-    if (citeInfo) {
-      tippyHover(citeInfo.el, function() {
-        var popup = window.document.createElement('div');
-        citeInfo.cites.forEach(function(cite) {
-          var citeDiv = window.document.createElement('div');
-          citeDiv.classList.add('hanging-indent');
-          citeDiv.classList.add('csl-entry');
-          var biblioDiv = window.document.getElementById('ref-' + cite);
-          if (biblioDiv) {
-            citeDiv.innerHTML = biblioDiv.innerHTML;
-          }
-          popup.appendChild(citeDiv);
-        });
-        return popup.innerHTML;
+      }, function(instance) {
       });
     }
-  }
-});
-</script>
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./unsupervised-learning.html" class="pagination-link" aria-label="Unsupervised Learning">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Unsupervised Learning</span></span>
+      <a href="./Bayesian-Stats.html" class="pagination-link" aria-label="Bayesian Statistics">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Bayesian Statistics</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./Neural-Networks.html" class="pagination-link" aria-label="Deep Learning (Mostly Neural Networks)">
-        <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Deep Learning (Mostly Neural Networks)</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./tree-based-methods.html" class="pagination-link" aria-label="Tree Based Methods and an Aside on Validation">
+        <span class="nav-page-text">Tree Based Methods and an Aside on Validation</span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
@@ -1838,4 +1804,4 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 
 
 
-</body></html>
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions"><ul><li><a href="https://github.com/joshuafayallen/machine-learning-notes/edit/main/Causal-Inference.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/joshuafayallen/machine-learning-notes/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
