@@ -191,7 +191,7 @@ The nice thing about the MCC is that it has the same interpretation as the corre
 
 ## Test Questions 
 
-Some times employers will test you on things that aren't just going through these. One real example you ran into is that you needed to hand calculate the True postives and the True negatives which you failed miserably and wasn't able to even get to the rest. 
+Some times employers will test you on things that aren't just going through these. One real example you ran into is that you needed to hand calculate the True postives and the True negatives.
 
 
 
@@ -580,13 +580,12 @@ library(tinytable)
 df = read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv") |>
     janitor::clean_names() 
 
- df |>
+surv = df |>
     group_by(success, died) |>
     summarise(total = n()) |>
-    mutate(prop = total/sum(total)) |>
-                tt()
+    mutate(prop = total/sum(total)) 
 
-
+tt(surv)
 ```
 
 So for the most part nicely balanced class data is pretty rare! Lets take a fairly simple from Julia Silge's [excellent blog post](https://juliasilge.com/blog/himalayan-climbing/). For the most part mountaneering trips don't tend to have a lot of deaths which is good! However, when we want to start predicting what makes a succesful climb this can be a problem if we aren't careful.

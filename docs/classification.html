@@ -415,11 +415,8 @@ window.Quarto = {
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>plt.xticks(<span class="bu">range</span>(<span class="bu">len</span>(years_unique)), <span class="bu">sorted</span>(years_unique))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>([&lt;matplotlib.axis.XTick object at 0x149cf1b10&gt;, &lt;matplotlib.axis.XTick object at 0x14a3c3690&gt;, &lt;matplotlib.axis.XTick object at 0x15cb56a10&gt;, &lt;matplotlib.axis.XTick object at 0x15cb677d0&gt;, &lt;matplotlib.axis.XTick object at 0x15cb71250&gt;], [Text(0, 0, '2001'), Text(1, 0, '2002'), Text(2, 0, '2003'), Text(3, 0, '2004'), Text(4, 0, '2005')])</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Trading Volume"</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">"Trading Volume"</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">"Year"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -446,25 +443,20 @@ P(Tails) = 1 - P(Heads)
 <h3 class="anchored" data-anchor-id="modeling-it-in-python">Modeling it in Python</h3>
 <p>Lets take our stock market data and try to classify whether the direction is up or down using contemporaneous volumne and what appears to be lags of volume. Using the Stats model api we can do it like this</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>stocks_pd <span class="op">=</span> stocks.with_columns(</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    direction <span class="op">=</span> pl.when(pl.col(<span class="st">'Direction'</span>) <span class="op">==</span> <span class="st">'Up'</span>).then(<span class="dv">1</span>).otherwise(<span class="dv">0</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>stocks_pd <span class="op">=</span> stocks.with_columns(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    direction <span class="op">=</span> pl.when(pl.col(<span class="st">'Direction'</span>) <span class="op">==</span> <span class="st">'Up'</span>).then(<span class="dv">1</span>).otherwise(<span class="dv">0</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>form_version <span class="op">=</span> smf.logit(<span class="st">'direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume'</span>, data <span class="op">=</span> stocks_pd.to_pandas()).fit()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks_pd.drop([<span class="st">'Direction'</span>, <span class="st">'direction'</span>, <span class="st">'Year'</span>, <span class="st">'Today'</span>]).to_numpy()</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> sm.add_constant(x)</span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>form_version <span class="op">=</span> smf.logit(<span class="st">'direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + Volume'</span>, data <span class="op">=</span> stocks_pd.to_pandas()).fit()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Optimization terminated successfully.
-         Current function value: 0.691034
-         Iterations 4</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks_pd.drop([<span class="st">'Direction'</span>, <span class="st">'direction'</span>, <span class="st">'Year'</span>, <span class="st">'Today'</span>]).to_numpy()</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> sm.add_constant(x)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> stocks_pd[<span class="st">'direction'</span>].to_numpy()</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>stats_version <span class="op">=</span> sm.GLM(y, x, family <span class="op">=</span> sm.families.Binomial()).fit()</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>stats_version.summary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> stocks_pd[<span class="st">'direction'</span>].to_numpy()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>stats_version <span class="op">=</span> sm.GLM(y, x, family <span class="op">=</span> sm.families.Binomial()).fit()</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>stats_version.summary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <caption>Generalized Linear Model Regression Results</caption>
@@ -501,13 +493,13 @@ P(Tails) = 1 - P(Heads)
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Wed, 26 Feb 2025</td>
+<td>Mon, 02 Jun 2025</td>
 <td data-quarto-table-cell-role="th">Deviance:</td>
 <td>1727.6</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:23:38</td>
+<td>13:48:48</td>
 <td data-quarto-table-cell-role="th">Pearson chi2:</td>
 <td>1.25e+03</td>
 </tr>
@@ -604,7 +596,7 @@ P(Tails) = 1 - P(Heads)
 </tbody>
 </table>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>form_version.summary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>form_version.summary()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="simpletable caption-top table table-sm table-striped small" data-quarto-postprocess="true">
 <caption>Logit Regression Results</caption>
@@ -629,13 +621,13 @@ P(Tails) = 1 - P(Heads)
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">Date:</td>
-<td>Wed, 26 Feb 2025</td>
+<td>Mon, 02 Jun 2025</td>
 <td data-quarto-table-cell-role="th">Pseudo R-squ.:</td>
 <td>0.002074</td>
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">Time:</td>
-<td>16:23:38</td>
+<td>13:48:48</td>
 <td data-quarto-table-cell-role="th">Log-Likelihood:</td>
 <td>-863.79</td>
 </tr>
@@ -735,20 +727,17 @@ P(Tails) = 1 - P(Heads)
 </div>
 <p>To assess our classifier we should go through several steps first we can look at the confusion matrix. Basically we can get as very general look at how well our predictions lineup with the actual data. First we need to get our predictions and then bin them into 1’s and zero</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>form_preds <span class="op">=</span> form_version.predict(stocks_pd.to_pandas())</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> (form_preds <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>y_actual <span class="op">=</span> stocks_pd[<span class="st">'direction'</span>].to_pandas()</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>conf_mat <span class="op">=</span> confusion_matrix(y_actual, y_pred)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>conf_mat)</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>disp.plot()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;sklearn.metrics._plot.confusion_matrix.ConfusionMatrixDisplay object at 0x15cb4f090&gt;</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>form_preds <span class="op">=</span> form_version.predict(stocks_pd.to_pandas())</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>y_pred <span class="op">=</span> (form_preds <span class="op">&gt;=</span> <span class="fl">0.5</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>y_actual <span class="op">=</span> stocks_pd[<span class="st">'direction'</span>].to_pandas()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>conf_mat <span class="op">=</span> confusion_matrix(y_actual, y_pred)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>disp <span class="op">=</span> ConfusionMatrixDisplay(confusion_matrix<span class="op">=</span>conf_mat)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>disp.plot()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -801,100 +790,76 @@ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP) \times (TP + FN) \times
 </section>
 <section id="test-questions" class="level2">
 <h2 class="anchored" data-anchor-id="test-questions">Test Questions</h2>
-<p>Some times employers will test you on things that aren’t just going through these. One real example you ran into is that you needed to hand calculate the True postives and the True negatives which you failed miserably and wasn’t able to even get to the rest.</p>
+<p>Some times employers will test you on things that aren’t just going through these. One real example you ran into is that you needed to hand calculate the True postives and the True negatives.</p>
 <p>You are working on a classification problem with two classes: Class 1 and Class 2. There are a total of 2000 observations in the dataset, with 1200 observations in Class 1 and 800 observations in Class 2. Your classifier produces the following predictions:</p>
 <p>It assigns 1000 observations to Class 1. It assigns 800 observations to Class 2. Additionally, your classifier correctly classifies 1000 observations in total.</p>
 <p>Using this information:</p>
 <p>How many observations are true positives for Class 1 and Class 2? How many observations are false positives for each class?</p>
 <p>For the True Postives we would do some</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the known values</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>correctly_classified <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>predicted_class1 <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>predicted_class2 <span class="ot">&lt;-</span> <span class="dv">800</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>actual_class1 <span class="ot">&lt;-</span> <span class="dv">1200</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>actual_class2 <span class="ot">&lt;-</span> <span class="dv">800</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>TP2 <span class="ot">&lt;-</span> (predicted_class2 <span class="sc">-</span> actual_class1 <span class="sc">+</span> correctly_classified) <span class="sc">/</span> <span class="dv">2</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve for TP1 using TP1 + TP2 = correctly_classified</span></span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>TP1 <span class="ot">&lt;-</span> correctly_classified <span class="sc">-</span> TP2</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve for FP1 and FP2</span></span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>FP1 <span class="ot">&lt;-</span> predicted_class1 <span class="sc">-</span> TP1</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>FP2 <span class="ot">&lt;-</span> predicted_class2 <span class="sc">-</span> TP2</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>TP1 <span class="sc">+</span> TP2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 1000</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the results</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"True Positives for Class 1 (TP1):"</span>, TP1, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>True Positives for Class 1 (TP1): 700 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"True Positives for Class 2 (TP2):"</span>, TP2, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>True Positives for Class 2 (TP2): 300 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"False Positives for Class 1 (FP1):"</span>, FP1, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>False Positives for Class 1 (FP1): 300 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"False Positives for Class 2 (FP2):"</span>, FP2, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>False Positives for Class 2 (FP2): 500 </code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the known values</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>correctly_classified <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>predicted_class1 <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>predicted_class2 <span class="ot">&lt;-</span> <span class="dv">800</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>actual_class1 <span class="ot">&lt;-</span> <span class="dv">1200</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>actual_class2 <span class="ot">&lt;-</span> <span class="dv">800</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>TP2 <span class="ot">&lt;-</span> (predicted_class2 <span class="sc">-</span> actual_class1 <span class="sc">+</span> correctly_classified) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve for TP1 using TP1 + TP2 = correctly_classified</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>TP1 <span class="ot">&lt;-</span> correctly_classified <span class="sc">-</span> TP2</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve for FP1 and FP2</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>FP1 <span class="ot">&lt;-</span> predicted_class1 <span class="sc">-</span> TP1</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>FP2 <span class="ot">&lt;-</span> predicted_class2 <span class="sc">-</span> TP2</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>TP1 <span class="sc">+</span> TP2</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Print the results</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"True Positives for Class 1 (TP1):"</span>, TP1, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"True Positives for Class 2 (TP2):"</span>, TP2, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"False Positives for Class 1 (FP1):"</span>, FP1, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"False Positives for Class 2 (FP2):"</span>, FP2, <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="the-workflow" class="level2">
 <h2 class="anchored" data-anchor-id="the-workflow">The workflow</h2>
 <p>In the stock market example we can do something like this.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks[[<span class="st">'Lag1'</span>, <span class="st">'Lag2'</span>]]</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> stocks[<span class="st">'Direction'</span>]</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(x, y, test_size <span class="op">=</span> <span class="fl">0.2</span>, random_state <span class="op">=</span> <span class="dv">1994</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks[[<span class="st">'Lag1'</span>, <span class="st">'Lag2'</span>]]</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> stocks[<span class="st">'Direction'</span>]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(x, y, test_size <span class="op">=</span> <span class="fl">0.2</span>, random_state <span class="op">=</span> <span class="dv">1994</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Then we fit our models like this we initiate a logit object same as we would in tidy models same goes for various other. To pair this down we are going to just use two features. One thing to note is that scikit learn regularizs the logit by default with an l2 norm aka the ridge penalty.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> LogisticRegression()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>logit <span class="op">=</span> LogisticRegression()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So lets go ahead and fit the logit and see how it does</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>logit_mod <span class="op">=</span> logit.fit(x_train, y_train)</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>logit_preds <span class="op">=</span> logit_mod.predict(x_test)</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>accuracy_score(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.508</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[33, 83],
-       [40, 94]])</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>classification_report(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>'              precision    recall  f1-score   support\n\n        Down       0.45      0.28      0.35       116\n          Up       0.53      0.70      0.60       134\n\n    accuracy                           0.51       250\n   macro avg       0.49      0.49      0.48       250\nweighted avg       0.49      0.51      0.49       250\n'</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>logit_mod <span class="op">=</span> logit.fit(x_train, y_train)</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>logit_preds <span class="op">=</span> logit_mod.predict(x_test)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>accuracy_score(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>classification_report(y_test, logit_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So it has about a coin toss chance on being right. If we wanted to give it specific values we can give it some values</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>new_dat <span class="op">=</span> pl.DataFrame({</span>
-<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Lag1'</span>: [<span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">1.1</span>],</span>
-<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Lag2'</span>: [<span class="fl">1.2</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.3</span>],</span>
-<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>predicted_probs <span class="op">=</span> logit_mod.predict(new_dat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>new_dat <span class="op">=</span> pl.DataFrame({</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Lag1'</span>: [<span class="fl">0.5</span>, <span class="fl">0.8</span>, <span class="fl">1.1</span>],</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">'Lag2'</span>: [<span class="fl">1.2</span>, <span class="op">-</span><span class="fl">0.5</span>, <span class="fl">0.3</span>],</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>predicted_probs <span class="op">=</span> logit_mod.predict(new_dat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="lda" class="level2">
@@ -905,17 +870,13 @@ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP) \times (TP + FN) \times
 <li><p>If we have small sample size and the distribution of the predictors is approx normal.</p></li>
 </ul>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>lda <span class="op">=</span> LinearDiscriminantAnalysis(store_covariance<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>lda_mod <span class="op">=</span> lda.fit(x_train, y_train)</span>
-<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>lda_preds <span class="op">=</span> lda_mod.predict(x_test)</span>
-<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, lda_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[33, 83],
-       [40, 94]])</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>lda <span class="op">=</span> LinearDiscriminantAnalysis(store_covariance<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>lda_mod <span class="op">=</span> lda.fit(x_train, y_train)</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>lda_preds <span class="op">=</span> lda_mod.predict(x_test)</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, lda_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>I will comeback to this but for the most part we are still doing a bad job of predicting the down direction. We are also seeing some bad things in the diagnostics.</p>
 </section>
@@ -923,39 +884,31 @@ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP) \times (TP + FN) \times
 <h2 class="anchored" data-anchor-id="qda">QDA</h2>
 <p>QDA is pretty similar to LDA in a lot of respects howevr it assumes that each class has its own mean and covariance rather than enforcing and equality assumptions</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.discriminant_analysis <span class="im">import</span> QuadraticDiscriminantAnalysis</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>qda <span class="op">=</span> QuadraticDiscriminantAnalysis()</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>qda_mod <span class="op">=</span> qda.fit(x_train, y_train)</span>
-<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>qda_preds <span class="op">=</span> qda_mod.predict(x_test)</span>
-<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb33-11"><a href="#cb33-11" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, qda_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[ 27,  89],
-       [ 33, 101]])</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.discriminant_analysis <span class="im">import</span> QuadraticDiscriminantAnalysis</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>qda <span class="op">=</span> QuadraticDiscriminantAnalysis()</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>qda_mod <span class="op">=</span> qda.fit(x_train, y_train)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>qda_preds <span class="op">=</span> qda_mod.predict(x_test)</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, qda_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="naive-bayes" class="level2">
 <h2 class="anchored" data-anchor-id="naive-bayes">Naive Bayes</h2>
 <p>Naive Bayes is a classic we make the assumption that our predictors are drawn from a gaussian distribution, that each of the features is conditionally independent, and we make the assumption that the classes are linearly seperable. What is interesting about Naive Bayes is that it works pretty well</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> GaussianNB()</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>nb_mod <span class="op">=</span> nb.fit(x_train, y_train)</span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>nb_preds <span class="op">=</span> nb.predict(x_test)</span>
-<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, nb_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[32, 84],
-       [36, 98]])</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>nb <span class="op">=</span> GaussianNB()</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>nb_mod <span class="op">=</span> nb.fit(x_train, y_train)</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>nb_preds <span class="op">=</span> nb.predict(x_test)</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, nb_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="k-nearest-neighbors" class="level2">
@@ -963,15 +916,15 @@ MCC = \frac{TP \times TN - FP \times FN}{\sqrt{(TP + FP) \times (TP + FN) \times
 <p>Finally the most “machine-learny” of the models of these classifiers that we have covered so far is K-Nearest neightbors. KNN is fairly intuitive things that are close to each other are more likely to be related to each other. We don’t make any assumptions of the functional form of the decision boundary. For the most part each of the classifiers so far we make linearity assumptions or that the classification boundary follows a Bernoulli distribution. We also make no assumptions about the distribution of the data. This is kind of cool but as we make less and less assumptions about the data we start needing more of it. However we need to ensure that each of our features are on the same scale or the algorithm is not going to do well. If we have the difference in years versus 1,000 or millions of dollars. A jump of 100 yeasrs is substantively larger than a jump in a 100 dollars but K-nearest neighbors is going to let the larger numbers dominate. So we need to rescale everything.</p>
 <p>The other thing is we don’t have any a priori knowledge of the optimal number of neighbors. We have have some idea but for machine learning models we use something called a hyperparameter to improve our model. There are mechancical parts of our models that we don’t have control over. In this setting we are not going to change how we calculate Euclidean distance. However, the number of neighbors to set that determines the classification boundaries are. Nothing in dataset or model can tell us what is the correct number of neighbors. We basically iterate over these to find the optimal <em>k</em> aka the optimal number of neighbors</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
-<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
-<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>caravan <span class="op">=</span> pl.read_csv(<span class="st">'data/Caravan.csv'</span>)</span>
-<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>x_df <span class="op">=</span> caravan.select(pl.exclude(<span class="st">'Purchase'</span>))</span>
-<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>scaler.fit(x_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> StandardScaler</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>caravan <span class="op">=</span> pl.read_csv(<span class="st">'data/Caravan.csv'</span>)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>x_df <span class="op">=</span> caravan.select(pl.exclude(<span class="st">'Purchase'</span>))</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>scaler.fit(x_df)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <style>#sk-container-id-1 {
   /* Definition of color scheme common for light and dark mode */
@@ -1390,41 +1343,34 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 }
 </style><div id="sk-container-id-1" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>StandardScaler()</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-1" type="checkbox" checked=""><label for="sk-estimator-id-1" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>StandardScaler</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.preprocessing.StandardScaler.html">?<span>Documentation for StandardScaler</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>StandardScaler()</pre></div> </div></div></div></div>
 </div>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>x_std <span class="op">=</span> scaler.transform(x_df)</span>
-<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>feature_sd <span class="op">=</span> pl.DataFrame(x_std, schema<span class="op">=</span>x_df.columns)</span>
-<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-6"><a href="#cb38-6" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(np.asarray(feature_sd),</span>
-<span id="cb38-7"><a href="#cb38-7" aria-hidden="true" tabindex="-1"></a>                                                    caravan[<span class="st">'Purchase'</span>],</span>
-<span id="cb38-8"><a href="#cb38-8" aria-hidden="true" tabindex="-1"></a>                                                    test_size <span class="op">=</span> <span class="dv">1000</span>)</span>
-<span id="cb38-9"><a href="#cb38-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-10"><a href="#cb38-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-11"><a href="#cb38-11" aria-hidden="true" tabindex="-1"></a>knn <span class="op">=</span> KNeighborsClassifier(n_neighbors<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb38-12"><a href="#cb38-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-13"><a href="#cb38-13" aria-hidden="true" tabindex="-1"></a>knn_preds <span class="op">=</span> knn.fit(x_train, y_train).predict(x_test)</span>
-<span id="cb38-14"><a href="#cb38-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb38-15"><a href="#cb38-15" aria-hidden="true" tabindex="-1"></a>knn.fit(x_train, y_train).predict_proba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>&lt;bound method KNeighborsClassifier.predict_proba of KNeighborsClassifier(n_neighbors=1)&gt;</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, knn_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[879,  61],
-       [ 56,   4]])</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>x_std <span class="op">=</span> scaler.transform(x_df)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>feature_sd <span class="op">=</span> pl.DataFrame(x_std, schema<span class="op">=</span>x_df.columns)</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(np.asarray(feature_sd),</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>                                                    caravan[<span class="st">'Purchase'</span>],</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>                                                    test_size <span class="op">=</span> <span class="dv">1000</span>)</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>knn <span class="op">=</span> KNeighborsClassifier(n_neighbors<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>knn_preds <span class="op">=</span> knn.fit(x_train, y_train).predict(x_test)</span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>knn.fit(x_train, y_train).predict_proba</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, knn_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So one neighbor does pretty well but what if we could do better? We can perform a grid search over the number of neighors. 10 Neighbors is probably unreasonable. Since this is not actually all that intensive we could theoretically just use a for loop to tune this parameter. However, thats not really the best way since we have built in tools.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GridSearchCV, RandomizedSearchCV</span>
-<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>knn <span class="op">=</span> KNeighborsClassifier()</span>
-<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {<span class="st">'n_neighbors'</span> : <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">10</span>))}</span>
-<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>grid_search <span class="op">=</span> GridSearchCV(knn, param_grid, cv <span class="op">=</span> <span class="dv">5</span>)</span>
-<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>grid_search.fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> GridSearchCV, RandomizedSearchCV</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>knn <span class="op">=</span> KNeighborsClassifier()</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>param_grid <span class="op">=</span> {<span class="st">'n_neighbors'</span> : <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">10</span>))}</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>grid_search <span class="op">=</span> GridSearchCV(knn, param_grid, cv <span class="op">=</span> <span class="dv">5</span>)</span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>grid_search.fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <style>#sk-container-id-2 {
   /* Definition of color scheme common for light and dark mode */
@@ -1843,63 +1789,36 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 }
 </style><div id="sk-container-id-2" class="sk-top-container"><div class="sk-text-repr-fallback"><pre>GridSearchCV(cv=5, estimator=KNeighborsClassifier(),
              param_grid={'n_neighbors': [1, 2, 3, 4, 5, 6, 7, 8, 9]})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-2" type="checkbox"><label for="sk-estimator-id-2" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>GridSearchCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.GridSearchCV.html">?<span>Documentation for GridSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>GridSearchCV(cv=5, estimator=KNeighborsClassifier(),
-             param_grid={'n_neighbors': [1, 2, 3, 4, 5, 6, 7, 8, 9]})</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox"><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>best_estimator_: KNeighborsClassifier</div></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=8)</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox"><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>KNeighborsClassifier</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">?<span>Documentation for KNeighborsClassifier</span></a></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=8)</pre></div> </div></div></div></div></div></div></div></div></div>
+             param_grid={'n_neighbors': [1, 2, 3, 4, 5, 6, 7, 8, 9]})</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-3" type="checkbox"><label for="sk-estimator-id-3" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>best_estimator_: KNeighborsClassifier</div></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=7)</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-4" type="checkbox"><label for="sk-estimator-id-4" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>KNeighborsClassifier</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">?<span>Documentation for KNeighborsClassifier</span></a></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=7)</pre></div> </div></div></div></div></div></div></div></div></div>
 </div>
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a>grid_search.best_score_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>np.float64(0.9400666480338831)</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>grid_search.score(x_test, y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.939</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>best_grid <span class="op">=</span> grid_search.best_estimator_</span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>best_grid_preds <span class="op">=</span> best_grid.predict(x_test)</span>
-<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, best_grid_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[939,   1],
-       [ 60,   0]])</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>best_grid.n_neighbors</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>8</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>grid_search.best_score_</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>grid_search.score(x_test, y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>best_grid <span class="op">=</span> grid_search.best_estimator_</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>best_grid_preds <span class="op">=</span> best_grid.predict(x_test)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, best_grid_preds)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>best_grid.n_neighbors</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>This is kind of nice. So lets breakdown what we did. We k-fold cross-validation meaning we created 5 evenly sized folds where the model will be trained on k-1 fold. Meaning we trained the model on 4 folds. Then repeat this process. In a grid search we are kind of just going through each individual combination of hyperparameters. So we are doing k =1 distance = manhattan, k =1 distance = euclidean etc. So this maybe fine if we don’t have a ton of things to do but if we have a ton of hyperparameters than that is not all that efficient.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools</span>
-<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>p_grid_2 <span class="op">=</span> {<span class="st">'n_neighbors'</span>: <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">5</span>)), <span class="st">'metric'</span>: <span class="bu">list</span>([<span class="st">'euclidean'</span>, <span class="st">'manhattan'</span>, <span class="st">'minkowski'</span>])}</span>
-<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>combos <span class="op">=</span> itertools.product(p_grid_2[<span class="st">'n_neighbors'</span>], p_grid_2[<span class="st">'metric'</span>])</span>
-<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> comb <span class="kw">in</span> combos:</span>
-<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(comb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>(1, 'euclidean')
-(1, 'manhattan')
-(1, 'minkowski')
-(2, 'euclidean')
-(2, 'manhattan')
-(2, 'minkowski')
-(3, 'euclidean')
-(3, 'manhattan')
-(3, 'minkowski')
-(4, 'euclidean')
-(4, 'manhattan')
-(4, 'minkowski')</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> itertools</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>p_grid_2 <span class="op">=</span> {<span class="st">'n_neighbors'</span>: <span class="bu">list</span>(<span class="bu">range</span>(<span class="dv">1</span>,<span class="dv">5</span>)), <span class="st">'metric'</span>: <span class="bu">list</span>([<span class="st">'euclidean'</span>, <span class="st">'manhattan'</span>, <span class="st">'minkowski'</span>])}</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>combos <span class="op">=</span> itertools.product(p_grid_2[<span class="st">'n_neighbors'</span>], p_grid_2[<span class="st">'metric'</span>])</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> comb <span class="kw">in</span> combos:</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(comb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Whereas random search is will take a random sample of these combos</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>param_dist <span class="op">=</span> {<span class="st">'n_neighbors'</span>: np.arange(<span class="dv">1</span>,<span class="dv">5</span>), <span class="st">'metric'</span>: [<span class="st">'euclidean'</span>, <span class="st">'manhattan'</span>, <span class="st">'minkowski'</span>]}</span>
-<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>random_search <span class="op">=</span> RandomizedSearchCV(knn, param_distributions<span class="op">=</span>param_dist, n_iter <span class="op">=</span> <span class="dv">4</span>)</span>
-<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>random_search.fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>param_dist <span class="op">=</span> {<span class="st">'n_neighbors'</span>: np.arange(<span class="dv">1</span>,<span class="dv">5</span>), <span class="st">'metric'</span>: [<span class="st">'euclidean'</span>, <span class="st">'manhattan'</span>, <span class="st">'minkowski'</span>]}</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>random_search <span class="op">=</span> RandomizedSearchCV(knn, param_distributions<span class="op">=</span>param_dist, n_iter <span class="op">=</span> <span class="dv">4</span>)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>random_search.fit(x_train, y_train)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <style>#sk-container-id-3 {
   /* Definition of color scheme common for light and dark mode */
@@ -2322,80 +2241,67 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
                                         'n_neighbors': array([1, 2, 3, 4])})</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br>On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class="sk-container" hidden=""><div class="sk-item sk-dashed-wrapped"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-5" type="checkbox"><label for="sk-estimator-id-5" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>RandomizedSearchCV</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.model_selection.RandomizedSearchCV.html">?<span>Documentation for RandomizedSearchCV</span></a><span class="sk-estimator-doc-link fitted">i<span>Fitted</span></span></div></label><div class="sk-toggleable__content fitted"><pre>RandomizedSearchCV(estimator=KNeighborsClassifier(), n_iter=4,
                    param_distributions={'metric': ['euclidean', 'manhattan',
                                                    'minkowski'],
-                                        'n_neighbors': array([1, 2, 3, 4])})</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox"><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>best_estimator_: KNeighborsClassifier</div></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(metric='euclidean', n_neighbors=np.int64(4))</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox"><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>KNeighborsClassifier</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">?<span>Documentation for KNeighborsClassifier</span></a></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(metric='euclidean', n_neighbors=np.int64(4))</pre></div> </div></div></div></div></div></div></div></div></div>
+                                        'n_neighbors': array([1, 2, 3, 4])})</pre></div> </div></div><div class="sk-parallel"><div class="sk-parallel-item"><div class="sk-item"><div class="sk-label-container"><div class="sk-label fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-6" type="checkbox"><label for="sk-estimator-id-6" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>best_estimator_: KNeighborsClassifier</div></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=np.int64(3))</pre></div> </div></div><div class="sk-serial"><div class="sk-item"><div class="sk-estimator fitted sk-toggleable"><input class="sk-toggleable__control sk-hidden--visually" id="sk-estimator-id-7" type="checkbox"><label for="sk-estimator-id-7" class="sk-toggleable__label fitted sk-toggleable__label-arrow"><div><div>KNeighborsClassifier</div></div><div><a class="sk-estimator-doc-link fitted" rel="noreferrer" target="_blank" href="https://scikit-learn.org/1.6/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">?<span>Documentation for KNeighborsClassifier</span></a></div></label><div class="sk-toggleable__content fitted"><pre>KNeighborsClassifier(n_neighbors=np.int64(3))</pre></div> </div></div></div></div></div></div></div></div></div>
 </div>
-<div class="sourceCode cell-code" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a>best_random <span class="op">=</span> random_search.best_estimator_</span>
-<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>best_preds_random <span class="op">=</span> best_random.predict(x_test)</span>
-<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>best_random.score(x_test, y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.935</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, best_preds_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>array([[935,   5],
-       [ 60,   0]])</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>best_random <span class="op">=</span> random_search.best_estimator_</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>best_preds_random <span class="op">=</span> best_random.predict(x_test)</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>best_random.score(x_test, y_test)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>confusion_matrix(y_test, best_preds_random)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="selecting-the-best-classifier" class="level2">
 <h2 class="anchored" data-anchor-id="selecting-the-best-classifier">Selecting the best classifier</h2>
 <p>Often times we do something akin to this where we train a bunch of models and then have to compare which one is the best. This would be a huge pain to do manually. However this is why computers are nice</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> LabelEncoder</span>
-<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve, auc</span>
-<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
-<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks.select(pl.col(<span class="st">'Lag1'</span>, <span class="st">'Lag2'</span>, <span class="st">'Volume'</span>)).to_numpy()</span>
-<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span>  stocks.select(pl.col(<span class="st">'Direction'</span>)).to_numpy().flatten()</span>
-<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a>label_encoder <span class="op">=</span> LabelEncoder()</span>
-<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a>y_encoded <span class="op">=</span> label_encoder.fit_transform(y)</span>
-<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(x,</span>
-<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a>                                                    y_encoded,</span>
-<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a>                                                    test_size <span class="op">=</span> <span class="fl">0.2</span>)</span>
-<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-20"><a href="#cb58-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-21"><a href="#cb58-21" aria-hidden="true" tabindex="-1"></a>x_train_scaled <span class="op">=</span> scaler.fit_transform(x_train)</span>
-<span id="cb58-22"><a href="#cb58-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-23"><a href="#cb58-23" aria-hidden="true" tabindex="-1"></a>x_test_scaled <span class="op">=</span> scaler.fit_transform(x_test)</span>
-<span id="cb58-24"><a href="#cb58-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-25"><a href="#cb58-25" aria-hidden="true" tabindex="-1"></a>classifiers <span class="op">=</span> [</span>
-<span id="cb58-26"><a href="#cb58-26" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">'QDA'</span>,  <span class="st">'model'</span>: QuadraticDiscriminantAnalysis()},</span>
-<span id="cb58-27"><a href="#cb58-27" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"Logit"</span>,<span class="st">'model'</span>: LogisticRegression()},</span>
-<span id="cb58-28"><a href="#cb58-28" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"LDA"</span>,  <span class="st">'model'</span>: LinearDiscriminantAnalysis()}, </span>
-<span id="cb58-29"><a href="#cb58-29" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"KNN"</span>,  <span class="st">'model'</span>: KNeighborsClassifier(n_neighbors<span class="op">=</span><span class="dv">5</span>)}</span>
-<span id="cb58-30"><a href="#cb58-30" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb58-31"><a href="#cb58-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-32"><a href="#cb58-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-33"><a href="#cb58-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> classifiers:</span>
-<span id="cb58-34"><a href="#cb58-34" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> m[<span class="st">'model'</span>]</span>
-<span id="cb58-35"><a href="#cb58-35" aria-hidden="true" tabindex="-1"></a>    model.fit(x_train_scaled, y_train)</span>
-<span id="cb58-36"><a href="#cb58-36" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model.predict(x_test_scaled)</span>
-<span id="cb58-37"><a href="#cb58-37" aria-hidden="true" tabindex="-1"></a>    fpr, tpr, thresholds <span class="op">=</span> roc_curve(y_test, model.predict_proba(x_test_scaled)[:,<span class="dv">0</span>])<span class="co"># direction down </span></span>
-<span id="cb58-38"><a href="#cb58-38" aria-hidden="true" tabindex="-1"></a>    plt.plot(fpr, tpr, label<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>m[<span class="st">"label"</span>]<span class="sc">}</span><span class="ss"> ROC'</span>)</span>
-<span id="cb58-39"><a href="#cb58-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb58-40"><a href="#cb58-40" aria-hidden="true" tabindex="-1"></a>plt.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>],<span class="st">'r--'</span>)</span>
-<span id="cb58-41"><a href="#cb58-41" aria-hidden="true" tabindex="-1"></a>plt.xlim([<span class="fl">0.0</span>, <span class="fl">1.0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>(0.0, 1.0)</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.0</span>, <span class="fl">1.05</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>(0.0, 1.05)</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'1-Specificity(False Positive Rate)'</span>)</span>
-<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Sensitivity(True Positive Rate)'</span>)</span>
-<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Receiver Operating Characteristic'</span>)</span>
-<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>plt.legend(loc<span class="op">=</span><span class="st">"lower right"</span>)</span>
-<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>plt.show()   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.preprocessing <span class="im">import</span> LabelEncoder</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> roc_curve, auc</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>scaler <span class="op">=</span> StandardScaler()</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> stocks.select(pl.col(<span class="st">'Lag1'</span>, <span class="st">'Lag2'</span>, <span class="st">'Volume'</span>)).to_numpy()</span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span>  stocks.select(pl.col(<span class="st">'Direction'</span>)).to_numpy().flatten()</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>label_encoder <span class="op">=</span> LabelEncoder()</span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>y_encoded <span class="op">=</span> label_encoder.fit_transform(y)</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>x_train, x_test, y_train, y_test <span class="op">=</span> train_test_split(x,</span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>                                                    y_encoded,</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>                                                    test_size <span class="op">=</span> <span class="fl">0.2</span>)</span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>x_train_scaled <span class="op">=</span> scaler.fit_transform(x_train)</span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>x_test_scaled <span class="op">=</span> scaler.fit_transform(x_test)</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>classifiers <span class="op">=</span> [</span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">'QDA'</span>,  <span class="st">'model'</span>: QuadraticDiscriminantAnalysis()},</span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"Logit"</span>,<span class="st">'model'</span>: LogisticRegression()},</span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"LDA"</span>,  <span class="st">'model'</span>: LinearDiscriminantAnalysis()}, </span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>    {<span class="st">'label'</span>:<span class="st">"KNN"</span>,  <span class="st">'model'</span>: KNeighborsClassifier(n_neighbors<span class="op">=</span><span class="dv">5</span>)}</span>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> m <span class="kw">in</span> classifiers:</span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>    model <span class="op">=</span> m[<span class="st">'model'</span>]</span>
+<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a>    model.fit(x_train_scaled, y_train)</span>
+<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> model.predict(x_test_scaled)</span>
+<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a>    fpr, tpr, thresholds <span class="op">=</span> roc_curve(y_test, model.predict_proba(x_test_scaled)[:,<span class="dv">0</span>])<span class="co"># direction down </span></span>
+<span id="cb31-38"><a href="#cb31-38" aria-hidden="true" tabindex="-1"></a>    plt.plot(fpr, tpr, label<span class="op">=</span><span class="ss">f'</span><span class="sc">{</span>m[<span class="st">"label"</span>]<span class="sc">}</span><span class="ss"> ROC'</span>)</span>
+<span id="cb31-39"><a href="#cb31-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-40"><a href="#cb31-40" aria-hidden="true" tabindex="-1"></a>plt.plot([<span class="dv">0</span>, <span class="dv">1</span>], [<span class="dv">0</span>, <span class="dv">1</span>],<span class="st">'r--'</span>)</span>
+<span id="cb31-41"><a href="#cb31-41" aria-hidden="true" tabindex="-1"></a>plt.xlim([<span class="fl">0.0</span>, <span class="fl">1.0</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>plt.ylim([<span class="fl">0.0</span>, <span class="fl">1.05</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'1-Specificity(False Positive Rate)'</span>)</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Sensitivity(True Positive Rate)'</span>)</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Receiver Operating Characteristic'</span>)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>plt.legend(loc<span class="op">=</span><span class="st">"lower right"</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>plt.show()   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -2411,132 +2317,18 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 <section id="what-should-we-do-if-we-have-some-class-imbalance" class="level2">
 <h2 class="anchored" data-anchor-id="what-should-we-do-if-we-have-some-class-imbalance">What should we do if we have some class imbalance?</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytable)</span>
-<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>    janitor<span class="sc">::</span><span class="fu">clean_names</span>() </span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a> df <span class="sc">|&gt;</span></span>
-<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(success, died) <span class="sc">|&gt;</span></span>
-<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">total =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
-<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prop =</span> total<span class="sc">/</span><span class="fu">sum</span>(total)) <span class="sc">|&gt;</span></span>
-<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a>                <span class="fu">tt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<!-- preamble start -->
-
-    <script>
-
-      function styleCell_fwx36oskfd52hgq0mizg(i, j, css_id) {
-          var table = document.getElementById("tinytable_fwx36oskfd52hgq0mizg");
-          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
-          if (cell) {
-              console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
-              cell.classList.add(css_id);
-          } else {
-              console.warn(`Cell at (${i}, ${j}) not found.`);
-          }
-      }
-      function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_fwx36oskfd52hgq0mizg');
-        var newRow = table.insertRow(i);
-        var newCell = newRow.insertCell(0);
-        newCell.setAttribute("colspan", colspan);
-        // newCell.innerText = content;
-        // this may be unsafe, but innerText does not interpret <br>
-        newCell.innerHTML = content;
-      }
-      function spanCell_fwx36oskfd52hgq0mizg(i, j, rowspan, colspan) {
-        var table = document.getElementById("tinytable_fwx36oskfd52hgq0mizg");
-        const targetRow = table.rows[i];
-        const targetCell = targetRow.cells[j];
-        for (let r = 0; r < rowspan; r++) {
-          // Only start deleting cells to the right for the first row (r == 0)
-          if (r === 0) {
-            // Delete cells to the right of the target cell in the first row
-            for (let c = colspan - 1; c > 0; c--) {
-              if (table.rows[i + r].cells[j + c]) {
-                table.rows[i + r].deleteCell(j + c);
-              }
-            }
-          }
-          // For rows below the first, delete starting from the target column
-          if (r > 0) {
-            for (let c = colspan - 1; c >= 0; c--) {
-              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
-                table.rows[i + r].deleteCell(j);
-              }
-            }
-          }
-        }
-        // Set rowspan and colspan of the target cell
-        targetCell.rowSpan = rowspan;
-        targetCell.colSpan = colspan;
-      }
-      // tinytable span after
-      window.addEventListener('load', function () {
-          var cellsToStyle = [
-            // tinytable style arrays after
-          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 }, { i: 0, j: 2 }, { i: 0, j: 3 },  ], css_id: 'tinytable_css_w2jyju8i5gjpb6avv4xl',}, 
-          { positions: [ { i: 4, j: 0 }, { i: 4, j: 1 }, { i: 4, j: 2 }, { i: 4, j: 3 },  ], css_id: 'tinytable_css_mdgaymbmgewkwq6jlv7m',}, 
-          ];
-
-          // Loop over the arrays to style the cells
-          cellsToStyle.forEach(function (group) {
-              group.positions.forEach(function (cell) {
-                  styleCell_fwx36oskfd52hgq0mizg(cell.i, cell.j, group.css_id);
-              });
-          });
-      });
-    </script>
-
-    <style>
-      /* tinytable css entries after */
-      .table td.tinytable_css_w2jyju8i5gjpb6avv4xl, .table th.tinytable_css_w2jyju8i5gjpb6avv4xl { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
-      .table td.tinytable_css_mdgaymbmgewkwq6jlv7m, .table th.tinytable_css_mdgaymbmgewkwq6jlv7m { border-bottom: solid #d3d8dc 0.1em; }
-    </style>
-    <div class="container">
-      <table class="table table-borderless" id="tinytable_fwx36oskfd52hgq0mizg" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-        <thead>
-        
-              <tr>
-                <th scope="col">success</th>
-                <th scope="col">died</th>
-                <th scope="col">total</th>
-                <th scope="col">prop</th>
-              </tr>
-        </thead>
-        
-        <tbody>
-                <tr>
-                  <td>FALSE</td>
-                  <td>FALSE</td>
-                  <td>46452</td>
-                  <td>0.981656805</td>
-                </tr>
-                <tr>
-                  <td>FALSE</td>
-                  <td> TRUE</td>
-                  <td>  868</td>
-                  <td>0.018343195</td>
-                </tr>
-                <tr>
-                  <td> TRUE</td>
-                  <td>FALSE</td>
-                  <td>28961</td>
-                  <td>0.991849036</td>
-                </tr>
-                <tr>
-                  <td> TRUE</td>
-                  <td> TRUE</td>
-                  <td>  238</td>
-                  <td>0.008150964</td>
-                </tr>
-        </tbody>
-      </table>
-    </div>
-<!-- hack to avoid NA insertion in last line -->
-</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tinytable)</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>df <span class="ot">=</span> <span class="fu">read_csv</span>(<span class="st">"https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>    janitor<span class="sc">::</span><span class="fu">clean_names</span>() </span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>surv <span class="ot">=</span> df <span class="sc">|&gt;</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(success, died) <span class="sc">|&gt;</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">total =</span> <span class="fu">n</span>()) <span class="sc">|&gt;</span></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">prop =</span> total<span class="sc">/</span><span class="fu">sum</span>(total)) </span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a><span class="fu">tt</span>(surv)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>So for the most part nicely balanced class data is pretty rare! Lets take a fairly simple from Julia Silge’s <a href="https://juliasilge.com/blog/himalayan-climbing/">excellent blog post</a>. For the most part mountaneering trips don’t tend to have a lot of deaths which is good! However, when we want to start predicting what makes a succesful climb this can be a problem if we aren’t careful.</p>
 <section id="preprocessing-a-variety-of-sampling-techniques" class="level3">
@@ -2544,125 +2336,17 @@ div.sk-label-container:hover .sk-estimator-doc-link.fitted:hover,
 <p>So we can think about fraud and war along similar lines in the class imbalance space. For the most part we have a ton of not war or not fraud cases in these kinds of dataset. I am sure if we start to skew the class imbalances a little bit more or even just added a third class like ‘maybe fraud’ or ‘mid’ to the COW database we are going to start pushing the limits of what the model could handle.</p>
 <p>One of the real important things is choosing evaluation metrics that can handle imbalanced classes. As we saw in the last section accuracy tends to be a poor metric with big class imbalances becuase its the total number of correct predictions divided by the total number of predicitions. The thing about these models is that they tend to do pretty well in predicting things after they are trained on some data. So the model gets really good at predicting the dominant class but gets really bad at predicting the less dominant class.</p>
 <p>We can pray that we get more data and just by pure chance we got a bad draw with lots of class imbalance. But, for the most part those prayers will never be answered. Fundamentally if the DGP of war or fraud change we have kind of a big problem on our hands. Instead what we can do is use as variety of resampling methods to artificially create balance between the two classes. In <a href="#tbl-resampling-methods" class="quarto-xref">Table&nbsp;1</a> I outline the broad strokes of each resampling method.</p>
-<div class="cell">
 <div id="tbl-resampling-methods" class="cell quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl quarto-uncaptioned" id="tbl-resampling-methods-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;1
 </figcaption>
 <div aria-describedby="tbl-resampling-methods-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output-display">
-<!-- preamble start -->
+<div>
 
-    <script>
-
-      function styleCell_jcze4653rfq9be0lclan(i, j, css_id) {
-          var table = document.getElementById("tinytable_jcze4653rfq9be0lclan");
-          var cell = table.rows[i]?.cells[j];  // Safe navigation to avoid errors
-          if (cell) {
-              console.log(`Styling cell at (${i}, ${j}) with class ${css_id}`);
-              cell.classList.add(css_id);
-          } else {
-              console.warn(`Cell at (${i}, ${j}) not found.`);
-          }
-      }
-      function insertSpanRow(i, colspan, content) {
-        var table = document.getElementById('tinytable_jcze4653rfq9be0lclan');
-        var newRow = table.insertRow(i);
-        var newCell = newRow.insertCell(0);
-        newCell.setAttribute("colspan", colspan);
-        // newCell.innerText = content;
-        // this may be unsafe, but innerText does not interpret <br>
-        newCell.innerHTML = content;
-      }
-      function spanCell_jcze4653rfq9be0lclan(i, j, rowspan, colspan) {
-        var table = document.getElementById("tinytable_jcze4653rfq9be0lclan");
-        const targetRow = table.rows[i];
-        const targetCell = targetRow.cells[j];
-        for (let r = 0; r < rowspan; r++) {
-          // Only start deleting cells to the right for the first row (r == 0)
-          if (r === 0) {
-            // Delete cells to the right of the target cell in the first row
-            for (let c = colspan - 1; c > 0; c--) {
-              if (table.rows[i + r].cells[j + c]) {
-                table.rows[i + r].deleteCell(j + c);
-              }
-            }
-          }
-          // For rows below the first, delete starting from the target column
-          if (r > 0) {
-            for (let c = colspan - 1; c >= 0; c--) {
-              if (table.rows[i + r] && table.rows[i + r].cells[j]) {
-                table.rows[i + r].deleteCell(j);
-              }
-            }
-          }
-        }
-        // Set rowspan and colspan of the target cell
-        targetCell.rowSpan = rowspan;
-        targetCell.colSpan = colspan;
-      }
-      // tinytable span after
-      window.addEventListener('load', function () {
-          var cellsToStyle = [
-            // tinytable style arrays after
-          { positions: [ { i: 0, j: 0 }, { i: 0, j: 1 },  ], css_id: 'tinytable_css_k89xh2319g1zlc8nqsc0',}, 
-          { positions: [ { i: 5, j: 0 }, { i: 5, j: 1 },  ], css_id: 'tinytable_css_6qm3t82wycdgezk4rxe3',}, 
-          ];
-
-          // Loop over the arrays to style the cells
-          cellsToStyle.forEach(function (group) {
-              group.positions.forEach(function (cell) {
-                  styleCell_jcze4653rfq9be0lclan(cell.i, cell.j, group.css_id);
-              });
-          });
-      });
-    </script>
-
-    <style>
-      /* tinytable css entries after */
-      .table td.tinytable_css_k89xh2319g1zlc8nqsc0, .table th.tinytable_css_k89xh2319g1zlc8nqsc0 { border-top: solid #d3d8dc 0.1em; border-bottom: solid #d3d8dc 0.05em; }
-      .table td.tinytable_css_6qm3t82wycdgezk4rxe3, .table th.tinytable_css_6qm3t82wycdgezk4rxe3 { border-bottom: solid #d3d8dc 0.1em; }
-    </style>
-    <div class="container">
-      <table class="table table-borderless" id="tinytable_jcze4653rfq9be0lclan" style="width: auto; margin-left: auto; margin-right: auto;" data-quarto-disable-processing="true">
-        <thead>
-        
-              <tr>
-                <th scope="col">Method</th>
-                <th scope="col">What it Does</th>
-              </tr>
-        </thead>
-        
-        <tbody>
-                <tr>
-                  <td>Oversampling                                     </td>
-                  <td>Bias the classifier towards the minority class by duplicating the minority class                                                      </td>
-                </tr>
-                <tr>
-                  <td>Undersampling                                    </td>
-                  <td>Bias the classifier towards the minority class by removing examples of the dominant class                                             </td>
-                </tr>
-                <tr>
-                  <td>Random Oversampling Examples (ROSE)              </td>
-                  <td>Generate new synthetic points with some noise to the minority class                                                                   </td>
-                </tr>
-                <tr>
-                  <td>Synthetic Minority Oversampling Technique (SMOTE)</td>
-                  <td>Generates new synthetic points by interpolating between existing points                                                               </td>
-                </tr>
-                <tr>
-                  <td>Adaptive Synthetic Sampling (ADASYN)             </td>
-                  <td>Identify hard to classify examples meaning they do not have a ton of neighbors. Generate some synthetic points via K-nearest neighbors</td>
-                </tr>
-        </tbody>
-      </table>
-    </div>
-<!-- hack to avoid NA insertion in last line -->
 </div>
 </div>
 </figure>
-</div>
 </div>
 <p>Effectively what each of these are doing from the perspective of the classifier because it imposes non-uniform missclassfication costs. The simplest approach is to simply randomly add data to the minority class or randomly delete data from the dominant class. However, these approaches have some obvious drawbacks. One thing that you will notice is that we have to manually set a ratio. What ratio do we set 🤷. We may want to shoot for equal balance but we have kind of fundamentaly changed the DGP which does not come at zero cost. By oversampling we are increasing our computational cost because we are copying our data and we risk over fitting. For undersampling we are chucking useful information away a lot of useful information that may improve predictive power down the line.</p>
 <p>To combat this there are various procedures to use more data driven approaches to make up data or sample data. SMOTE generates synthetic examples by selecting a minority class instance, finding one of its k-nearest neighbors (from the same class), and creating a new point along the line segment between them. The synthetic point is placed at a random position between the two, ensuring that the newly generated data follows the distribution of the minority class via K-NN. SMOTE is viable strategy if the skew isn’t really bad. One of the problems is that while k-NN is kind of clever we have a hyperparameter to tune which can be computationally expensive. Since SMOTE is an oversampling technique some of the same draw backs of oversampling still apply.</p>
